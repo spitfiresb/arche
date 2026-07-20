@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floor — grass / campground options</title>
+<style>
+  body { font-family: Georgia, serif; margin: 2em; background: #fff; color: #000; }
+  h1 { font-size: 1.2em; }
+  p.note { max-width: 44em; font-size: 0.9em; line-height: 1.5; }
+  figure { margin: 0 0 3em; }
+  figcaption { font-size: 0.85em; margin-top: 0.6em; max-width: 44em; line-height: 1.5; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<h1>Floor options — where the climber lands</h1>
+<p class="note">Three takes on a grass floor at the base of the cliff, drawn in
+the same ink style as the wall (single black strokes, hatch shading, no fill
+color). The jagged edge on the right is the cliff base; the stick figure and
+rope coil are placed roughly where they end up on the real page. Ground is a
+sliced solid like the wall: an edge line with hatch rules under it.</p>
+
+<div id="panels"></div>
+
+<script>
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  let W = 640;                            // panel width (set per panel)
+  const H = 260, GY = 195;                // ground line y
+  let CLIFF_X = 560;                      // cliff base x (set per panel)
+  const f1 = v => v.toFixed(1);
+  const noise = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const M = (x, y) => 'M' + f1(x) + ' ' + f1(y);
+  const L = (x, y) => 'L' + f1(x) + ' ' + f1(y);
+  const Q = (cx, cy, x, y) => 'Q' + f1(cx) + ' ' + f1(cy) + ' ' + f1(x) + ' ' + f1(y);
+
+  function el(name, attrs, parent) {
+    const e = document.createElementNS(NS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    parent.appendChild(e);
+    return e;
+  }
+  const line = w => ({ fill: 'none', stroke: '#000', 'stroke-width': w,
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+
+  /* ---- shared pieces ---- */
+
+  // ground: a slightly wavy edge line, hatch rules below it (same 58-ish
+  // degree rules as the wall so the two solids read as one material)
+  function ground(svg, seed) {
+    let d = M(0, GY + Math.sin(seed) * 1.5);
+    for (let x = 14; x <= W; x += 14)
+      d += L(x, GY + (noise(seed + x) - 0.5) * 3);
+    el('path', Object.assign(line(2), { d }), svg);
+    let rules = '';
+    for (let x = -40; x < W + 40; x += 9 + noise(seed + x) * 4) {
+      rules += M(x, GY + 5) + L(x + 26, GY + 5 + 26 * 0.64);
+    }
+    const g = el('g', {}, svg);
+    const clip = el('clipPath', { id: 'gclip' + seed }, svg);
+    el('path', { d: M(0, GY) + L(W, GY) + L(W, GY + 26) + L(0, GY + 26) + 'Z' }, clip);
+    g.setAttribute('clip-path', 'url(#gclip' + seed + ')');
+    el('path', Object.assign(line(0.6), { d: rules }), g);
+  }
+
+  // cliff base: a jagged vertical edge coming down from the top and
+  // meeting the ground, with a short inner echo + hatch, like the wall
+  function cliffBase(svg, seed) {
+    let d = M(CLIFF_X + 8 + noise(seed) * 6, 0);
+    let pts = [[CLIFF_X + 8 + noise(seed) * 6, 0]];
+    let y = 0, i = 0;
+    while (y < GY) {
+      y += 16 + noise(seed + ++i) * 22;
+      if (y > GY) y = GY;
+      pts.push([CLIFF_X + (noise(seed + i + 50) - 0.35) * 18, y]);
+    }
+    d = pts.map((p, j) => (j ? 'L' : 'M') + f1(p[0]) + ' ' + f1(p[1])).join('');
+    el('path', Object.assign(line(2), { d }), svg);
+    // inner echo + a few hatch strokes into the rock
+    let d2 = '';
+    for (let j = 0; j < pts.length; j++)
+      d2 += (j ? 'L' : 'M') + f1(pts[j][0] + 7 + noise(seed + j) * 4) + ' ' + f1(pts[j][1]);
+    el('path', Object.assign(line(0.9), { d: d2 }), svg);
+    let rules = '';
+    for (let yy = 8; yy < GY; yy += 6 + noise(seed + yy) * 3)
+      rules += M(CLIFF_X - 2 + (noise(seed + yy + 9) - 0.5) * 8, yy) +
+               'l' + f1(9) + ' ' + f1(5.8);
+    el('path', Object.assign(line(0.6), { d: rules }), svg);
+  }
+
+  // a tuft of grass: 3–6 curved blades fanning from one root
+  function tuft(svg, x, seed, scale) {
+    const s = scale || 1;
+    const n = 3 + Math.floor(noise(seed) * 4);
+    let d = '';
+    for (let i = 0; i < n; i++) {
+      const lean = (i / (n - 1) - 0.5) * 2;              // -1..1 across the fan
+      const hgt = (6 + noise(seed + i) * 8) * s;
+      const bx = x + lean * (2 + noise(seed + i + 7) * 2) * s;
+      d += M(x + lean * 1.2, GY + 1) +
+        Q(x + lean * 2.5 * s, GY - hgt * 0.6, bx + lean * 3.5 * s, GY - hgt);
+    }
+    el('path', Object.assign(line(1.1), { d }), svg);
+  }
+
+  // scatter tufts along a stretch, denser or sparser
+  function meadow(svg, x0, x1, seed, gap) {
+    let x = x0;
+    let i = 0;
+    while (x < x1) {
+      tuft(svg, x, seed + ++i * 13, 0.8 + noise(seed + i) * 0.6);
+      x += gap + noise(seed + i + 3) * gap;
+    }
+  }
+
+  // tiny flower: stem + dot head
+  function flower(svg, x, seed) {
+    const h = 10 + noise(seed) * 5;
+    el('path', Object.assign(line(1), {
+      d: M(x, GY) + Q(x + 1.5, GY - h * 0.6, x, GY - h) }), svg);
+    el('circle', { cx: x, cy: GY - h - 1.5, r: 1.8, fill: 'none',
+      stroke: '#000', 'stroke-width': 1 }, svg);
+  }
+
+  // small rounded rock with a couple of hatch ticks
+  function rock(svg, x, w, seed) {
+    const h = w * (0.45 + noise(seed) * 0.2);
+    el('path', Object.assign(line(1.4), {
+      d: M(x - w / 2, GY) +
+         Q(x - w / 2, GY - h, x - w * 0.1, GY - h) +
+         Q(x + w / 2, GY - h * 0.9, x + w / 2, GY) }), svg);
+    el('path', Object.assign(line(0.6), {
+      d: M(x + w * 0.05, GY - h * 0.75) + 'l' + f1(w * 0.22) + ' ' + f1(h * 0.3) +
+         M(x + w * 0.2, GY - h * 0.85) + 'l' + f1(w * 0.22) + ' ' + f1(h * 0.3) }), svg);
+  }
+
+  // A-frame tent: outline, ridge, door flap, hatch on the shaded panel
+  function tent(svg, x, w) {
+    const h = w * 0.72;
+    const apex = [x, GY - h];
+    // left face (shaded), right face with door
+    el('path', Object.assign(line(2), {
+      d: M(x - w / 2, GY) + L(apex[0], apex[1]) + L(x + w / 2, GY) +
+         M(x - w / 2, GY) + L(x + w / 2, GY) }), svg);
+    // ridge overhang tick
+    el('path', Object.assign(line(1.4), {
+      d: M(apex[0], apex[1]) + 'l 6 -5' }), svg);
+    // door: two flap lines from apex down the right face
+    el('path', Object.assign(line(1.2), {
+      d: M(apex[0], apex[1]) + Q(x + w * 0.1, GY - h * 0.4, x + w * 0.16, GY) +
+         M(apex[0], apex[1]) + Q(x + w * 0.2, GY - h * 0.45, x + w * 0.3, GY) }), svg);
+    // hatch on the left face
+    let rules = '';
+    for (let t = 0.18; t < 0.95; t += 0.13) {
+      const topX = x - w / 2 + (apex[0] - (x - w / 2)) * t;
+      const topY = GY + (apex[1] - GY) * t;
+      rules += M(topX + 2, GY - 1) + L(topX + 2 + (t * w) * 0.12, topY + 3);
+    }
+    el('path', Object.assign(line(0.6), { d: rules }), svg);
+    // guy line + stake
+    el('path', Object.assign(line(0.9), {
+      d: M(apex[0], apex[1]) + L(x - w * 0.72, GY) +
+         M(x - w * 0.72, GY - 3) + L(x - w * 0.72, GY + 2) }), svg);
+  }
+
+  // campfire: stone ring, crossed logs, flame strokes, wobbly smoke
+  function fire(svg, x, seed) {
+    // stones
+    for (let i = 0; i < 6; i++) {
+      const sx = x - 20 + i * 8;
+      el('path', Object.assign(line(1.2), {
+        d: M(sx - 4, GY + 1) + Q(sx, GY - 5 - noise(seed + i) * 3, sx + 4, GY + 1) }), svg);
+    }
+    // crossed logs
+    el('path', Object.assign(line(1.8), {
+      d: M(x - 13, GY - 2) + L(x + 11, GY - 12) +
+         M(x - 11, GY - 12) + L(x + 13, GY - 2) }), svg);
+    // flames: three nested licks
+    el('path', Object.assign(line(1.5), {
+      d: M(x - 8, GY - 9) + Q(x - 10, GY - 22, x - 1, GY - 32) +
+         Q(x + 2, GY - 22, x, GY - 16) +
+         M(x + 7, GY - 9) + Q(x + 10, GY - 18, x + 4, GY - 26) +
+         M(x - 3, GY - 11) + Q(x - 4, GY - 17, x + 1, GY - 21) }), svg);
+    // smoke: dashed wobbly rise
+    let d = M(x - 1, GY - 36);
+    let sx2 = x - 1, sy = GY - 36;
+    for (let i = 0; i < 4; i++) {
+      const nx = sx2 + (noise(seed + i * 3) - 0.35) * 14;
+      const ny = sy - 12 - noise(seed + i) * 8;
+      d += Q(sx2 + (noise(seed + i + 5) - 0.5) * 16, (sy + ny) / 2, nx, ny);
+      sx2 = nx; sy = ny;
+    }
+    el('path', Object.assign(line(1), { d, 'stroke-dasharray': '5 4' }), svg);
+  }
+
+  // log seat: a cylinder lying on the ground, end rings showing
+  function logSeat(svg, x, len) {
+    el('path', Object.assign(line(1.5), {
+      d: M(x, GY - 8) + L(x + len, GY - 8) +
+         M(x, GY) + L(x + len, GY) +
+         M(x, GY - 8) + Q(x - 5, GY - 4, x, GY) +
+         M(x + len, GY - 8) + Q(x + len + 5, GY - 4, x + len, GY) }), svg);
+    el('path', Object.assign(line(0.7), {
+      d: M(x + len, GY - 6) + Q(x + len + 2.5, GY - 4, x + len, GY - 2) }), svg);
+  }
+
+  // pine tree: trunk + three stacked zig-zag skirts
+  function pine(svg, x, h, seed) {
+    el('path', Object.assign(line(1.8), {
+      d: M(x, GY) + L(x, GY - h * 0.28) }), svg);
+    let d = '';
+    for (let t = 0; t < 3; t++) {
+      const yTop = GY - h * (0.55 + t * 0.22);
+      const yBot = GY - h * (0.22 + t * 0.2);
+      const half = h * (0.30 - t * 0.075);
+      d += M(x - half, yBot) + L(x, yTop) + L(x + half, yBot);
+      // skirt hem: a few sag ticks
+      for (let k = -2; k <= 2; k++)
+        d += M(x + k * half / 2.5, yBot - 1) + 'l 2 3';
+    }
+    el('path', Object.assign(line(1.4), { d }), svg);
+  }
+
+  // backpack leaning against something
+  function pack(svg, x) {
+    el('path', Object.assign(line(1.4), {
+      d: M(x, GY) + Q(x - 3, GY - 16, x + 3, GY - 20) +
+         Q(x + 13, GY - 22, x + 14, GY - 12) + Q(x + 15, GY - 3, x + 12, GY) +
+         L(x, GY) }), svg);
+    el('path', Object.assign(line(0.9), {
+      d: M(x + 3, GY - 20) + Q(x + 8, GY - 25, x + 12, GY - 21) +
+         M(x + 2, GY - 8) + L(x + 13, GY - 9) }), svg);
+  }
+
+  // rope coil at the cliff base (echo of the real one on the page)
+  function coil(svg, x) {
+    el('path', Object.assign(line(1.6), {
+      d: M(x - 16, GY - 1) +
+         'C' + [x - 4, GY - 6, x + 18, GY - 6, x + 24, GY - 2].map(f1).join(' ') +
+         'C' + [x + 30, GY + 1, x + 26, GY + 2, x + 16, GY + 1].map(f1).join(' ') +
+         'C' + [x + 4, GY - 0.5, x - 6, GY - 1, x - 10, GY + 0.5].map(f1).join(' ') }), svg);
+  }
+
+  // the stick man standing (simplified echo of the real rig's stand pose)
+  function man(svg, x) {
+    const fy = GY - 1;
+    el('circle', { cx: x - 1, cy: fy - 46, r: 4.2, fill: '#000' }, svg);
+    el('path', Object.assign(line(2.4), {
+      d: M(x - 1, fy - 46) + Q(x - 1, fy - 34, x, fy - 24) }), svg);
+    el('path', Object.assign(line(2.2), {
+      d: M(x, fy - 24) + L(x - 4, fy) + M(x, fy - 24) + L(x + 4, fy) }), svg);
+    el('path', Object.assign(line(2.2), {
+      d: M(x - 0.7, fy - 37) + L(x - 6, fy - 19) + M(x - 0.7, fy - 37) + L(x + 6, fy - 19) }), svg);
+  }
+
+  /* ---- the three options ---- */
+
+  // faint dashed guides marking where the centered content column sits,
+  // so the full-width mocks show the layout relationship
+  function columnGuides(svg, colL, colR) {
+    el('path', { d: M(colL, 10) + L(colL, GY - 4) + M(colR, 10) + L(colR, GY - 4),
+      fill: 'none', stroke: '#bbb', 'stroke-width': 1,
+      'stroke-dasharray': '4 5' }, svg);
+    const t = el('text', { x: (colL + colR) / 2, y: 26, 'text-anchor': 'middle',
+      fill: '#bbb', 'font-size': 12, 'font-family': 'Georgia, serif',
+      'font-style': 'italic' }, svg);
+    t.textContent = 'content column (timeline ends above)';
+  }
+
+  const panels = document.getElementById('panels');
+  function panel(title, caption, draw, width, cliffX) {
+    W = width || 640;
+    CLIFF_X = cliffX === undefined ? 560 : cliffX;
+    const fig = document.createElement('figure');
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.style.maxWidth = '100%';
+    draw(svg);
+    const cap = document.createElement('figcaption');
+    cap.innerHTML = '<strong>' + title + '</strong> — ' + caption;
+    fig.append(svg, cap);
+    panels.appendChild(fig);
+  }
+
+  panel('Option A: grass meadow',
+    'Quietest version. Just tufted grass running out from the cliff base, a ' +
+    'few rocks and one or two wildflowers. The page simply ends on a soft ' +
+    'green line (drawn in ink). Least busy, most in keeping with the current ' +
+    'minimalism.',
+    (svg) => {
+      cliffBase(svg, 3);
+      ground(svg, 3);
+      meadow(svg, 20, 300, 11, 26);
+      meadow(svg, 300, 545, 12, 40);
+      flower(svg, 150, 5);
+      flower(svg, 350, 6);
+      rock(svg, 250, 22, 7);
+      rock(svg, 430, 14, 8);
+      coil(svg, 520);
+      man(svg, 480);
+    });
+
+  panel('Option B: campsite',
+    'A modest camp: one tent, a small stone-ring fire with dashed smoke ' +
+    'drifting up, and a log to sit on. Grass stays sparse so the props read ' +
+    'clearly. Tells a story — he rappelled all the way down and made camp.',
+    (svg) => {
+      cliffBase(svg, 21);
+      ground(svg, 21);
+      tent(svg, 120, 110);
+      fire(svg, 280, 31);
+      logSeat(svg, 320, 46);
+      meadow(svg, 30, 60, 41, 22);
+      meadow(svg, 200, 240, 42, 24);
+      meadow(svg, 390, 545, 43, 34);
+      flower(svg, 420, 44);
+      coil(svg, 520);
+      man(svg, 480);
+    });
+
+  panel('Option C: full campground',
+    'The busiest take: pines at the far edge, tent, campfire, a backpack ' +
+    'dropped by the rope coil, grass throughout. Feels like a scene ending ' +
+    '(the reward at the bottom of the wall), at the cost of more visual ' +
+    'noise under your timeline.',
+    (svg) => {
+      cliffBase(svg, 55);
+      ground(svg, 55);
+      pine(svg, 40, 120, 61);
+      pine(svg, 85, 90, 62);
+      tent(svg, 190, 105);
+      fire(svg, 330, 63);
+      logSeat(svg, 370, 44);
+      meadow(svg, 110, 160, 64, 20);
+      meadow(svg, 250, 300, 65, 20);
+      meadow(svg, 410, 545, 66, 26);
+      flower(svg, 265, 67);
+      flower(svg, 445, 68);
+      rock(svg, 300, 16, 69);
+      pack(svg, 495);
+      coil(svg, 530);
+      man(svg, 470);
+    });
+
+  /* ---- full-page-width takes: the grass runs edge to edge across the
+     whole viewport, and the cliff comes down to meet it at the left
+     edge of the content column ---- */
+
+  const FW = 1120, COL_L = 320, COL_R = 800;   // 480px column, centered
+
+  panel('Option D: full-width, camp at the base',
+    'The ground runs the entire width of the page. The camp stays clustered ' +
+    'where the climber lands (left of the cliff, in the page margin), and the ' +
+    'grass just keeps going under the column and out to the right edge, ' +
+    'thinning as it gets further from camp. The floor reads as one continuous ' +
+    'piece of earth the whole page has been standing on.',
+    (svg) => {
+      columnGuides(svg, COL_L, COL_R);
+      cliffBase(svg, 81);
+      ground(svg, 82);
+      pine(svg, 44, 115, 83);
+      tent(svg, 130, 100);
+      fire(svg, 225, 84);
+      meadow(svg, 60, 100, 85, 22);
+      meadow(svg, 240, 280, 86, 20);
+      coil(svg, 300);
+      man(svg, 270);
+      // past the cliff the meadow keeps going, thinning out
+      meadow(svg, 360, 620, 87, 30);
+      flower(svg, 520, 88);
+      rock(svg, 660, 18, 89);
+      meadow(svg, 640, 900, 90, 48);
+      meadow(svg, 900, 1100, 91, 70);
+      flower(svg, 990, 92);
+    }, FW, COL_L);
+
+  panel('Option E: full-width, campground spread out',
+    'Same full-width ground, but the campground is a whole scene: camp on the ' +
+    'left where he lands, and a treeline drifting in from the right edge, so ' +
+    'both margins are inhabited and the bottom of the page feels like a ' +
+    'panorama. Busiest option; the empty stretch under the column keeps it ' +
+    'from feeling cluttered.',
+    (svg) => {
+      columnGuides(svg, COL_L, COL_R);
+      cliffBase(svg, 55);
+      ground(svg, 93);
+      pine(svg, 40, 120, 94);
+      pine(svg, 88, 88, 95);
+      tent(svg, 165, 105);
+      fire(svg, 250, 96);
+      logSeat(svg, 120, 40);
+      meadow(svg, 210, 300, 97, 24);
+      coil(svg, 300);
+      man(svg, 268);
+      meadow(svg, 360, 640, 98, 34);
+      flower(svg, 470, 99);
+      rock(svg, 590, 20, 100);
+      meadow(svg, 660, 940, 101, 40);
+      // treeline growing back in from the right edge
+      pine(svg, 950, 70, 102);
+      pine(svg, 1000, 105, 103);
+      pine(svg, 1055, 85, 104);
+      pine(svg, 1095, 125, 105);
+      meadow(svg, 940, 1110, 106, 30);
+    }, FW, COL_L);
+
+  /* ---- Option F: E again, but drawn for real — the ground is a
+     doubled-edge sliced solid like the wall, the grass is a continuous
+     turf line, and every prop is rooted, shaded and connected ---- */
+
+  // soil: edge line + inner echo + hatch band between them, exactly the
+  // wall's material language rotated to horizontal, with pebbles set in
+  function soil(svg, seed) {
+    const pts = [];
+    for (let x = 0; x <= W + 12; x += 12)
+      pts.push([x, GY + (noise(seed + x) - 0.5) * 2.5]);
+    const edgeD = pts.map((p, j) => (j ? 'L' : 'M') + f1(p[0]) + ' ' + f1(p[1])).join('');
+    el('path', Object.assign(line(1.8), { d: edgeD }), svg);
+    let echoD = '';
+    pts.forEach((p, j) => {
+      echoD += (j ? 'L' : 'M') + f1(p[0]) + ' ' +
+        f1(p[1] + 5.5 + noise(seed + j) * 2.5);
+    });
+    el('path', Object.assign(line(0.8), { d: echoD }), svg);
+    for (let i = 0; i < W / 90; i++) {
+      const px = 20 + noise(seed + i * 31) * (W - 40);
+      const py = GY + 7 + noise(seed + i * 17) * 11;
+      el('path', Object.assign(line(0.7), {
+        d: M(px - 2.5, py) + Q(px, py - 3.5, px + 2.5, py) +
+           Q(px, py + 2, px - 2.5, py) }), svg);
+    }
+  }
+
+  // turf: dense overlapping blade clusters along the whole edge — the
+  // grass IS the ground line, not decorations sitting on one
+  function turf(svg, x0, x1, seed) {
+    let d = '';
+    let x = x0, i = 0;
+    while (x < x1) {
+      const n = 2 + Math.floor(noise(seed + i) * 3);
+      const s = 0.7 + noise(seed + i * 7) * 0.7;
+      for (let b = 0; b < n; b++) {
+        const bx = x + b * 1.6 - n * 0.8;
+        const lean = (b / Math.max(1, n - 1) - 0.5) * 2 + 0.3;
+        const hgt = (5 + noise(seed + i * 13 + b) * 9) * s;
+        d += M(bx, GY + 1.5) +
+          Q(bx + lean * 2, GY - hgt * 0.55, bx + lean * 4.5, GY - hgt);
+      }
+      x += 8 + noise(seed + i * 3) * 9;
+      i++;
+    }
+    el('path', Object.assign(line(0.9), { d }), svg);
+  }
+
+  // pine: trunk drawn first, then the canopy as a closed filled outline
+  // on top — the hem erases the trunk where they overlap, so the trunk
+  // ends exactly at the hem line and the join reads as a real junction
+  function dPine(svg, x, h, seed) {
+    const tw = [0.27, 0.2, 0.14, 0.09].map((w, i) =>
+      h * w * (0.92 + noise(seed + i * 7) * 0.16));
+    const ty = [0.24, 0.45, 0.64, 0.8].map(f => GY - h * f);
+    const cy = ty.map(y => y + h * 0.07);          // corners drape below notches
+    el('path', Object.assign(line(1.3), {
+      d: M(x - 2.2, GY + 1) + L(x - 1.6, cy[0]) +
+         M(x + 2.2, GY + 1) + L(x + 1.6, cy[0]) +
+         M(x - 2.2, GY) + Q(x - 4.5, GY - 1, x - 6, GY + 1) +
+         M(x + 2.2, GY) + Q(x + 4.5, GY - 1, x + 6, GY + 1) }), svg);
+    let d = M(x - tw[0], cy[0]);
+    for (let t = 1; t < 4; t++) {
+      d += L(x - tw[t] * 0.5, ty[t]);
+      d += Q(x - tw[t] * 0.8, ty[t] + h * 0.04, x - tw[t], cy[t]);
+    }
+    d += L(x, GY - h);
+    d += L(x + tw[3], cy[3]);
+    for (let t = 3; t >= 1; t--) {
+      d += Q(x + tw[t] * 0.8, ty[t] + h * 0.04, x + tw[t] * 0.5, ty[t]);
+      d += L(x + tw[t - 1], cy[t - 1]);
+    }
+    // bottom hem closes the canopy with a centre sag over the trunk
+    d += Q(x, cy[0] + h * 0.05, x - tw[0], cy[0]) + 'Z';
+    el('path', Object.assign(line(1.4), { d, fill: '#fff' }), svg);
+  }
+
+  // round-canopy tree: trunk with a fork, then a lobed cloud canopy
+  // filled white on top — same trunk/foliage separation as the pines
+  function roundTree(svg, x, h, seed) {
+    const cx2 = x, cy2 = GY - h * 0.63, r = h * 0.36;
+    el('path', Object.assign(line(1.3), {
+      d: M(x - 2.4, GY + 1) + Q(x - 2, GY - h * 0.2, x - 1.2, cy2) +
+         M(x + 2.4, GY + 1) + Q(x + 2, GY - h * 0.2, x + 1.2, cy2) +
+         M(x + 1, GY - h * 0.28) + Q(x + 5, GY - h * 0.38, x + 7, cy2 + r * 0.4) +
+         M(x - 2.4, GY) + Q(x - 5, GY - 1, x - 6.5, GY + 1) +
+         M(x + 2.4, GY) + Q(x + 5, GY - 1, x + 6.5, GY + 1) }), svg);
+    const n = 9;
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+      const rr = r * (0.88 + noise(seed + i) * 0.28);
+      pts.push([cx2 + Math.cos(a) * rr, cy2 + Math.sin(a) * rr]);
+    }
+    let d = M(pts[0][0], pts[0][1]);
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[i], p1 = pts[(i + 1) % n];
+      const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2;
+      const dl = Math.hypot(mx - cx2, my - cy2) || 1;
+      d += Q(mx + (mx - cx2) / dl * r * 0.42, my + (my - cy2) / dl * r * 0.42,
+             p1[0], p1[1]);
+    }
+    el('path', Object.assign(line(1.3), { d: d + 'Z', fill: '#fff' }), svg);
+  }
+
+  // bush: one closed run of humps rooted in the turf
+  function bush(svg, x, w, seed) {
+    const h = w * 0.55;
+    const n = 6;
+    const pts = [];
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      pts.push([x - w / 2 + w * t,
+        GY - h * Math.sin(Math.PI * t) * (0.85 + noise(seed + i) * 0.3)]);
+    }
+    let d = M(pts[0][0], GY + 1);
+    for (let i = 1; i <= n; i++) {
+      const p0 = pts[i - 1], p1 = pts[i];
+      const mx = (p0[0] + p1[0]) / 2;
+      d += Q(mx + (mx - x) * 0.3, (p0[1] + p1[1]) / 2 - h * 0.32,
+             p1[0], i === n ? GY + 1 : p1[1]);
+    }
+    el('path', Object.assign(line(1.2), { d: d + 'Z', fill: '#fff' }), svg);
+  }
+
+  // stump: little cylinder with the cut face showing a growth ring
+  function stump(svg, x, w) {
+    const h = w * 0.7;
+    el('path', Object.assign(line(1.3), {
+      d: M(x - w / 2, GY + 1) + L(x - w / 2 + 1, GY - h) +
+         Q(x, GY - h - 2.5, x + w / 2 - 1, GY - h) +
+         L(x + w / 2, GY + 1) + 'Z', fill: '#fff' }), svg);
+    el('path', Object.assign(line(0.8), {
+      d: M(x - w / 2 + 1, GY - h) + Q(x, GY - h + 2.5, x + w / 2 - 1, GY - h) +
+         M(x - w * 0.2, GY - h + 0.8) + Q(x, GY - h + 2, x + w * 0.2, GY - h + 0.8) }), svg);
+  }
+
+  // birds: two-stroke gull marks high over the treeline
+  function bird(svg, x, y, s) {
+    el('path', Object.assign(line(1.1), {
+      d: M(x - 4 * s, y) + Q(x - 1.5 * s, y - 2.5 * s, x, y) +
+         Q(x + 1.5 * s, y - 2.5 * s, x + 4 * s, y) }), svg);
+  }
+
+  // tent as flowing single-line sweeps: a bell silhouette of concave
+  // curves with a short ridge shoulder for depth, centre pole, swept-open
+  // door, long fold lines and a corner vestibule — no shading
+  function dTent(svg, x, w) {
+    const h = w * 0.62;
+    const ay = GY - h;
+    const lx = x - w / 2, rx = x + w / 2;
+    const shX = x + w * 0.13, shY = GY - h * 0.78; // ridge shoulder
+    el('path', Object.assign(line(1.6), {
+      d: M(lx, GY) +
+         Q(x - w * 0.17, GY - h * 0.18, x, ay) +
+         L(shX, shY) +
+         Q(x + w * 0.22, GY - h * 0.16, rx, GY) +
+         L(lx, GY) + 'Z', fill: '#fff' }), svg);
+    // pole tip poking through the peak
+    el('path', Object.assign(line(1.2), { d: M(x - 0.5, ay) + L(x - 0.5, ay - 4.5) }), svg);
+    // centre pole
+    el('path', Object.assign(line(0.85), { d: M(x, ay + 3) + L(x, GY) }), svg);
+    // door flaps swept open around the pole
+    el('path', Object.assign(line(1), {
+      d: M(x, ay + 2) + Q(x - w * 0.02, GY - h * 0.42, x - w * 0.09, GY) +
+         M(x, ay + 2) + Q(x + w * 0.06, GY - h * 0.36, x + w * 0.14, GY) }), svg);
+    // guy lines out to stakes
+    const gl = lx - w * 0.09, gr = rx + w * 0.09;
+    el('path', Object.assign(line(0.8), {
+      d: M(lx + 1, GY - h * 0.06) + L(gl, GY + 0.5) +
+         M(gl, GY - 3.5) + L(gl - 1.5, GY + 2) +
+         M(rx - 1, GY - h * 0.06) + L(gr, GY + 0.5) +
+         M(gr, GY - 3.5) + L(gr + 1.5, GY + 2) }), svg);
+  }
+
+  // registry of per-frame updaters for anything alive in the sketch
+  const animated = [];
+
+  // fire after the brazier reference: a spiky licking flame silhouette
+  // rising out of a shallow bowl on stub legs, one smoke squiggle above —
+  // three nested flame layers, each morphing on its own phase
+  function dFire(svg, x, seed) {
+    const inner = el('path', Object.assign(line(1.4), { fill: '#fff' }), svg);
+    const core = el('path', line(1), svg);
+    // brazier: bowl drawn after the flames so it covers their roots
+    el('path', Object.assign(line(1.5), {
+      d: M(x - 25, GY - 15) + Q(x, GY - 11.5, x + 25, GY - 15) +
+         Q(x + 21, GY - 4, x + 7, GY - 3) + L(x - 7, GY - 3) +
+         Q(x - 21, GY - 4, x - 25, GY - 15) + 'Z', fill: '#fff' }), svg);
+    el('path', Object.assign(line(2.2), {
+      d: M(x - 13, GY - 4) + L(x - 17, GY + 1) +
+         M(x + 13, GY - 4) + L(x + 17, GY + 1) +
+         M(x, GY - 3) + L(x, GY + 1) }), svg);
+    const smoke = el('path', line(1.5), svg);
+    const y0 = GY - 13;
+    // closed smooth loop through the points (quadratics via midpoints);
+    // the tip point is doubled by the caller so it stays pointed
+    const smoothClosed = (pts) => {
+      let d = M((pts[0][0] + pts[pts.length - 1][0]) / 2,
+                (pts[0][1] + pts[pts.length - 1][1]) / 2);
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i], q = pts[(i + 1) % pts.length];
+        d += Q(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+      }
+      return d + 'Z';
+    };
+    // silhouette template: [x-offset, height-fraction, isTip, phase] —
+    // tips are doubled so they stay pointed through the smoothing, and
+    // each tip wiggles on its own phase
+    const T = [
+      [-11, 0.02, 0], [-15, 0.22, 0],
+      [-13, 0.42, 0], [-15.5, 0.56, 1, 0],
+      [-6.5, 0.68, 0],
+      [0, 1, 1, 2],
+      [4.5, 0.72, 0], [8, 0.55, 0],
+      [14, 0.42, 1, 3], [10, 0.32, 0],
+      [12.5, 0.16, 0], [10, 0.02, 0],
+    ];
+    function flameShape(t, s, ph) {
+      const h = 54 * s * (0.9 + 0.1 *
+        Math.sin(t * 3.4 + ph * 2 + Math.sin(t * 1.9 + ph)));
+      const tip = Math.sin(t * 1.8 + ph + 1) * 3 * s;
+      const pts = [];
+      for (const p of T) {
+        let px = p[0] * s, py = y0 - h * p[1];
+        if (p[2]) {
+          px += p[0] === 0 ? tip
+            : Math.sin(t * 2.6 + ph + p[3] * 1.9) * 1.4 * s * Math.sign(p[0]);
+          py += Math.sin(t * 2.2 + ph + p[3]) * 1 * s;
+          pts.push([x + px, py], [x + px, py]);
+        } else pts.push([x + px, py]);
+      }
+      return pts;
+    }
+    animated.push((t) => {
+      inner.setAttribute('d', smoothClosed(flameShape(t, 0.55, 2.0)));
+      core.setAttribute('d', smoothClosed(flameShape(t, 0.28, 4.1)));
+      // one smoke squiggle swaying gently above the flame
+      const sw = (k) => Math.sin(t * 1.1 + k * 1.7) * 2.5;
+      const sp = [[x + 1, GY - 52], [x - 4 + sw(1), GY - 63],
+        [x + 4 + sw(2), GY - 73], [x - 3 + sw(3), GY - 82],
+        [x + 2 + sw(4), GY - 90]];
+      let sd = M(sp[0][0], sp[0][1]);
+      for (let i = 1; i < sp.length - 1; i++)
+        sd += Q(sp[i][0], sp[i][1],
+          (sp[i][0] + sp[i + 1][0]) / 2, (sp[i][1] + sp[i + 1][1]) / 2);
+      sd += L(sp[sp.length - 1][0], sp[sp.length - 1][1]);
+      smoke.setAttribute('d', sd);
+    });
+  }
+
+  // log seat with bark grain and end-grain rings
+  function dLog(svg, x, len) {
+    el('path', Object.assign(line(1.4), {
+      d: M(x, GY - 9) + Q(x + len / 2, GY - 11, x + len, GY - 9) +
+         M(x, GY) + Q(x + len / 2, GY + 1, x + len, GY) +
+         M(x, GY - 9) + Q(x - 5.5, GY - 4.5, x, GY) }), svg);
+    el('path', Object.assign(line(1.1), {
+      d: M(x + len, GY - 9) + Q(x + len + 5.5, GY - 4.5, x + len, GY) }), svg);
+    el('path', Object.assign(line(0.6), {
+      d: M(x + len, GY - 6.7) + Q(x + len + 2.8, GY - 4.5, x + len, GY - 2.3) +
+         M(x + len, GY - 5.4) + Q(x + len + 1.3, GY - 4.5, x + len, GY - 3.6) +
+         M(x + 4, GY - 7) + Q(x + len * 0.5, GY - 8.4, x + len - 4, GY - 6.8) +
+         M(x + 6, GY - 3) + Q(x + len * 0.55, GY - 4.2, x + len - 6, GY - 2.8) }), svg);
+  }
+
+  // scree: angular rubble piled where the cliff meets the ground
+  function scree(svg, x, seed) {
+    for (let i = 0; i < 5; i++) {
+      const sx = x - 16 + noise(seed + i * 7) * 30;
+      const w2 = 5 + noise(seed + i * 3) * 9;
+      const h2 = w2 * (0.5 + noise(seed + i) * 0.35);
+      el('path', Object.assign(line(1.1), {
+        d: M(sx - w2 / 2, GY + 1) + L(sx - w2 * 0.2, GY - h2) +
+           L(sx + w2 * 0.25, GY - h2 * 0.8) + L(sx + w2 / 2, GY + 1) }), svg);
+      el('path', Object.assign(line(0.55), {
+        d: M(sx - w2 * 0.1, GY - h2 * 0.55) +
+           'l' + f1(w2 * 0.32) + ' ' + f1(h2 * 0.4) }), svg);
+    }
+  }
+
+  panel('Option F: current direction',
+    'The camp now sits out in the meadow between the fallen log and the ' +
+    'round tree; the bush, stump and rock moved to the left stretch under ' +
+    'the pines. The fire is alive — sinuous flame strokes over crossed ' +
+    'logs, flickering and swaying, smoke crawling upward — in a cleared ' +
+    'patch of bare ground. Grass density is uniform across the whole floor, ' +
+    'and the tent is pared back to silhouette, pole, door and guy lines.',
+    (svg) => {
+      columnGuides(svg, COL_L, COL_R);
+      cliffBase(svg, 55);
+      soil(svg, 141);
+      dPine(svg, 48, 150, 142);
+      dPine(svg, 106, 105, 143);
+      bush(svg, 158, 42, 157);
+      stump(svg, 218, 16);
+      rock(svg, 262, 20, 146);
+      scree(svg, 316, 145);
+      dLog(svg, 430, 46);
+      flower(svg, 480, 147);
+      dTent(svg, 570, 112);
+      dFire(svg, 700, 144);
+      flower(svg, 762, 148);
+      roundTree(svg, 852, 92, 158);
+      dPine(svg, 945, 95, 149);
+      dPine(svg, 1002, 140, 150);
+      dPine(svg, 1058, 110, 151);
+      dPine(svg, 1102, 155, 152);
+      bush(svg, 918, 38, 159);
+      flower(svg, 975, 153);
+      bird(svg, 395, 60, 1);
+      bird(svg, 425, 48, 0.8);
+      bird(svg, 1010, 34, 1);
+      // a cleared patch of bare ground around the fire
+      turf(svg, 4, 664, 154);
+      turf(svg, 736, 1116, 155);
+      coil(svg, 308);
+      man(svg, 292);
+    }, FW, COL_L);
+
+  (function flick() {
+    const t = performance.now() / 1000;
+    for (const f of animated) f(t);
+    requestAnimationFrame(flick);
+  })();
+})();
+</script>
+</body>
+</html>

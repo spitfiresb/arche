@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Zain Saeed</title>
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body class="page">
+  <main>
+    <a class="back" href="index.html">Back</a>
+
+    <p class="kicker">my story</p>
+
+    <ul class="timeline">
+      <li>
+        <span class="date">2022</span>
+        <h2 class="entry-title">Started at University of Oregon</h2>
+        <p>Chose to major in Data Science with an emphasis in Economics.</p>
+      </li>
+      <li>
+        <span class="date">March 2023</span>
+        <h2 class="entry-title">Co-founded Oregon Software Consulting</h2>
+        <p>Oregon's first software development student club. Managed a team of
+        five developers and ran the club's first recruiting cycle.</p>
+      </li>
+      <li>
+        <span class="date">July &ndash; October 2024</span>
+        <h2 class="entry-title">Genomics Data Analyst, Rohlfs Evolutionary Genomics Lab</h2>
+        <p>Extremly fulfilling work, boring code to write. </p>
+      </li>
+      <li>
+        <span class="date">August &ndash; October 2024</span>
+        <h2 class="entry-title">Data Engineer, ExpertFlow</h2>
+        <p>Built and optimized data pipelines. First internship secured!</p>
+      </li>
+      <li>
+        <span class="date">July &ndash; September 2025</span>
+        <h2 class="entry-title">Data Engineer, Trimble</h2>
+        <p>Deployed containerized workloads to Azure with Helm, built a
+        cashflow forecasting pipeline on Snowflake and SQL Server, and cut
+        deployment diagnostics by over 90% with automated bulk deployment
+        scripts.</p>
+      </li>
+      <li>
+        <span class="date">June 2026</span>
+        <h2 class="entry-title">Graduated</h2>
+        <p>B.S. in Computer Science and Data Science, University of Oregon.</p>
+      </li>
+      <li>
+        <span class="date">Now</span>
+        <h2 class="entry-title">Co-founder at Unpak</h2>
+        <p>A workforce intelligence platform &mdash; process mining for
+        knowledge work. I designed the capture and processing architecture, and
+        drove the first enterprise deployment through its security review.</p>
+      </li>
+    </ul>
+
+    <!-- The climber is a procedural rig: every joint is placed by JS each
+         frame (spring physics + IK), so there is no static artwork here -->
+    <svg class="stickman" width="68" height="88" viewBox="-34 0 68 88" aria-hidden="true"></svg>
+
+    <!-- The rope's tail: a straight drop that disappears into the turf -->
+    <svg class="rope" width="160" height="150" viewBox="0 0 160 150" aria-hidden="true">
+      <path d="M1 0 L1 149" fill="none" stroke="#000" stroke-width="2"/>
+    </svg>
+
+  </main>
+  <script>
+  (function () {
+    const main = document.querySelector('main');
+    const kicker = document.querySelector('.kicker');
+    const ul = document.querySelector('ul.timeline');
+    const coil = document.querySelector('.rope');
+    const man = document.querySelector('.stickman');
+    const items = Array.from(document.querySelectorAll('ul.timeline li'));
+
+    /* ---- The floor: a campground meadow running the full width of the
+       viewport at the base of the descent, drawn in the wall's ink
+       language — doubled ground edge, white-filled silhouettes so near
+       shapes occlude far ones, everything rooted in a continuous turf
+       line. Left props anchor off the viewport's left edge, the camp
+       anchors off the cliff base, the treeline off the right edge; any
+       prop that doesn't fit the current width is simply left out, so a
+       narrow screen just gets grass, soil and whatever else has room.
+       Self-contained (own helpers) so it also runs in the
+       reduced-motion path, where the fire is drawn once, unlit. ---- */
+    const FNS = 'http://www.w3.org/2000/svg';
+    const floorSvg = document.createElementNS(FNS, 'svg');
+    floorSvg.setAttribute('class', 'floor');
+    floorSvg.setAttribute('aria-hidden', 'true');
+    main.appendChild(floorSvg);
+    let floorFlame = null;
+    function buildFloor() {
+      const ff = (v) => v.toFixed(1);
+      const FM = (a, b) => 'M' + ff(a) + ' ' + ff(b);
+      const FL = (a, b) => 'L' + ff(a) + ' ' + ff(b);
+      const FQ = (a, b, c, d) => 'Q' + ff(a) + ' ' + ff(b) + ' ' + ff(c) + ' ' + ff(d);
+      const fln = (w) => ({ fill: 'none', stroke: '#000', 'stroke-width': w,
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+      const fn = (i) => {
+        const s = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+        return s - Math.floor(s);
+      };
+      function fel(name, attrs) {
+        const e = document.createElementNS(FNS, name);
+        for (const k in attrs) e.setAttribute(k, attrs[k]);
+        floorSvg.appendChild(e);
+        return e;
+      }
+      floorSvg.textContent = '';
+      floorFlame = null;
+      const mrect = main.getBoundingClientRect();
+      const fw = document.documentElement.clientWidth;
+      const gy = 172;                       // ground line y inside this svg
+      const fy = coil.getBoundingClientRect().top - mrect.top + 148;
+      const cliffX = mrect.left + ul.offsetLeft - 1;
+      floorSvg.setAttribute('viewBox', '0 0 ' + fw + ' 205');
+      floorSvg.setAttribute('width', fw);
+      floorSvg.setAttribute('height', 205);
+      floorSvg.style.left = ff(-mrect.left) + 'px';
+      floorSvg.style.top = ff(fy - gy) + 'px';
+
+      // soil: doubled ground edge, pebbles set into the dirt below
+      const spts = [];
+      for (let px = 0; px <= fw + 12; px += 12)
+        spts.push([px, gy + (fn(px) - 0.5) * 2.5]);
+      fel('path', Object.assign(fln(1.8), {
+        d: spts.map((p, j) => (j ? 'L' : 'M') + ff(p[0]) + ' ' + ff(p[1])).join('') }));
+      fel('path', Object.assign(fln(0.8), {
+        d: spts.map((p, j) =>
+          (j ? 'L' : 'M') + ff(p[0]) + ' ' + ff(p[1] + 5.5 + fn(j) * 2.5)).join('') }));
+      for (let i = 0; i < fw / 90; i++) {
+        const px = 20 + fn(i * 31) * (fw - 40);
+        const py = gy + 7 + fn(i * 17) * 11;
+        fel('path', Object.assign(fln(0.7), {
+          d: FM(px - 2.5, py) + FQ(px, py - 3.5, px + 2.5, py) +
+             FQ(px, py + 2, px - 2.5, py) }));
+      }
+
+      // pine: trunk first, filled canopy over it — the hem cuts the
+      // trunk exactly at the join
+      function pine(x, h, seed) {
+        const tw = [0.27, 0.2, 0.14, 0.09].map((w, i) =>
+          h * w * (0.92 + fn(seed + i * 7) * 0.16));
+        const ty = [0.24, 0.45, 0.64, 0.8].map(f => gy - h * f);
+        const cy = ty.map(y => y + h * 0.07);
+        fel('path', Object.assign(fln(1.3), {
+          d: FM(x - 2.2, gy + 1) + FL(x - 1.6, cy[0]) +
+             FM(x + 2.2, gy + 1) + FL(x + 1.6, cy[0]) +
+             FM(x - 2.2, gy) + FQ(x - 4.5, gy - 1, x - 6, gy + 1) +
+             FM(x + 2.2, gy) + FQ(x + 4.5, gy - 1, x + 6, gy + 1) }));
+        let d = FM(x - tw[0], cy[0]);
+        for (let t = 1; t < 4; t++) {
+          d += FL(x - tw[t] * 0.5, ty[t]);
+          d += FQ(x - tw[t] * 0.8, ty[t] + h * 0.04, x - tw[t], cy[t]);
+        }
+        d += FL(x, gy - h);
+        d += FL(x + tw[3], cy[3]);
+        for (let t = 3; t >= 1; t--) {
+          d += FQ(x + tw[t] * 0.8, ty[t] + h * 0.04, x + tw[t] * 0.5, ty[t]);
+          d += FL(x + tw[t - 1], cy[t - 1]);
+        }
+        d += FQ(x, cy[0] + h * 0.05, x - tw[0], cy[0]) + 'Z';
+        fel('path', Object.assign(fln(1.4), { d, fill: '#fff' }));
+      }
+
+      // round-canopy tree: forked trunk, lobed cloud filled white on top
+      function roundTree(x, h, seed) {
+        const cy2 = gy - h * 0.63, r = h * 0.36;
+        fel('path', Object.assign(fln(1.3), {
+          d: FM(x - 2.4, gy + 1) + FQ(x - 2, gy - h * 0.2, x - 1.2, cy2) +
+             FM(x + 2.4, gy + 1) + FQ(x + 2, gy - h * 0.2, x + 1.2, cy2) +
+             FM(x + 1, gy - h * 0.28) +
+             FQ(x + 5, gy - h * 0.38, x + 7, cy2 + r * 0.4) +
+             FM(x - 2.4, gy) + FQ(x - 5, gy - 1, x - 6.5, gy + 1) +
+             FM(x + 2.4, gy) + FQ(x + 5, gy - 1, x + 6.5, gy + 1) }));
+        const n = 9, pts = [];
+        for (let i = 0; i < n; i++) {
+          const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+          const rr = r * (0.88 + fn(seed + i) * 0.28);
+          pts.push([x + Math.cos(a) * rr, cy2 + Math.sin(a) * rr]);
+        }
+        let d = FM(pts[0][0], pts[0][1]);
+        for (let i = 0; i < n; i++) {
+          const p0 = pts[i], p1 = pts[(i + 1) % n];
+          const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2;
+          const dl = Math.hypot(mx - x, my - cy2) || 1;
+          d += FQ(mx + (mx - x) / dl * r * 0.42,
+                  my + (my - cy2) / dl * r * 0.42, p1[0], p1[1]);
+        }
+        fel('path', Object.assign(fln(1.3), { d: d + 'Z', fill: '#fff' }));
+      }
+
+      // bush: one closed run of humps rooted in the turf
+      function bush(x, w, seed) {
+        const h = w * 0.55, n = 6, pts = [];
+        for (let i = 0; i <= n; i++) {
+          const t = i / n;
+          pts.push([x - w / 2 + w * t,
+            gy - h * Math.sin(Math.PI * t) * (0.85 + fn(seed + i) * 0.3)]);
+        }
+        let d = FM(pts[0][0], gy + 1);
+        for (let i = 1; i <= n; i++) {
+          const p0 = pts[i - 1], p1 = pts[i];
+          const mx = (p0[0] + p1[0]) / 2;
+          d += FQ(mx + (mx - x) * 0.3, (p0[1] + p1[1]) / 2 - h * 0.32,
+                  p1[0], i === n ? gy + 1 : p1[1]);
+        }
+        fel('path', Object.assign(fln(1.2), { d: d + 'Z', fill: '#fff' }));
+      }
+
+      // stump with the growth ring showing on the cut face
+      function stump(x, w) {
+        const h = w * 0.7;
+        fel('path', Object.assign(fln(1.3), {
+          d: FM(x - w / 2, gy + 1) + FL(x - w / 2 + 1, gy - h) +
+             FQ(x, gy - h - 2.5, x + w / 2 - 1, gy - h) +
+             FL(x + w / 2, gy + 1) + 'Z', fill: '#fff' }));
+        fel('path', Object.assign(fln(0.8), {
+          d: FM(x - w / 2 + 1, gy - h) + FQ(x, gy - h + 2.5, x + w / 2 - 1, gy - h) +
+             FM(x - w * 0.2, gy - h + 0.8) +
+             FQ(x, gy - h + 2, x + w * 0.2, gy - h + 0.8) }));
+      }
+
+      // small rounded rock with a couple of hatch ticks
+      function rock(x, w, seed) {
+        const h = w * (0.45 + fn(seed) * 0.2);
+        fel('path', Object.assign(fln(1.4), {
+          d: FM(x - w / 2, gy) + FQ(x - w / 2, gy - h, x - w * 0.1, gy - h) +
+             FQ(x + w / 2, gy - h * 0.9, x + w / 2, gy) }));
+        fel('path', Object.assign(fln(0.6), {
+          d: FM(x + w * 0.05, gy - h * 0.75) +
+             'l' + ff(w * 0.22) + ' ' + ff(h * 0.3) +
+             FM(x + w * 0.2, gy - h * 0.85) +
+             'l' + ff(w * 0.22) + ' ' + ff(h * 0.3) }));
+      }
+
+      // fallen log with bark grain and end-grain rings
+      function flog(x, len) {
+        fel('path', Object.assign(fln(1.4), {
+          d: FM(x, gy - 9) + FQ(x + len / 2, gy - 11, x + len, gy - 9) +
+             FM(x, gy) + FQ(x + len / 2, gy + 1, x + len, gy) +
+             FM(x, gy - 9) + FQ(x - 5.5, gy - 4.5, x, gy) }));
+        fel('path', Object.assign(fln(1.1), {
+          d: FM(x + len, gy - 9) + FQ(x + len + 5.5, gy - 4.5, x + len, gy) }));
+        fel('path', Object.assign(fln(0.6), {
+          d: FM(x + len, gy - 6.7) + FQ(x + len + 2.8, gy - 4.5, x + len, gy - 2.3) +
+             FM(x + len, gy - 5.4) + FQ(x + len + 1.3, gy - 4.5, x + len, gy - 3.6) +
+             FM(x + 4, gy - 7) + FQ(x + len * 0.5, gy - 8.4, x + len - 4, gy - 6.8) +
+             FM(x + 6, gy - 3) + FQ(x + len * 0.55, gy - 4.2, x + len - 6, gy - 2.8) }));
+      }
+
+      // tiny flower: stem and an open head
+      function flower(x, seed) {
+        const h = 10 + fn(seed) * 5;
+        fel('path', Object.assign(fln(1), {
+          d: FM(x, gy) + FQ(x + 1.5, gy - h * 0.6, x, gy - h) }));
+        fel('circle', { cx: x, cy: gy - h - 1.5, r: 1.8, fill: 'none',
+          stroke: '#000', 'stroke-width': 1 });
+      }
+
+      // scree: angular rubble where the cliff meets the meadow
+      function scree(x, seed) {
+        for (let i = 0; i < 5; i++) {
+          const sx = x - 16 + fn(seed + i * 7) * 30;
+          const w2 = 5 + fn(seed + i * 3) * 9;
+          const h2 = w2 * (0.5 + fn(seed + i) * 0.35);
+          fel('path', Object.assign(fln(1.1), {
+            d: FM(sx - w2 / 2, gy + 1) + FL(sx - w2 * 0.2, gy - h2) +
+               FL(sx + w2 * 0.25, gy - h2 * 0.8) + FL(sx + w2 / 2, gy + 1) }));
+          fel('path', Object.assign(fln(0.55), {
+            d: FM(sx - w2 * 0.1, gy - h2 * 0.55) +
+               'l' + ff(w2 * 0.32) + ' ' + ff(h2 * 0.4) }));
+        }
+      }
+
+      // tent: bell silhouette of concave sweeps with a ridge shoulder,
+      // centre pole, swept-open door, guy lines — no shading
+      function tent(x, w) {
+        const h = w * 0.62, ay = gy - h;
+        const lx = x - w / 2, rx = x + w / 2;
+        const shX = x + w * 0.13, shY = gy - h * 0.78;
+        fel('path', Object.assign(fln(1.6), {
+          d: FM(lx, gy) + FQ(x - w * 0.17, gy - h * 0.18, x, ay) +
+             FL(shX, shY) + FQ(x + w * 0.22, gy - h * 0.16, rx, gy) +
+             FL(lx, gy) + 'Z', fill: '#fff' }));
+        fel('path', Object.assign(fln(1.2), { d: FM(x - 0.5, ay) + FL(x - 0.5, ay - 4.5) }));
+        fel('path', Object.assign(fln(0.85), { d: FM(x, ay + 3) + FL(x, gy) }));
+        fel('path', Object.assign(fln(1), {
+          d: FM(x, ay + 2) + FQ(x - w * 0.02, gy - h * 0.42, x - w * 0.09, gy) +
+             FM(x, ay + 2) + FQ(x + w * 0.06, gy - h * 0.36, x + w * 0.14, gy) }));
+        const gl = lx - w * 0.09, gr = rx + w * 0.09;
+        fel('path', Object.assign(fln(0.8), {
+          d: FM(lx + 1, gy - h * 0.06) + FL(gl, gy + 0.5) +
+             FM(gl, gy - 3.5) + FL(gl - 1.5, gy + 2) +
+             FM(rx - 1, gy - h * 0.06) + FL(gr, gy + 0.5) +
+             FM(gr, gy - 3.5) + FL(gr + 1.5, gy + 2) }));
+      }
+
+      // fire: two nested teardrop flames rising out of a brazier bowl on
+      // stub legs, one smoke squiggle above; the layers morph on their
+      // own phases via the returned updater
+      function fire(x) {
+        const inner = fel('path', Object.assign(fln(1.4), { fill: '#fff' }));
+        const core = fel('path', fln(1));
+        fel('path', Object.assign(fln(1.5), {
+          d: FM(x - 25, gy - 15) + FQ(x, gy - 11.5, x + 25, gy - 15) +
+             FQ(x + 21, gy - 4, x + 7, gy - 3) + FL(x - 7, gy - 3) +
+             FQ(x - 21, gy - 4, x - 25, gy - 15) + 'Z', fill: '#fff' }));
+        fel('path', Object.assign(fln(2.2), {
+          d: FM(x - 13, gy - 4) + FL(x - 17, gy + 1) +
+             FM(x + 13, gy - 4) + FL(x + 17, gy + 1) +
+             FM(x, gy - 3) + FL(x, gy + 1) }));
+        const smoke = fel('path', fln(1.5));
+        const y0 = gy - 13;
+        const smoothClosed = (pts) => {
+          let d = FM((pts[0][0] + pts[pts.length - 1][0]) / 2,
+                     (pts[0][1] + pts[pts.length - 1][1]) / 2);
+          for (let i = 0; i < pts.length; i++) {
+            const p = pts[i], q = pts[(i + 1) % pts.length];
+            d += FQ(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+          }
+          return d + 'Z';
+        };
+        // silhouette: [x-offset, height-fraction, isTip, phase] — tips
+        // are doubled so they stay pointed through the smoothing
+        const T = [
+          [-11, 0.02, 0], [-15, 0.22, 0],
+          [-13, 0.42, 0], [-15.5, 0.56, 1, 0],
+          [-6.5, 0.68, 0],
+          [0, 1, 1, 2],
+          [4.5, 0.72, 0], [8, 0.55, 0],
+          [14, 0.42, 1, 3], [10, 0.32, 0],
+          [12.5, 0.16, 0], [10, 0.02, 0],
+        ];
+        function flameShape(t, s, ph) {
+          const h = 54 * s * (0.9 + 0.1 *
+            Math.sin(t * 3.4 + ph * 2 + Math.sin(t * 1.9 + ph)));
+          const tip = Math.sin(t * 1.8 + ph + 1) * 3 * s;
+          const pts = [];
+          for (const p of T) {
+            let px = p[0] * s, py = y0 - h * p[1];
+            if (p[2]) {
+              px += p[0] === 0 ? tip
+                : Math.sin(t * 2.6 + ph + p[3] * 1.9) * 1.4 * s * Math.sign(p[0]);
+              py += Math.sin(t * 2.2 + ph + p[3]) * 1 * s;
+              pts.push([x + px, py], [x + px, py]);
+            } else pts.push([x + px, py]);
+          }
+          return pts;
+        }
+        const upd = (t) => {
+          inner.setAttribute('d', smoothClosed(flameShape(t, 0.55, 2.0)));
+          core.setAttribute('d', smoothClosed(flameShape(t, 0.28, 4.1)));
+          const sw = (k) => Math.sin(t * 1.1 + k * 1.7) * 2.5;
+          const sp = [[x + 1, gy - 52], [x - 4 + sw(1), gy - 63],
+            [x + 4 + sw(2), gy - 73], [x - 3 + sw(3), gy - 82],
+            [x + 2 + sw(4), gy - 90]];
+          let sd = FM(sp[0][0], sp[0][1]);
+          for (let i = 1; i < sp.length - 1; i++)
+            sd += FQ(sp[i][0], sp[i][1],
+              (sp[i][0] + sp[i + 1][0]) / 2, (sp[i][1] + sp[i + 1][1]) / 2);
+          smoke.setAttribute('d',
+            sd + FL(sp[sp.length - 1][0], sp[sp.length - 1][1]));
+        };
+        upd(0);
+        floorFlame = upd;
+      }
+
+      // birds: two-stroke gull marks
+      function bird(x, y, s) {
+        fel('path', Object.assign(fln(1.1), {
+          d: FM(x - 4 * s, y) + FQ(x - 1.5 * s, y - 2.5 * s, x, y) +
+             FQ(x + 1.5 * s, y - 2.5 * s, x + 4 * s, y) }));
+      }
+
+      // turf: dense overlapping blade clusters — the grass IS the
+      // ground line, drawn last so it fronts everything planted in it
+      function turf(x0, x1, seed) {
+        let d = '', tx = x0, i = 0;
+        while (tx < x1) {
+          const n = 2 + Math.floor(fn(seed + i) * 3);
+          const s = 0.7 + fn(seed + i * 7) * 0.7;
+          for (let b = 0; b < n; b++) {
+            const bx = tx + b * 1.6 - n * 0.8;
+            const lean = (b / Math.max(1, n - 1) - 0.5) * 2 + 0.3;
+            const hgt = (5 + fn(seed + i * 13 + b) * 9) * s;
+            d += FM(bx, gy + 1.5) +
+              FQ(bx + lean * 2, gy - hgt * 0.55, bx + lean * 4.5, gy - hgt);
+          }
+          tx += 8 + fn(seed + i * 3) * 9;
+          i++;
+        }
+        fel('path', Object.assign(fln(0.9), { d }));
+      }
+
+      /* ---- layout: skip anything the current width can't hold ---- */
+      // left of the cliff, anchored off the viewport's left edge
+      if (cliffX - 27 > 90) pine(48, 150, 142);
+      if (cliffX - 27 > 136) pine(106, 105, 143);
+      if (cliffX - 27 > 181) bush(158, 42, 157);
+      if (cliffX - 27 > 228) stump(218, 16);
+      if (cliffX - 27 > 274) rock(262, 20, 146);
+      scree(cliffX - 4, 145);
+      // the camp, anchored off the cliff base; the treeline needs the
+      // rightmost ~232px, so camp props must stop short of it
+      let busyR = cliffX + 34;
+      let fireX = null, tentOn = false;
+      const campFit = (r) => r < fw - 232;
+      if (campFit(cliffX + 156)) { flog(cliffX + 110, 46); busyR = cliffX + 162; }
+      if (campFit(cliffX + 165)) { flower(cliffX + 160, 147); busyR = cliffX + 165; }
+      if (campFit(cliffX + 336)) { tent(cliffX + 250, 112); busyR = cliffX + 336; tentOn = true; }
+      if (campFit(cliffX + 408)) { fire(cliffX + 380); busyR = cliffX + 408; fireX = cliffX + 380; }
+      if (campFit(cliffX + 447)) { flower(cliffX + 442, 148); busyR = cliffX + 447; }
+      if (campFit(cliffX + 565)) { roundTree(cliffX + 532, 92, 158); busyR = cliffX + 565; }
+      // treeline growing in from the right edge
+      if (fw - 221 > busyR + 15) bush(fw - 202, 38, 159);
+      if (fw - 202 > busyR + 15) pine(fw - 175, 95, 149);
+      if (fw - 157 > busyR + 15) pine(fw - 118, 140, 150);
+      if (fw - 150 > busyR + 15) flower(fw - 145, 153);
+      if (fw - 93 > busyR + 15) pine(fw - 62, 110, 151);
+      if (fw - 61 > busyR + 15) pine(fw - 18, 155, 152);
+      if (tentOn) {
+        bird(cliffX + 75, gy - 135, 1);
+        bird(cliffX + 105, gy - 147, 0.8);
+      }
+      if (fw - 157 > busyR + 15) bird(fw - 110, gy - 161, 1);
+      // turf across the full width, with a cleared patch around the fire
+      if (fireX !== null) {
+        turf(0, fireX - 38, 154);
+        turf(fireX + 38, fw, 155);
+      } else {
+        turf(0, fw, 154);
+      }
+    }
+
+    // Reduced motion: static scroll-reveal, no stickman
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      man.remove();
+      const reveal = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('shown');
+            reveal.unobserve(entry.target);
+          }
+        }
+      }, { threshold: 0.25 });
+      items.concat([coil]).forEach((el) => reveal.observe(el));
+      buildFloor();
+      addEventListener('resize', buildFloor);
+      return;
+    }
+
+    document.documentElement.classList.add('man');
+    // The rope is rigged before he ever appears: it hangs from the top
+    // anchor, threaded through every bolt ring, and its tail already
+    // lies coiled at the base — it never has to appear out of nowhere
+    coil.classList.add('shown');
+
+    /* ---- The character is drawn fresh every frame.
+       Skeleton points (pelvis, chest, head, hands, feet) are targets that
+       real spring-damper physics chase, so every movement gets natural
+       lag, overshoot and follow-through. Elbows and knees are solved with
+       two-bone IK. Local x=0 is the rope; the wall face is at x=30. ---- */
+
+    const NS = 'http://www.w3.org/2000/svg';
+    // The rope lives in its own svg behind the figure, so the full line
+    // can hang on the wall from page load while the climber himself
+    // only shows up after the intro
+    const rig = document.createElementNS(NS, 'svg');
+    rig.setAttribute('class', 'rig');
+    rig.setAttribute('aria-hidden', 'true');
+    man.parentNode.insertBefore(rig, man);
+    function shape(name, attrs, parent) {
+      const e = document.createElementNS(NS, name);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      (parent || man).appendChild(e);
+      return e;
+    }
+    const line = (w) => ({
+      fill: 'none', stroke: '#000', 'stroke-width': w,
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+    });
+    // Paint order = depth: the rope svg sits behind the figure svg;
+    // within the figure: far limbs (thinner), torso, near limbs, head,
+    // guide arm on top
+    const ropeEl = shape('path', line(2), rig);
+    const slackEl = shape('path', Object.assign(line(1.5), { class: 'slack' }), rig);
+    const legBEl = shape('path', line(1.9));
+    const armBEl = shape('path', line(1.9));
+    const torsoEl = shape('path', line(2.4));
+    const legFEl = shape('path', line(2.2));
+    const headEl = shape('circle', { r: 4.2, fill: '#000' });
+    const armGEl = shape('path', line(2.2));
+    const handGEl = shape('circle', { r: 1.6, fill: '#000' });
+    const handBEl = shape('circle', { r: 1.6, fill: '#000' });
+
+    // The cliff face he rappels against: a jagged outer edge doubled by
+    // an inner echo line, the band between them filled with parallel
+    // hatch rules — drawn like a sliced solid, regenerated to fit the
+    // page on every measure
+    const wall = document.createElementNS(NS, 'svg');
+    wall.setAttribute('class', 'wall');
+    wall.setAttribute('aria-hidden', 'true');
+    // The hatch rules live in a group clipped to the exact band shape,
+    // so every stroke is cut flush on both edge lines by construction
+    const wallClip = document.createElementNS(NS, 'clipPath');
+    wallClip.setAttribute('id', 'wallband');
+    const wallClipPath = document.createElementNS(NS, 'path');
+    wallClip.appendChild(wallClipPath);
+    const wallHatchG = document.createElementNS(NS, 'g');
+    wallHatchG.setAttribute('clip-path', 'url(#wallband)');
+    const wallRules = document.createElementNS(NS, 'path');
+    for (const [k, v] of Object.entries(line(0.6))) wallRules.setAttribute(k, v);
+    wallHatchG.appendChild(wallRules);
+    const wallInner = document.createElementNS(NS, 'path');
+    for (const [k, v] of Object.entries(line(0.9))) wallInner.setAttribute(k, v);
+    const wallFace = document.createElementNS(NS, 'path');
+    for (const [k, v] of Object.entries(line(2))) wallFace.setAttribute(k, v);
+    wall.append(wallClip, wallHatchG, wallInner, wallFace);
+    main.appendChild(wall);
+    // keep the floor above the wall so the turf and scree sit over the
+    // cliff base where they meet
+    main.appendChild(floorSvg);
+
+    // Deterministic per-index noise so the rock keeps its shape across
+    // resizes instead of reshuffling
+    const noise = (i) => {
+      const s = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+      return s - Math.floor(s);
+    };
+
+    // Face base sits FACE_X px into the wall svg, aligned to the rope
+    // rule; profile offsets (wallOff) push the rock in and out of that
+    const WALL_W = 72, FACE_X = 30;
+    let wallPts = [];
+    // x of the inner echo line at a given document y — assigned by
+    // buildWall, used to pin the timeline dots onto that line
+    let innerAt = () => FACE_X;
+    // Horizontal offset of the rock surface from the base line at a
+    // given document y — the feet plant on this
+    function wallOff(y) {
+      if (!wallPts.length) return 0;
+      if (y <= wallPts[0][1]) return wallPts[0][0] - FACE_X;
+      for (let i = 1; i < wallPts.length; i++) {
+        if (y <= wallPts[i][1]) {
+          const [x0, y0] = wallPts[i - 1], [x1, y1] = wallPts[i];
+          return x0 + (x1 - x0) * ((y - y0) / (y1 - y0 || 1)) - FACE_X;
+        }
+      }
+      return wallPts[wallPts.length - 1][0] - FACE_X;
+    }
+    function buildWall() {
+      // The silhouette: two slow sine layers carve real bays and
+      // buttresses into the line (the drama), jitter roughens it, and
+      // set pieces punctuate it — overhanging shelves that jut out over
+      // a tucked-under face, and clefts biting back into the rock
+      const ph1 = noise(1) * 6.28, ph2 = noise(2) * 6.28;
+      const macro = (yy) =>
+        -6.5 - 8 * Math.sin(yy / 150 + ph1)
+        - 4.5 * Math.sin(yy / 57 + ph2);
+      const shelves = [];
+      wallPts = [[FACE_X + macro(0), 0]];
+      let y = 0, i = 0;
+      while (y < floorY) {
+        ++i;
+        const r = noise(i + 999);
+        if (r > 0.82 && y < floorY - 44) {
+          // overhang: shelf lip thrust out over a tucked-under face
+          const out = 10 + noise(i + 41) * 7;
+          y += 3 + noise(i + 43) * 3;
+          const lipX = Math.max(2, FACE_X + macro(y) - out);
+          wallPts.push([lipX, y]);
+          shelves.push([lipX, y]);
+          y += 4 + noise(i + 44) * 4;
+          wallPts.push([lipX + 3, y]);
+          y += 10 + noise(i + 45) * 10;
+          wallPts.push([FACE_X + macro(y) + 4.5, y]);
+        } else if (r < 0.18 && y < floorY - 30) {
+          // crevice: a cleft biting deep into the rock and back out
+          y += 4 + noise(i + 46) * 5;
+          wallPts.push([FACE_X + macro(y) + 7 + noise(i + 47) * 4, y]);
+          y += 3 + noise(i + 48) * 5;
+          wallPts.push([FACE_X + macro(y) - 2, y]);
+        } else {
+          y += 8 + noise(i) * 12;
+          wallPts.push([FACE_X + macro(y) + noise(i + 57) * 7 - 3.5, y]);
+        }
+      }
+      wallPts[wallPts.length - 1][1] = floorY;
+      const facePath = wallPts
+        .map((p, j) => (j ? 'L' : 'M') + f1(p[0]) + ' ' + f1(p[1])).join('');
+      wallFace.setAttribute('d', facePath);
+
+      // The inner echo: the silhouette offset into the rock. Width is
+      // driven by the smoothed surface angle — thin where the face
+      // leans out into the light, thick where it cuts back into
+      // shadow — with a guaranteed clearance so a sharp shelf step
+      // can't make the two lines cross
+      const surf = (yy) =>
+        FACE_X + wallOff(Math.max(0, Math.min(floorY, yy)));
+      const slope = (yy) => (surf(yy + 4) - surf(yy - 4)) / 8;
+      const targetWidth = (yy) => {
+        let s = 0, n = 0;
+        for (let d = -16; d <= 16; d += 4) { s += slope(yy + d); n++; }
+        s /= n;
+        return 2.8 + Math.max(0, Math.min(9, 3.2 + s * 5.5));
+      };
+      const innerRaw = [];
+      for (let yy = 0; yy <= floorY; yy += 2) {
+        let x = 0;
+        for (let d = -5; d <= 5; d += 2.5) x = Math.max(x, surf(yy + d) + 2.4);
+        innerRaw.push(Math.max(x, surf(yy) + targetWidth(yy)));
+      }
+      for (let pass = 0; pass < 3; pass++) {
+        const src = innerRaw.slice();
+        for (let j = 1; j < src.length - 1; j++)
+          innerRaw[j] = (src[j - 1] + src[j] * 2 + src[j + 1]) / 4;
+      }
+      innerAt = (yy) => {
+        const idx = Math.max(0, Math.min(innerRaw.length - 1, yy / 2));
+        const i0 = Math.floor(idx), tt = idx - i0;
+        const a = innerRaw[i0];
+        const b = innerRaw[Math.min(innerRaw.length - 1, i0 + 1)];
+        return a + (b - a) * tt;
+      };
+      // One geometry for everything: this polyline is both the drawn
+      // inner line and the clip boundary, so the hatch ends flush on it
+      let innerPath = '';
+      for (let yy = 0; yy <= floorY; yy += 2)
+        innerPath += (yy ? 'L' : 'M') + f1(innerAt(yy)) + ' ' + f1(yy);
+      wallInner.setAttribute('d', innerPath);
+      let region = facePath;
+      for (let yy = floorY; yy >= 0; yy -= 2)
+        region += 'L' + f1(innerAt(yy)) + ' ' + f1(yy);
+      wallClipPath.setAttribute('d', region + 'Z');
+
+      // Hatch rules: long parallel 58° strokes across the whole strip,
+      // clipped to the band. Only the spacing varies — wide (shadowed)
+      // stretches and under-lip pockets pack tighter, thin lit runs
+      // open up — so density reads as shading and parallel lines can
+      // never touch or cross
+      const DYDX = 0.29 / 0.45;
+      const underLip = (yy) => {
+        let u = 0;
+        for (const s of shelves) {
+          const d = yy - s[1];
+          if (d > 0 && d < 20) u = Math.max(u, 1 - d / 20);
+        }
+        return u;
+      };
+      let rules = '';
+      let ry = -WALL_W;
+      while (ry < floorY + WALL_W) {
+        rules += 'M0 ' + f1(ry) +
+          'L' + WALL_W + ' ' + f1(ry + WALL_W * DYDX);
+        const yMid = Math.max(0, Math.min(floorY, ry + 14 * DYDX + 8));
+        const wHere = innerAt(yMid) - surf(yMid);
+        let sp2 = 2.7 + Math.max(0, 9.5 - wHere) * 0.6;
+        sp2 = Math.max(2.1, sp2 - underLip(yMid) * 1.3);
+        ry += sp2;
+      }
+      wallRules.setAttribute('d', rules);
+    }
+
+    let ropeX, startY, endY, restY, floorY, nodes, positions, mainTop;
+    let standX = 0;
+
+    // Anchor bolts: every second timeline dot, a ring on the face line.
+    // The rope hangs full length from the top anchor, threaded through
+    // every ring, its tail ending at the floor coil. He cleans the
+    // route on the way down: at each ring he pauses, unclips the strand
+    // below him, and the freed stretch swings out toward plumb
+    let anchors = [];
+    let ringEls = [];
+    let cleaned = 0;
+    // committed shape of the strand below the next uncleaned ring:
+    // ring -> ring -> ... -> coil. Rebuilt on measure and on each clean
+    let belowPts = [];
+    // 0..1 while he reaches for a ring: the fist leaves the rope, so
+    // the strand above blends from ending in his hand to ending at the
+    // harness device — the rope moves with the action, never snapping
+    let reach = 0;
+
+    // Rope pinned between two points: straight where it can be,
+    // bending around whatever rock protrudes past the chord, so it
+    // never crosses the face (lower convex chain over the face profile)
+    function tautChain(a, b) {
+      const pts = [a];
+      for (let yy = a[1] + 4; yy < b[1] - 3; yy += 4)
+        pts.push([FACE_X + wallOff(yy) - 1, yy]);
+      pts.push(b);
+      const hull = [];
+      for (const p of pts) {
+        while (hull.length > 1) {
+          const o = hull[hull.length - 2], q = hull[hull.length - 1];
+          if ((q[1] - o[1]) * (p[0] - o[0]) -
+              (q[0] - o[0]) * (p[1] - o[1]) <= 0) hull.pop();
+          else break;
+        }
+        hull.push(p);
+      }
+      return hull;
+    }
+
+    // A chain between two pinned points, with a touch of hang added on
+    // the long free spans so the unloaded strand doesn't read as wire.
+    // Returns the points after the start (the start is the caller's)
+    function chainPts(a, b) {
+      const hull = tautChain(a, b);
+      const pts = [];
+      for (let i = 1; i < hull.length; i++) {
+        const p0 = hull[i - 1], p1 = hull[i];
+        if (p1[1] - p0[1] > 60)
+          pts.push([(p0[0] + p1[0]) / 2 - 3, (p0[1] + p1[1]) / 2]);
+        pts.push(p1);
+      }
+      return pts;
+    }
+
+    function buildBelow() {
+      belowPts = [];
+      let prev = anchors[cleaned];
+      if (!prev) return;  // everything cleaned: strand runs straight to the coil
+      prev = [prev.x, prev.y];
+      for (let i = cleaned + 1; i < anchors.length; i++) {
+        const pt = [anchors[i].x, anchors[i].y];
+        belowPts.push(...chainPts(prev, pt));
+        prev = pt;
+      }
+      belowPts.push(...chainPts(prev, [0, endY]));
+    }
+
+    // A freshly freed stretch of rope. At the pop its exact route —
+    // bight through the ring, the chain below it — is captured as a
+    // dense point set, and render morphs those points out to the
+    // hanging line; the springs only take over once the morph lands
+    // exactly on their positions. No frame ever changes shape in a step
+    let freed = null;
+
+    // Point at fraction f along the hanging line from the brake hand
+    // (hbx, hby) down to nxt: the chord plus a bow that sags toward
+    // down/away-from-wall, clamped out of the rock — the shape an
+    // unloaded strand wants to take
+    function hangTarget(f, hbx, hby, nxt) {
+      const ddx = nxt[0] - hbx, ddy = nxt[1] - hby;
+      const dl = Math.hypot(ddx, ddy) || 1;
+      const bow = 6 * Math.sin(Math.PI * f);
+      const ty = hby + ddy * f + (ddx / dl) * bow;
+      const tx = Math.min(hbx + ddx * f - (ddy / dl) * bow,
+        FACE_X + wallOff(ty) - 2);
+      return [tx, ty];
+    }
+
+    // Fractions of the below strand carrying the live springs. The
+    // first sits close to the brake hand so the drawn curve's rounding
+    // at the hand is the same whether the strand is spring-drawn or
+    // being settle-morphed — the two representations must agree there
+    const BFR = [0.05, 0.3, 0.62, 0.88];
+
+    // The exact geometry ropePath draws for a control polyline (start,
+    // quadratics through successive midpoints, line to the end) as a
+    // dense polyline. Capturing and targeting drawn CURVES — not
+    // control skeletons — is what keeps the settle seamless: skeleton
+    // corners get rounded by the renderer, curves don't move
+    function flattenRope(ctrl, steps) {
+      const out = [[ctrl[0][0], ctrl[0][1]]];
+      let cur = ctrl[0];
+      for (let i = 1; i < ctrl.length - 1; i++) {
+        const m = [(ctrl[i][0] + ctrl[i + 1][0]) / 2,
+          (ctrl[i][1] + ctrl[i + 1][1]) / 2];
+        for (let k = 1; k <= steps; k++) {
+          const t = k / steps, a = 1 - t;
+          out.push([
+            a * a * cur[0] + 2 * a * t * ctrl[i][0] + t * t * m[0],
+            a * a * cur[1] + 2 * a * t * ctrl[i][1] + t * t * m[1],
+          ]);
+        }
+        cur = m;
+      }
+      out.push([ctrl[ctrl.length - 1][0], ctrl[ctrl.length - 1][1]]);
+      return out;
+    }
+
+    // Even arc-length resampling of a polyline into n spans, so a morph
+    // moves the whole strand smoothly instead of just its bend points
+    function resampleN(poly, n) {
+      const lens = [0];
+      let total = 0;
+      for (let i = 1; i < poly.length; i++) {
+        total += Math.hypot(poly[i][0] - poly[i - 1][0],
+          poly[i][1] - poly[i - 1][1]);
+        lens.push(total);
+      }
+      const out = [[poly[0][0], poly[0][1]]];
+      for (let k = 1; k <= n; k++) {
+        const s = total * k / n;
+        let i = 1;
+        while (i < poly.length - 1 && lens[i] < s) i++;
+        const t = (s - lens[i - 1]) / ((lens[i] - lens[i - 1]) || 1);
+        out.push([
+          poly[i - 1][0] + (poly[i][0] - poly[i - 1][0]) * t,
+          poly[i - 1][1] + (poly[i][1] - poly[i - 1][1]) * t,
+        ]);
+      }
+      return out;
+    }
+
+    function resample(poly, step) {
+      let total = 0;
+      for (let i = 1; i < poly.length; i++) {
+        total += Math.hypot(poly[i][0] - poly[i - 1][0],
+          poly[i][1] - poly[i - 1][1]);
+      }
+      return resampleN(poly, Math.max(6, Math.round(total / step)));
+    }
+
+    // Split a polyline at its vertex nearest to p. The settle morphs
+    // the body lead-in (fist -> device -> brake hand) and the freed
+    // strand as separate pieces anchored at the brake hand, so rope
+    // material stays where it is — the freed bight falls onto its hang
+    // line and can never slide across toward the other hand
+    function splitAt(poly, p) {
+      let bi = 0, bd = 1e9;
+      for (let i = 0; i < poly.length; i++) {
+        const d = Math.hypot(poly[i][0] - p[0], poly[i][1] - p[1]);
+        if (d < bd) { bd = d; bi = i; }
+      }
+      return [poly.slice(0, bi + 1), poly.slice(bi)];
+    }
+
+    // Pop the strand out of the ring at hand: the ring goes bare and
+    // the route below is rebuilt without it. The strand's exact route
+    // at this instant — brake hand, bight springs, the ring, the old
+    // chain below it — is captured densely for the settle morph, so
+    // the drawn rope doesn't move at all on the frame of the pop
+    function doClean(now) {
+      const a = anchors[cleaned];
+      if (!a) return;
+      cleaned++;
+      a.ring.setAttribute('fill', '#000');
+      a.ring.setAttribute('r', 2.6);
+      buildBelow();
+      const nxt = anchors[cleaned]
+        ? [anchors[cleaned].x, anchors[cleaned].y] : [0, endY];
+      // the capture starts at the rope's current end (fist, or the
+      // harness mid-reach) so it is the drawn curve, prefix and all;
+      // it is then split at the brake hand into lead-in + freed strand
+      const ex = S.handG.x + (S.pelvis.x - 1 - S.handG.x) * reach;
+      const ey = S.handG.y + (S.pelvis.y + 2 - S.handG.y) * reach;
+      const flat = flattenRope([
+        [ex, ey],
+        [S.pelvis.x - 1, S.pelvis.y + 2],
+        [S.handB.x, S.handB.y],
+        [S.b1.x, S.b1.y], [S.b2.x, S.b2.y],
+        [S.b3.x, S.b3.y], [S.b4.x, S.b4.y],
+        [a.x, a.y],
+      ].concat(chainPts([a.x, a.y], nxt)), 4);
+      const parts = splitAt(flat, [S.handB.x, S.handB.y]);
+      freed = {
+        t0: now,
+        hb: [S.handB.x, S.handB.y],
+        pre: resampleN(parts[0], 6),
+        // 3px sampling: the strand hairpins ~10px around the brake
+        // hand, and a coarser grid flattens that loop — the visible
+        // "rope pulls off the hand" pop
+        from: resample(parts[1], 3),
+      };
+    }
+
+    function measure() {
+      ropeX = ul.offsetLeft - 1;
+      nodes = items.map((li) => ({ el: li, y: li.offsetTop + 6 }));
+      startY = nodes[0].y;
+      // SVG elements have no offsetTop, so place the coil via rects
+      endY = coil.getBoundingClientRect().top - main.getBoundingClientRect().top;
+      floorY = endY + 148;
+      // His last stop sits a little above the coil, so the strand below
+      // his brake hand still runs down toward it, never up
+      restY = endY - 36;
+      // The perches he rappels between: each timeline node, then the
+      // last stop above the coil
+      positions = nodes.map((n) => n.y).concat([restY]);
+      mainTop = main.getBoundingClientRect().top + scrollY;
+      // The svg spans the whole descent so the rig can be drawn in one
+      // coordinate space (x relative to the rope, y = document y)
+      man.setAttribute('viewBox', '-34 0 90 ' + (floorY + 40));
+      man.setAttribute('width', 90);
+      man.setAttribute('height', floorY + 40);
+      man.style.left = (ropeX - 64) + 'px';
+      man.style.top = '0px';
+      rig.setAttribute('viewBox', '-34 0 90 ' + (floorY + 40));
+      rig.setAttribute('width', 90);
+      rig.setAttribute('height', floorY + 40);
+      rig.style.left = (ropeX - 64) + 'px';
+      rig.style.top = '0px';
+      wall.setAttribute('viewBox', '0 0 ' + WALL_W + ' ' + floorY);
+      wall.setAttribute('width', WALL_W);
+      wall.setAttribute('height', floorY);
+      wall.style.left = (ropeX - FACE_X) + 'px';
+      buildWall();
+      // Pin each timeline dot onto the outer face line at its own
+      // height (offset from the li's left edge: li left = ropeX + 1,
+      // wall left = ropeX - FACE_X). Every second dot is an anchor
+      // bolt ring the rope is threaded through; the rings are drawn in
+      // the rig svg so they're on the wall before their entries reveal
+      ringEls.forEach((r) => r.remove());
+      ringEls = [];
+      anchors = [];
+      items.forEach((li, i) => {
+        const dy = li.offsetTop + 10;
+        li.style.setProperty('--dotx', (wallOff(dy) - 1).toFixed(1) + 'px');
+        if (i % 2 === 0) {
+          li.classList.add('anchor');
+          const ring = document.createElementNS(NS, 'circle');
+          ring.setAttribute('cx', (FACE_X + wallOff(dy)).toFixed(1));
+          ring.setAttribute('cy', dy);
+          ring.setAttribute('stroke', '#000');
+          ring.setAttribute('stroke-width', 1.5);
+          if (anchors.length < cleaned) {
+            // already cleaned: a bare bolt, same look as a plain dot
+            ring.setAttribute('fill', '#000');
+            ring.setAttribute('r', 2.6);
+          } else {
+            ring.setAttribute('fill', '#fff');
+            ring.setAttribute('r', 3.4);
+          }
+          rig.appendChild(ring);
+          ringEls.push(ring);
+          anchors.push({ x: FACE_X + wallOff(dy), y: dy, ring });
+        }
+      });
+      buildBelow();
+      // Before he appears the rope is already rigged: the whole line,
+      // top anchor through every ring down to the coil. It's unloaded,
+      // so it's drawn as the slack stroke — the loaded main stroke only
+      // exists above his device once he's on the rope, and it rides
+      // into view with him instead of swapping in
+      if (state === 'wait' && anchors.length) {
+        slackEl.setAttribute('d', ropePath(
+          [[0, 0]].concat(chainPts([0, 0], [anchors[0].x, anchors[0].y]),
+            belowPts)));
+        ropeEl.setAttribute('d', '');
+      }
+      // Where the cliff base crowds the landing spot, stand him left
+      // of the leftmost rock over his standing height
+      let base = Infinity;
+      for (let yy = floorY - 52; yy <= floorY; yy += 4)
+        base = Math.min(base, FACE_X + wallOff(yy));
+      standX = Math.min(0, base - 21);
+      buildFloor();
+    }
+
+    // ---- tiny physics + kinematics toolkit ----
+    const clamp01 = (v) => Math.min(1, Math.max(0, v));
+    const easeInOut = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+    // one arch of a sine inside [a,b], zero outside — for anticipation,
+    // landing absorption etc.
+    const bell = (t, a, b) => (t <= a || t >= b) ? 0 : Math.sin(Math.PI * (t - a) / (b - a));
+
+    function sp() { return { x: 0, y: 0, vx: 0, vy: 0 }; }
+    // Spring with exponential damping: unconditionally stable no matter
+    // how long a frame takes, so a busy tab can never blow the rig up
+    function drive(s, t, k, d, dt) {
+      const damp = Math.exp(-d * dt);
+      s.vx = (s.vx + k * (t[0] - s.x) * dt) * damp;
+      s.vy = (s.vy + k * (t[1] - s.y) * dt) * damp;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+    }
+    function put(s, t) { s.x = t[0]; s.y = t[1]; s.vx = 0; s.vy = 0; }
+
+    // Two-bone IK: joint (elbow/knee) between root a and end b.
+    // bend picks which side the joint pops out on.
+    function ik(a, b, l1, l2, bend) {
+      let dx = b[0] - a.x, dy = b[1] - a.y, d = Math.hypot(dx, dy) || 0.001;
+      const reach = l1 + l2 - 0.01;
+      if (d > reach) { dx *= reach / d; dy *= reach / d; d = reach; }
+      const along = (l1 * l1 - l2 * l2 + d * d) / (2 * d);
+      const out = Math.sqrt(Math.max(0, l1 * l1 - along * along));
+      return [
+        a.x + dx * along / d - (-dy / d) * out * bend,
+        a.y + dy * along / d - (dx / d) * out * bend,
+      ];
+    }
+
+    const f1 = (v) => v.toFixed(1);
+    // A limb: two segments meeting at the joint, with a small rounded
+    // corner so elbows and knees don't read as sharp kinks
+    function limbPath(a, joint, b) {
+      const ax = a.x + (joint[0] - a.x) * 0.82;
+      const ay = a.y + (joint[1] - a.y) * 0.82;
+      const bx = joint[0] + (b[0] - joint[0]) * 0.18;
+      const by = joint[1] + (b[1] - joint[1]) * 0.18;
+      return 'M' + f1(a.x) + ' ' + f1(a.y) + ' L' + f1(ax) + ' ' + f1(ay) +
+        ' Q' + f1(joint[0]) + ' ' + f1(joint[1]) + ' ' + f1(bx) + ' ' + f1(by) +
+        ' L' + f1(b[0]) + ' ' + f1(b[1]);
+    }
+    function ropePath(pts) {
+      let d = 'M' + f1(pts[0][0]) + ' ' + f1(pts[0][1]);
+      for (let i = 1; i < pts.length - 1; i++) {
+        d += ' Q' + f1(pts[i][0]) + ' ' + f1(pts[i][1]) +
+          ' ' + f1((pts[i][0] + pts[i + 1][0]) / 2) +
+          ' ' + f1((pts[i][1] + pts[i + 1][1]) / 2);
+      }
+      const last = pts[pts.length - 1];
+      return d + ' L' + f1(last[0]) + ' ' + f1(last[1]);
+    }
+    function rotAbout(x, y, cy, ang) {
+      const s = Math.sin(ang), c = Math.cos(ang);
+      return [x * c - (y - cy) * s, cy + x * s + (y - cy) * c];
+    }
+
+    // Bone lengths
+    const ARM1 = 9.5, ARM2 = 9.5, LEG1 = 13, LEG2 = 13.5;
+
+    // Joint springs — stiffness/damping tuned per part: feet plant
+    // crisply, the head is loose and lags, the rope tail is looser still
+    const S = {
+      pelvis: sp(), chest: sp(), head: sp(),
+      handG: sp(), handB: sp(), f1: sp(), f2: sp(),
+      // points along the strand below the brake hand — it hangs down
+      // to the next ring and swings loose whenever a ring is cleaned
+      b1: sp(), b2: sp(), b3: sp(), b4: sp(),
+      // points along the strand above — anchored at the ceiling, pulled
+      // around by his grip, so the whole line flexes and whips
+      r1: sp(), r2: sp(), r3: sp(), r4: sp(),
+    };
+
+    /* ---- poses: each returns spring targets for the whole body ---- */
+
+    // Seated back in the harness, feet braced on the wall. sway (radians)
+    // pivots the body around the rope grip; planted feet stay put, so a
+    // sway reads as a lean.
+    // gx is how far the grip (and the rope with it) is pushed out from
+    // plumb — the body hangs from wherever the rope end is
+    function perchPose(gy, sway, gx) {
+      gx = gx || 0;
+      // the classic rappel pictogram: body reclined out to the LEFT of
+      // the rope, one straight arm up to the fist on the rope, brake
+      // hand tucked behind the lower back, hips under the line, thighs
+      // near horizontal with knees up and feet planted on the wall
+      const p = rotAbout(6, gy + 30, gy, sway);
+      const c = rotAbout(-7.5, gy + 19, gy, sway);
+      const h = rotAbout(-11.5, gy + 10.5, gy, sway);
+      // Feet plant exactly on the rock face line, wherever it wanders.
+      // The body slides toward or away from the rope by a fraction of
+      // the local face offset so the legs stay braced at a natural
+      // bend — never folded shut where the face crowds the rope, never
+      // overstretched or buried where it leans away
+      const w1 = wallOff(gy + 36), w2 = wallOff(gy + 44);
+      const bs = gx + Math.max(-14, Math.min(10,
+        ((w1 + w2) / 2 + 6.5) * 0.6));
+      return {
+        pelvis: [p[0] + bs, p[1]], chest: [c[0] + bs, c[1]],
+        head: [h[0] + bs, h[1]],
+        handG: [gx, gy], handB: [p[0] + bs - 10, p[1] + 0.5],
+        f1: [30 + w1, gy + 36],
+        f2: [29.5 + w2, gy + 44],
+        bendG: -1, bendB: -1, bendL: 1,
+        feetFast: true,
+      };
+    }
+
+    // Hanging straight down the rope, hand over hand, legs dangling
+    function hangPose(gy) {
+      return {
+        pelvis: [-3, gy + 30], chest: [-2, gy + 16], head: [-2.5, gy + 8],
+        handG: [0, gy], handB: [-0.5, gy + 6.5],
+        f1: [0, gy + 55], f2: [-3, gy + 56],
+        bendG: 1, bendB: 1, bendL: 1,
+        feetFast: false,
+      };
+    }
+
+    // On the ground by the coiled rope: breathing, and a wave hello.
+    // standX (set in measure) slides the whole pose left just far
+    // enough that he stands clear of the cliff base, not inside it
+    function standPose(now) {
+      const fy = floorY - 1;
+      const br = Math.sin(now / 620);
+      const t = now - standT0;
+      let handB = [standX + 17.5, fy - 19 + br * 0.6], bendB = -1;
+      const tw = t - 600;
+      if (tw > 0 && tw < 3200) {
+        // raise the arm, wave, lower it
+        const lift = Math.min(1, tw / 400) * Math.min(1, (3200 - tw) / 400);
+        const wave = Math.sin(tw / 155) * 3.5;
+        handB = [standX + 17 + (8 + wave) * lift, (fy - 19) - 26 * lift];
+      }
+      return {
+        pelvis: [standX + 11.5, fy - 24 + br * 0.5],
+        chest: [standX + 11, fy - 37 + br * 0.9],
+        head: [standX + 10.8, fy - 46 + br],
+        handG: [standX + 5.5, fy - 19 + br * 0.6], handB,
+        f1: [standX + 7.5, fy], f2: [standX + 15, fy],
+        bendG: 1, bendB, bendL: 1,
+        feetFast: true,
+      };
+    }
+
+    // states: wait -> perch (hopping between nodes, cleaning each ring
+    //   he passes) -> pause -> fall (lets go of the rope) -> stand
+    let state = 'wait';
+    let y = -110;          // grip point on the rope, document y
+    let pauseT0 = 0, fallT0 = 0, standT0 = 0, releaseY = 0;
+    let hop = null;        // in-flight hop tween
+    let cleanPause = null; // paused at a ring, unclipping the strand below
+
+    measure();
+    addEventListener('resize', measure);
+
+    function reveal(i) {
+      if (i < nodes.length) nodes[i].el.classList.add('shown');
+    }
+
+    function seed(T) {
+      put(S.pelvis, T.pelvis); put(S.chest, T.chest); put(S.head, T.head);
+      put(S.handG, T.handG); put(S.handB, T.handB);
+      put(S.f1, T.f1); put(S.f2, T.f2);
+      // the below strand starts already on its line down to the next
+      // ring, so taking over from the pre-rigged rope doesn't jump
+      const a0 = anchors[cleaned]
+        ? [anchors[cleaned].x, anchors[cleaned].y] : [0, endY];
+      [S.b1, S.b2, S.b3, S.b4].forEach((s, i) => put(s, [
+        T.handB[0] + (a0[0] - T.handB[0]) * BFR[i],
+        T.handB[1] + (a0[1] - T.handB[1]) * BFR[i],
+      ]));
+      put(S.r1, [0, 0]); put(S.r2, [0, 0]);
+      put(S.r3, [0, 0]); put(S.r4, [0, 0]);
+    }
+
+    function render(onRope, now) {
+      const shoulder = {
+        x: S.chest.x + (S.head.x - S.chest.x) * 0.25,
+        y: S.chest.y + (S.head.y - S.chest.y) * 0.25,
+      };
+      // Torso: one curve from head through the chest to the pelvis
+      const tcx = 2 * S.chest.x - (S.head.x + S.pelvis.x) / 2;
+      const tcy = 2 * S.chest.y - (S.head.y + S.pelvis.y) / 2;
+      torsoEl.setAttribute('d', 'M' + f1(S.head.x) + ' ' + f1(S.head.y) +
+        ' Q' + f1(tcx) + ' ' + f1(tcy) + ' ' + f1(S.pelvis.x) + ' ' + f1(S.pelvis.y));
+      headEl.setAttribute('cx', f1(S.head.x));
+      headEl.setAttribute('cy', f1(S.head.y));
+      armGEl.setAttribute('d', limbPath(shoulder,
+        ik(shoulder, [S.handG.x, S.handG.y], ARM1, ARM2, bends.g), [S.handG.x, S.handG.y]));
+      armBEl.setAttribute('d', limbPath(shoulder,
+        ik(shoulder, [S.handB.x, S.handB.y], ARM1, ARM2, bends.b), [S.handB.x, S.handB.y]));
+      legFEl.setAttribute('d', limbPath(S.pelvis,
+        ik(S.pelvis, [S.f1.x, S.f1.y], LEG1, LEG2, bends.l), [S.f1.x, S.f1.y]));
+      legBEl.setAttribute('d', limbPath(S.pelvis,
+        ik(S.pelvis, [S.f2.x, S.f2.y], LEG1, LEG2, bends.l), [S.f2.x, S.f2.y]));
+      handGEl.setAttribute('cx', f1(S.handG.x));
+      handGEl.setAttribute('cy', f1(S.handG.y));
+      handBEl.setAttribute('cx', f1(S.handB.x));
+      handBEl.setAttribute('cy', f1(S.handB.y));
+      // The strand above ends in his fist normally; while he reaches
+      // for a ring the fist leaves the rope, so it eases over to end
+      // at the harness device instead — the line always moves with him
+      const bx = onRope ? S.handG.x + (S.pelvis.x - 1 - S.handG.x) * reach : 0;
+      const by = onRope ? S.handG.y + (S.pelvis.y + 2 - S.handG.y) * reach : endY;
+      if (onRope) {
+        // One continuous rope below the device: fist -> harness ->
+        // brake hand behind the back, then down through every ring he
+        // hasn't cleaned yet, ending at the coil on the floor
+        const pts = [[bx, by]];
+        if (freed) {
+          // settle morph: dense samples ease from the exact curve the
+          // rope drew at the pop toward the exact curve the springs
+          // will draw at handoff. Both include the fist -> harness ->
+          // brake-hand prefix, so the renderer's corner rounding at
+          // the hands is identical on both edges of the settle — the
+          // strand can't shift even a pixel when representations swap
+          const e = easeInOut(clamp01((now - freed.t0) / 900));
+          const nxt = anchors[cleaned]
+            ? [anchors[cleaned].x, anchors[cleaned].y] : [0, endY];
+          const hbx = S.handB.x, hby = S.handB.y;
+          const toFlat = flattenRope([
+            [bx, by],
+            [S.pelvis.x - 1, S.pelvis.y + 2],
+            [hbx, hby],
+            hangTarget(BFR[0], hbx, hby, nxt),
+            hangTarget(BFR[1], hbx, hby, nxt),
+            hangTarget(BFR[2], hbx, hby, nxt),
+            hangTarget(BFR[3], hbx, hby, nxt),
+            nxt,
+          ], 4);
+          const tparts = splitAt(toFlat, [hbx, hby]);
+          const toPre = resampleN(tparts[0], 6);
+          const toPost = resampleN(tparts[1], freed.from.length - 1);
+          const dxh = hbx - freed.hb[0], dyh = hby - freed.hb[1];
+          // body lead-in morphs piece-to-piece, riding fully with him
+          for (let i = 1; i <= 6; i++) {
+            const fx = freed.pre[i][0] + dxh;
+            const fy = freed.pre[i][1] + dyh;
+            pts.push([fx + (toPre[i][0] - fx) * e, fy + (toPre[i][1] - fy) * e]);
+          }
+          // the freed strand morphs anchored at the brake hand: it can
+          // only fall from its old route onto its hang line, never
+          // slide across toward the other hand. It rides with the hand
+          // (fully at the top, fading to nothing at the pinned far
+          // end) so it keeps swaying with him instead of freezing
+          const n = freed.from.length - 1;
+          for (let i = 1; i <= n; i++) {
+            const w = 1 - i / n;
+            const fx = freed.from[i][0] + dxh * w;
+            const fy = freed.from[i][1] + dyh * w;
+            pts.push([fx + (toPost[i][0] - fx) * e, fy + (toPost[i][1] - fy) * e]);
+          }
+        } else {
+          pts.push(
+            [S.pelvis.x - 1, S.pelvis.y + 2],
+            [S.handB.x, S.handB.y],
+            [S.b1.x, S.b1.y], [S.b2.x, S.b2.y],
+            [S.b3.x, S.b3.y], [S.b4.x, S.b4.y],
+          );
+          const na = anchors[cleaned];
+          pts.push(na ? [na.x, na.y] : [0, endY]);
+        }
+        for (const p of belowPts) pts.push(p);
+        slackEl.setAttribute('d', ropePath(pts));
+      }
+      // The strand above: from the top anchor through the flex points
+      // down to the rope's end — his side of the device while he rides
+      // it, hanging plumb to the coil once he's let go
+      ropeEl.setAttribute('d', ropePath([
+        [0, 0],
+        [S.r1.x, S.r1.y], [S.r2.x, S.r2.y],
+        [S.r3.x, S.r3.y], [S.r4.x, S.r4.y],
+        [bx, by],
+      ]));
+    }
+
+    const bends = { g: -1, b: 1, l: -1 };
+    // Debug knob: the whole rig — hops, cleaning beats, spring physics —
+    // runs off one scaled clock. 1 = normal speed, 0.25 = quarter speed
+    const SPEED = 1;
+    let vnow = performance.now();
+    let prevReal = vnow;
+    let prevT = vnow;
+
+    function tick(realNow) {
+      vnow += (realNow - prevReal) * SPEED;
+      prevReal = realNow;
+      const now = vnow;
+      const dt = Math.min(0.033, Math.max(0.001, (now - prevT) / 1000));
+      prevT = now;
+      // the campfire burns on the real clock, independent of the rig's
+      // scaled one
+      if (floorFlame) floorFlame(realNow / 1000);
+      let T = null;
+      let airborne = false;
+
+      if (state === 'perch') {
+        // He rappels down to the lowest perch visible in the viewport —
+        // on load that means bouncing down everything on screen, and each
+        // scroll uncovers more wall for him to descend. Never upward:
+        // you can't hop up a rope.
+        const vis = scrollY + innerHeight - mainTop - 80;
+        let wantY = positions[0];
+        for (let i = 0; i < positions.length; i++) {
+          if (positions[i] <= vis) wantY = positions[i];
+        }
+        if (!hop && !cleanPause && wantY - y > 1) {
+          // Rappel bounds: split the remaining distance into equal
+          // bounces of roughly 130px, chaining hop-hop-hop until he's
+          // there; a long way to go quickens the rhythm. The descent
+          // always stops exactly at the next uncleaned ring so he can
+          // pause and pop the strand below him out of it.
+          let target = wantY;
+          const na = anchors[cleaned];
+          if (na && na.y - 4 > y + 1 && na.y - 4 < wantY) target = na.y - 4;
+          const dist = target - y;
+          const step = dist / Math.max(1, Math.round(dist / 130));
+          hop = {
+            t0: now,
+            from: y,
+            to: y + step,
+            dur: (dist > 320 ? 0.85 : 1) * (460 + step * 4.2),
+          };
+        }
+        let sway = 0.022 * Math.sin(now / 850);   // idle: breathing sway
+        let gx = 0;
+        let hopT = null;
+        if (hop) {
+          const t = Math.min(1, (now - hop.t0) / hop.dur);
+          hopT = t;
+          // the grip holds through the anticipation crouch, then slides
+          y = hop.from + (hop.to - hop.from) * easeInOut(clamp01((t - 0.15) / 0.75));
+          // push off: swing out hard on the rope, carrying the rope with
+          // him, then swing back in to plant
+          sway += 0.27 * Math.sin(Math.PI * clamp01((t - 0.12) / 0.78));
+          gx = -13 * bell(t, 0.08, 0.96);
+          if (t >= 1) {
+            y = hop.to;
+            hop = null;
+            for (let i = 0; i < nodes.length; i++) {
+              if (positions[i] <= y + 2) reveal(i);
+            }
+            // landed at the next uncleaned ring: pause and clean it
+            const na = anchors[cleaned];
+            if (na && Math.abs(y - (na.y - 4)) <= 3) {
+              cleanPause = { t0: now, done: false, a: na };
+            }
+            if (Math.abs(y - restY) <= 1 && wantY === restY) {
+              state = 'pause';
+              pauseT0 = now;
+            }
+          }
+        }
+        T = perchPose(y, sway, gx);
+        // cleaning beat: seated at the ring, the guide hand lets go of
+        // the rope above (the strand eases over to hang from the
+        // harness device — the brake hand behind his back never leaves
+        // the rope), reaches out, pops the strand below him out of the
+        // ring at the top of the reach, and comes back to the rope as
+        // the freed stretch swings loose toward plumb
+        reach = 0;
+        if (cleanPause) {
+          const u = (now - cleanPause.t0) / 900;
+          const a = cleanPause.a;
+          reach = bell(clamp01(u), 0.04, 0.96);
+          T.handG = [
+            T.handG[0] + (a.x - 1.5 - T.handG[0]) * reach,
+            T.handG[1] + (a.y - 1 - T.handG[1]) * reach,
+          ];
+          // the reach is a whole-body action: torso and head lean out
+          // toward the ring with the arm, and settle back with it
+          T.chest[0] += 3.5 * reach; T.chest[1] -= 0.6 * reach;
+          T.head[0] += 5 * reach; T.head[1] -= 1.2 * reach;
+          T.pelvis[0] += 1.5 * reach;
+          if (!cleanPause.done && u >= 0.5) {
+            cleanPause.done = true;
+            doClean(now);
+          }
+          if (u >= 1.55) cleanPause = null;
+        }
+        if (hopT !== null && hop) {
+          const t = hopT;
+          // anticipation: sink into the legs before the jump
+          const c = bell(t, 0, 0.16);
+          T.pelvis[0] += 3 * c; T.pelvis[1] += 2 * c;
+          T.head[0] += 1.2 * c; T.head[1] += 0.8 * c;
+          if (t > 0.16 && t < 0.8) {
+            // airborne: legs extended off the wall, gliding down the rope
+            airborne = true;
+            T.f1 = [T.pelvis[0] + 15, T.pelvis[1] + 3];
+            T.f2 = [T.pelvis[0] + 16.5, T.pelvis[1] + 9];
+            T.feetFast = false;
+          }
+          // catch: knees absorb the landing
+          const d = bell(t, 0.8, 1);
+          T.pelvis[0] += 1.2 * d; T.pelvis[1] += 2.2 * d;
+        }
+      } else if (state === 'pause') {
+        T = perchPose(y, 0.02 * Math.sin(now / 850));
+        if (now - pauseT0 > 850) {
+          state = 'fall';
+          fallT0 = now;
+          releaseY = y;
+          // his side of the rope fades as the freed line falls plumb
+          // onto the coil it was already tied into
+          slackEl.style.opacity = 0;
+        }
+      } else if (state === 'fall') {
+        // lets go of the rope and drops the last stretch to the floor
+        const f = Math.min(1, (now - fallT0) / 500);
+        const g = releaseY + (floorY - 54 - releaseY) * f * f;
+        // drift toward the landing spot so he touches down where he
+        // will stand, clear of the cliff base
+        const dx = standX * f;
+        T = hangPose(g);
+        T.pelvis[0] += dx; T.chest[0] += dx; T.head[0] += dx;
+        T.handG = [dx - 3, g + 10];
+        T.handB = [dx + 9, g + 10];
+        T.bendG = -1; T.bendB = -1;
+        T.f1 = [dx + 8, g + 50]; T.f2 = [dx + 4, g + 51];
+        airborne = true;
+        if (f >= 1) {
+          // the springs arrive carrying downward velocity, so the landing
+          // squashes and recovers on its own
+          state = 'stand';
+          standT0 = now;
+        }
+      } else if (state === 'stand') {
+        T = standPose(now);
+      }
+
+      if (T) {
+        // safety net: if the grip somehow ends up well past an
+        // uncleaned ring (resize, huge scroll jump), clean immediately
+        if (state === 'perch' || state === 'pause') {
+          while (anchors[cleaned] && anchors[cleaned].y <= y - 6) doClean(now);
+        }
+        bends.g = T.bendG; bends.b = T.bendB; bends.l = T.bendL;
+        const onRope = state === 'perch' || state === 'pause';
+        const fk = T.feetFast && !airborne ? 1000 : 320;
+        const fd = T.feetFast && !airborne ? 50 : 30;
+        // integrate in fixed substeps so a slow frame is subdivided,
+        // never taken as one big unstable leap
+        const n = Math.min(4, Math.max(1, Math.ceil(dt / 0.0125)));
+        const h = dt / n;
+        for (let i = 0; i < n; i++) {
+          drive(S.pelvis, T.pelvis, 340, 30, h);
+          drive(S.chest, T.chest, 270, 26, h);
+          drive(S.head, T.head, 200, 21, h);
+          drive(S.handG, T.handG, 900, 52, h);
+          drive(S.handB, T.handB, 500, 36, h);
+          drive(S.f1, T.f1, fk, fd, h);
+          drive(S.f2, T.f2, fk * 0.85, fd * 0.9, h);
+          // the strand below the brake hand: loose springs with a bowed
+          // target line down to the next uncleaned ring (or the coil
+          // once everything's cleaned) give it weight and let it swing
+          // out when a ring is cleaned — never passing into the rock
+          if (onRope) {
+            const nxt = anchors[cleaned]
+              ? [anchors[cleaned].x, anchors[cleaned].y] : [0, endY];
+            if (freed) {
+              // the settle morph owns the strand; when it lands, seed
+              // the springs exactly where it landed and hand over —
+              // both shapes are the same hanging line, so the swap is
+              // invisible
+              if (now - freed.t0 >= 900) {
+                freed = null;
+                [S.b1, S.b2, S.b3, S.b4].forEach((s2, i2) =>
+                  put(s2, hangTarget(BFR[i2], S.handB.x, S.handB.y, nxt)));
+              }
+            } else {
+              drive(S.b1, hangTarget(BFR[0], S.handB.x, S.handB.y, nxt), 340, 24, h);
+              drive(S.b2, hangTarget(BFR[1], S.handB.x, S.handB.y, nxt), 150, 12, h);
+              drive(S.b3, hangTarget(BFR[2], S.handB.x, S.handB.y, nxt), 120, 10, h);
+              drive(S.b4, hangTarget(BFR[3], S.handB.x, S.handB.y, nxt), 300, 22, h);
+              [S.b1, S.b2, S.b3, S.b4].forEach((s2) => {
+                const fx = FACE_X + wallOff(s2.y) - 2;
+                if (s2.x > fx) { s2.x = fx; if (s2.vx > 0) s2.vx = 0; }
+              });
+            }
+          }
+          // the strand above flexes toward the straight line from the
+          // top anchor down to the rope's end; the loose middle makes
+          // it bow and whip when he kicks off. While he reaches for a
+          // ring its end eases from his fist to the harness device, so
+          // the whole line above moves with the action
+          const rx = onRope
+            ? S.handG.x + (S.pelvis.x - 1 - S.handG.x) * reach : 0;
+          const ry = onRope
+            ? Math.min(S.handG.y + (S.pelvis.y + 2 - S.handG.y) * reach, endY)
+            : endY;
+          const rt = (f) => {
+            const ty = ry * f;
+            const tx = Math.min(rx * f, FACE_X + wallOff(ty) - 2);
+            return [tx, ty];
+          };
+          drive(S.r1, rt(0.2), 150, 11, h);
+          drive(S.r2, rt(0.45), 110, 9, h);
+          drive(S.r3, rt(0.7), 130, 10, h);
+          drive(S.r4, rt(0.9), 220, 14, h);
+          // Loaded from the top anchor, the strand above is taut under
+          // his weight: it may sag below the anchor-to-end chord, never
+          // arc above it (a lagging flex point would otherwise poke up
+          // like stiff wire), and it can never pass into the rock
+          const rfr = [0.2, 0.45, 0.7, 0.9];
+          [S.r1, S.r2, S.r3, S.r4].forEach((s2, i2) => {
+            const cy = ry * rfr[i2];
+            if (s2.y < cy) { s2.y = cy; if (s2.vy < 0) s2.vy = 0; }
+            const fx = FACE_X + wallOff(s2.y) - 2;
+            if (s2.x > fx) { s2.x = fx; if (s2.vx > 0) s2.vx = 0; }
+          });
+        }
+        render(onRope, now);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Type out the kicker, then cue the drop
+    const label = kicker.textContent.trim();
+    kicker.textContent = '';
+    const typed = document.createElement('span');
+    const caret = document.createElement('span');
+    caret.className = 'caret';
+    kicker.append(typed, caret);
+    let i = 0;
+    (function type() {
+      if (i < label.length) {
+        typed.textContent = label.slice(0, ++i);
+        setTimeout(type, 65 + Math.random() * 55);
+      } else {
+        setTimeout(() => caret.classList.add('done'), 1200);
+        setTimeout(() => {
+          // he enters already in his rappel position, bouncing in from
+          // above the top edge of the page
+          state = 'perch';
+          y = -110;
+          seed(perchPose(y, 0, 0));
+          // taking the rope: the strand below him still lies exactly
+          // along its pre-rigged drape (through the old top-anchor
+          // line), and settles onto his brake hand with the same morph
+          // a cleaned ring uses — so nothing switches at the handover
+          const a0 = anchors.length
+            ? [anchors[0].x, anchors[0].y] : [0, endY];
+          const flat0 = flattenRope(
+            [[S.handG.x, S.handG.y],
+              [S.pelvis.x - 1, S.pelvis.y + 2],
+              [S.handB.x, S.handB.y], [0, 0]]
+              .concat(chainPts([0, 0], a0)), 4);
+          const parts0 = splitAt(flat0, [S.handB.x, S.handB.y]);
+          freed = {
+            t0: vnow,
+            hb: [S.handB.x, S.handB.y],
+            pre: resampleN(parts0[0], 6),
+            from: resample(parts0[1], 3),
+          };
+          man.classList.add('on');
+        }, 450);
+      }
+    })();
+
+    requestAnimationFrame(tick);
+  })();
+  </script>
+</body>
+</html>
