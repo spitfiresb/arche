@@ -67,6 +67,7 @@
     </svg>
 
   </main>
+  <script src="car-art.js"></script>
   <script>
   (function () {
     const main = document.querySelector('main');
@@ -401,6 +402,47 @@
         fel('path', Object.assign(fln(0.9), { d }));
       }
 
+      // the owner's 4Runner, parked on the turf right of the tent (art in
+      // car-art.js): a white body silhouette that occludes the scene behind
+      // it, then the black line detail on top — scaled from its source box
+      // and seated so the tyres meet the ground line.
+      let carPlan = null;
+      function drawCar(x, h, sink) {
+        const s = h / CAR.bh;
+        const g = fel('g', { transform:
+          'translate(' + ff(x - CAR.bx * s) + ' ' +
+          ff(gy + (sink || 0) - CAR.groundY * s) + ') scale(' + s.toFixed(4) + ')' });
+        g.innerHTML =
+          '<g fill="#fff"><g transform="' + CAR.tr + '">' + CAR.sil + '</g></g>' +
+          '<g fill="#000" stroke="#000" stroke-width="0.45"><g transform="' +
+          CAR.tr + '">' + CAR.line + '</g></g>';
+        // settle the tyres into the dirt: for each wheel, mask the buried
+        // bottom behind the ground and heap a little displaced soil at the
+        // contact — drawn over the car so the dirt reads in FRONT of the
+        // sunk wheel (grass, drawn later, still fronts it all)
+        if (sink) {
+          const tw = 14;                          // tyre half-width, scene px
+          [412, 1113].forEach(function (wx) {     // wheel centres in art space
+            const c = x + (wx - CAR.bx) * s;
+            // mask the buried tyre bottom behind the dirt
+            fel('path', { fill: '#fff', stroke: 'none', d:
+              FM(c - tw - 2, gy + 0.5) + FL(c + tw + 2, gy + 0.5) +
+              FL(c + tw + 2, gy + sink + 5) + FL(c - tw - 2, gy + sink + 5) + 'Z' });
+            // re-lay the lower dirt edge across the masked patch, reusing the
+            // ground's own formula so it rejoins the line seamlessly
+            let d2 = '';
+            for (let px = Math.floor((c - tw - 8) / 12) * 12; px <= c + tw + 8; px += 12)
+              d2 += (d2 ? 'L' : 'M') + ff(px) + ' ' +
+                ff(gy + (fn(px) - 0.5) * 2.5 + 5.5 + fn(px / 12) * 2.5);
+            fel('path', Object.assign(fln(0.8), { d: d2 }));
+            // heaped soil at the contact
+            fel('path', Object.assign(fln(1.6), { d:
+              FM(c - tw - 8, gy) + FQ(c - tw - 1, gy - 3.5, c - tw + 1, gy + 0.5) +
+              FM(c + tw - 1, gy + 0.5) + FQ(c + tw + 1, gy - 3.5, c + tw + 8, gy) }));
+          });
+        }
+      }
+
       /* ---- layout: skip anything the current width can't hold ---- */
       // left of the cliff, anchored off the viewport's left edge
       if (cliffX - 27 > 90) pine(48, 150, 142);
@@ -431,8 +473,14 @@
       // where the campfire sits in the rig's rope-relative space, so he
       // knows where to walk once he's off the rope
       campX = fireX === null ? null : fireX - cliffX;
-      if (campFit(cliffX + 366)) { tent(cliffX + 310, 112); busyR = cliffX + 366; tentOn = true; }
+      if (campFit(cliffX + 366)) { tent(cliffX + 310, 78); busyR = cliffX + 349; tentOn = true; }
       if (campFit(cliffX + 382)) { flower(cliffX + 377, 148); busyR = cliffX + 382; }
+      // park the 4Runner just past the tent and reserve its footprint, so
+      // the treeline fills in only beyond it
+      if (tentOn && typeof CAR !== 'undefined') {
+        const ch = 84, cw = ch * CAR.bw / CAR.bh, cx = cliffX + 450;
+        if (cx + cw < fw - 12) { carPlan = { x: cx, h: ch, sink: 4 }; busyR = cx + cw; }
+      }
       // treeline growing in from the right edge
       if (fw - 221 > busyR + 15) bush(fw - 202, 38, 159);
       if (fw - 202 > busyR + 15) pine(fw - 175, 95, 149);
@@ -445,6 +493,9 @@
         bird(cliffX + 105, gy - 147, 0.8);
       }
       if (fw - 157 > busyR + 15) bird(fw - 110, gy - 161, 1);
+      // drawn last of the scenery so it sits in front of the treeline;
+      // the turf below then fronts its tyres
+      if (carPlan) drawCar(carPlan.x, carPlan.h, carPlan.sink);
       // turf across the full width, with a cleared patch around the fire
       if (fireX !== null) {
         turf(0, fireX - 38, 154);
@@ -1068,7 +1119,7 @@
     // crisply, the head is loose and lags, the rope tail is looser still
     const S = {
       pelvis: sp(), chest: sp(), head: sp(),
-      handG: sp(), handB: sp(), f1: sp(), f2: sp(),
+      handG: sp(), handB: sp(), elbowG: sp(), elbowB: sp(), f1: sp(), f2: sp(),
       // points along the strand below the brake hand — it hangs down
       // to the next ring and swings loose whenever a ring is cleaned
       b1: sp(), b2: sp(), b3: sp(), b4: sp(),
@@ -1207,10 +1258,13 @@
         ' Q' + f1(tcx) + ' ' + f1(tcy) + ' ' + f1(S.pelvis.x) + ' ' + f1(S.pelvis.y));
       headEl.setAttribute('cx', f1(S.head.x));
       headEl.setAttribute('cy', f1(S.head.y));
-      armGEl.setAttribute('d', limbPath(shoulder,
-        ik(shoulder, [S.handG.x, S.handG.y], ARM1, ARM2, bends.g), [S.handG.x, S.handG.y]));
-      armBEl.setAttribute('d', limbPath(shoulder,
-        ik(shoulder, [S.handB.x, S.handB.y], ARM1, ARM2, bends.b), [S.handB.x, S.handB.y]));
+      // arms: a driven elbow during the walk (whole arm swings), else IK
+      armGEl.setAttribute('d', armFK.g
+        ? limbPath(shoulder, [S.elbowG.x, S.elbowG.y], [S.handG.x, S.handG.y])
+        : limbPath(shoulder, ik(shoulder, [S.handG.x, S.handG.y], ARM1, ARM2, bends.g), [S.handG.x, S.handG.y]));
+      armBEl.setAttribute('d', armFK.b
+        ? limbPath(shoulder, [S.elbowB.x, S.elbowB.y], [S.handB.x, S.handB.y])
+        : limbPath(shoulder, ik(shoulder, [S.handB.x, S.handB.y], ARM1, ARM2, bends.b), [S.handB.x, S.handB.y]));
       legFEl.setAttribute('d', limbPath(S.pelvis,
         ik(S.pelvis, [S.f1.x, S.f1.y], LEG1, LEG2, bends.l), [S.f1.x, S.f1.y]));
       legBEl.setAttribute('d', limbPath(S.pelvis,
@@ -1223,16 +1277,17 @@
       // fist, always aimed at the base of the flames
       if (stickTaken) {
         // aim point in rig space (floor-relative fire x plus the 30px
-        // offset between the two coordinate systems): over the bowl's
-        // rim, into the base of the flames themselves
-        const tx = (campX !== null ? campX + 30 : stumpX + 90) - 4;
-        const ty = floorY - 21;
+        // offset between the two coordinate systems): near the bowl's
+        // centre, at the base of the flames where they meet the coals
+        const tx = (campX !== null ? campX + 30 : stumpX + 90) - 2;
+        const ty = floorY - 17;
         let sdx = tx - S.handG.x, sdy = ty - S.handG.y;
         const sdl = Math.hypot(sdx, sdy) || 1;
         sdx /= sdl; sdy /= sdl;
-        // gripped at its butt end: just a short nub behind the fist,
-        // the length of it out in front toward the fire
-        stickTip = [S.handG.x + sdx * 31, S.handG.y + sdy * 31];
+        // gripped at its butt end: just a short nub behind the fist, the
+        // length of it out in front — long enough to reach the flames
+        // rising from the bowl's centre rather than falling short at the rim
+        stickTip = [S.handG.x + sdx * 40, S.handG.y + sdy * 40];
         stickEl.setAttribute('d',
           'M' + f1(S.handG.x - sdx * 2.5) + ' ' + f1(S.handG.y - sdy * 2.5) +
           ' L' + f1(stickTip[0]) + ' ' + f1(stickTip[1]));
@@ -1384,6 +1439,14 @@
     }
 
     const bends = { g: -1, b: 1, l: -1 };
+    // During the walk each arm swings as a driven double pendulum — the whole
+    // upper arm rotates about the shoulder and the elbow flexes on top of it,
+    // instead of a hand target with IK guessing (and freezing) the elbow. When
+    // armFK.g/.b is set, render draws through the sprung elbow rather than the
+    // IK solve; the *Prev flags let the elbow spring seed cleanly the first
+    // frame FK takes over so it doesn't snap in from the origin.
+    const armFK = { g: false, b: false };
+    let armFKgPrev = false, armFKbPrev = false;
     // Debug knob: the whole rig — hops, cleaning beats, spring physics —
     // runs off one scaled clock. 1 = normal speed, 0.25 = quarter speed
     const SPEED = 1;
@@ -1645,23 +1708,43 @@
           pelvis: [x, fy - 23.0 - 2.4 * rise + dip],
           chest: [x + 1.6 + 0.5 * s, fy - 36.0 - 2.1 * rise + dip * 0.7],
           head: [x + 2.7, fy - 45.0 - 1.9 * rise + dip * 0.5],
-          handG: [x + 2.5 + 6.5 * s, fy - 20.5 - 2 * rise],
-          handB: [x + 2.5 - 6.5 * s, fy - 20.5 - 2 * rise],
           f1: f1t, f2: f2t,
-          // elbows trail the swing: the apex points back, so the
-          // forearm folds the way an arm actually can
           bendG: -1, bendB: -1, bendL: 1,
           feetFast: true,
+          armFKg: true, armFKb: true,   // whole-arm swing, not IK-to-hand
         };
-        // over the first strides the guide hand is still trailing on
-        // the rope behind him, easing off it — release blends into
-        // the walk instead of being its own pause
+        // The N arm rig picked in walk-options: the whole arm swings from the
+        // shoulder. `a` is the arm-forward metric (+1 throws the arm forward,
+        // -1 back); the guide arm runs on +s and the far arm on -s, so each
+        // swings opposite its own leg. thU rotates the upper arm about the
+        // shoulder; the elbow flexes more up front (a>0) and straightens
+        // toward the back — so both segments move together instead of a stiff
+        // shoulder with only the forearm folding.
+        const shX = T.chest[0] + (T.head[0] - T.chest[0]) * 0.25;
+        const shY = T.chest[1] + (T.head[1] - T.chest[1]) * 0.25;
+        const D2R = Math.PI / 180;
+        const swingArm = (a) => {
+          const thU = (4 + 22 * a) * D2R;                    // upper-arm angle, +x = forward
+          const flex = (14 + 34 * Math.max(0, a)) * D2R;     // elbow: 14° at back, folds up front
+          const ex = shX + ARM1 * Math.sin(thU), ey = shY + ARM1 * Math.cos(thU);
+          const thF = thU + flex;
+          return { elbow: [ex, ey], hand: [ex + ARM2 * Math.sin(thF), ey + ARM2 * Math.cos(thF)] };
+        };
+        const gArm = swingArm(s), bArm = swingArm(-s);
+        T.handG = gArm.hand; T.elbowG = gArm.elbow;
+        T.handB = bArm.hand; T.elbowB = bArm.elbow;
+        // over the first strides the guide hand is still trailing on the rope
+        // behind him, easing off it — release blends into the walk instead of
+        // being its own pause. While it reaches off the rope the guide arm
+        // reads better as IK to the hand, so FK only takes over once the
+        // swing is free (rel === 1).
         const rel = easeInOut(clamp01((now - walkT0) / 420));
         if (rel < 1) {
           T.handG = [
             T.handG[0] * rel,
             (fy - 50) + (T.handG[1] - (fy - 50)) * rel,
           ];
+          T.armFKg = false;
         }
         // a few strides in he wipes his brow with the free hand and
         // flicks the sweat away
@@ -1684,6 +1767,12 @@
           T.handG = [T.handG[0] + (wx - T.handG[0]) * b,
                      T.handG[1] + (wy - T.handG[1]) * b];
           T.head[1] += 0.9 * b;   // he ducks into the wipe a touch
+          // the guide elbow leaves the swing and folds up to the brow with
+          // the hand: blend its target toward the IK solve for the wiping
+          // hand by the same amount, so the forearm reads as a real wipe
+          const wipeElb = ik({ x: shX, y: shY }, T.handG, ARM1, ARM2, -1);
+          T.elbowG = [T.elbowG[0] + (wipeElb[0] - T.elbowG[0]) * b,
+                      T.elbowG[1] + (wipeElb[1] - T.elbowG[1]) * b];
           if (!sweatMid && wp > 0.4) {
             sweatMid = true;
             spawnSweat(S.handG.x, S.handG.y, 2);
@@ -1739,23 +1828,28 @@
       } else if (state === 'sit') {
         // camp idle, forever: mostly just sitting and breathing; every
         // little while — at random — he leans in and gives the fire a
-        // jab (sometimes two), knocking a few embers loose
+        // double jab (two quick pokes), each knocking a burst of embers
+        // loose off the coals
         let pk = 0;
         if (!poke && now >= pokeAt) {
-          poke = { t0: now, jabs: Math.random() < 0.4 ? 2 : 1, spawned: false };
+          poke = { t0: now, spawned: [false, false] };
         }
         if (poke) {
-          const u = (now - poke.t0) / (poke.jabs > 1 ? 2100 : 1300);
-          pk = poke.jabs > 1
-            ? bell(u, 0.05, 0.55) + 0.85 * bell(u, 0.5, 0.95)
-            : bell(u, 0.06, 0.94);
-          if (!poke.spawned && u > 0.35) {
-            poke.spawned = true;
+          // two overlapping bells: poke, half-retract, poke again
+          const u = (now - poke.t0) / 2100;
+          pk = bell(u, 0.05, 0.55) + 0.9 * bell(u, 0.5, 0.95);
+          // spark burst as each jab drives into the coals (near its peak)
+          if (!poke.spawned[0] && u > 0.30) {
+            poke.spawned[0] = true;
+            spawnEmbers(stickTip[0], stickTip[1]);
+          }
+          if (!poke.spawned[1] && u > 0.72) {
+            poke.spawned[1] = true;
             spawnEmbers(stickTip[0], stickTip[1]);
           }
           if (u >= 1) {
             poke = null;
-            // next jab comes soon — a random 2, 3 or 4 second wait
+            // next double jab comes soon — a random 2, 3 or 4 second wait
             pokeAt = now + (2 + Math.floor(Math.random() * 3)) * 1000;
           }
         }
@@ -1771,6 +1865,7 @@
           while (anchors[cleaned] && anchors[cleaned].y <= y - 6) doClean(now);
         }
         bends.g = T.bendG; bends.b = T.bendB; bends.l = T.bendL;
+        armFK.g = !!T.armFKg; armFK.b = !!T.armFKb;
         // he's on the rope right through the bounces and the touchdown —
         // the grip only opens in the release beat
         const onRope = state === 'perch' || state === 'touch';
@@ -1786,6 +1881,11 @@
           drive(S.head, T.head, 200, 21, h);
           drive(S.handG, T.handG, 900, 52, h);
           drive(S.handB, T.handB, 500, 36, h);
+          // the swinging elbows track a touch softer than the hands so the
+          // forearm trails through the turns; seed (put) on the first FK
+          // frame so the upper arm doesn't snap in from the origin
+          if (armFK.g) { armFKgPrev ? drive(S.elbowG, T.elbowG, 600, 40, h) : put(S.elbowG, T.elbowG); }
+          if (armFK.b) { armFKbPrev ? drive(S.elbowB, T.elbowB, 600, 40, h) : put(S.elbowB, T.elbowB); }
           drive(S.f1, T.f1, fk, fd, h);
           drive(S.f2, T.f2, fk * 0.85, fd * 0.9, h);
           // the strand below the brake hand: loose springs with a bowed
@@ -1847,6 +1947,7 @@
             if (s2.x > fx) { s2.x = fx; if (s2.vx > 0) s2.vx = 0; }
           });
         }
+        armFKgPrev = armFK.g; armFKbPrev = armFK.b;
         render(onRope, now);
       }
       requestAnimationFrame(tick);
