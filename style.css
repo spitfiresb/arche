@@ -8,16 +8,11 @@ body {
   color: #000;
 }
 
-/* Home: block anchored at a fixed height (looks centered, but content
-   can expand downward without shifting what's above) */
+/* Home: block centered both horizontally and vertically */
 body.home {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-}
-
-body.home main {
-  margin-top: 32vh;
 }
 
 body.home a {
