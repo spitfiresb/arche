@@ -92,6 +92,10 @@
     floorSvg.setAttribute('aria-hidden', 'true');
     main.appendChild(floorSvg);
     let floorFlame = null;
+    let floorStick = null;  // his fire-poking stick, lying by the stump
+    let stickTaken = false; // once he picks it up it leaves the floor
+    let campX = null;       // campfire x in rope-relative coords
+    let stumpX = null;      // stump x in rope-relative coords
     function buildFloor() {
       const ff = (v) => v.toFixed(1);
       const FM = (a, b) => 'M' + ff(a) + ' ' + ff(b);
@@ -111,6 +115,7 @@
       }
       floorSvg.textContent = '';
       floorFlame = null;
+      floorStick = null;
       const mrect = main.getBoundingClientRect();
       const fw = document.documentElement.clientWidth;
       const gy = 172;                       // ground line y inside this svg
@@ -409,14 +414,25 @@
       let busyR = cliffX + 34;
       let fireX = null, tentOn = false;
       const campFit = (r) => r < fw - 232;
-      if (campFit(cliffX + 142)) { stump(cliffX + 133, 16); busyR = cliffX + 142; }
-      if (campFit(cliffX + 165)) { flower(cliffX + 160, 147); busyR = cliffX + 165; }
-      if (campFit(cliffX + 306)) { fire(cliffX + 278); busyR = cliffX + 306; fireX = cliffX + 278; }
+      stumpX = null;
+      if (campFit(cliffX + 143)) {
+        stump(cliffX + 133, 18);
+        busyR = cliffX + 143;
+        stumpX = 133;
+        // his fire-poking stick, lying in front of the stump until he
+        // sits down and picks it up
+        if (!stickTaken) {
+          floorStick = fel('path', Object.assign(fln(1.6), {
+            d: FM(cliffX + 139, gy - 0.4) +
+               FQ(cliffX + 156, gy - 1.1, cliffX + 173, gy - 0.4) }));
+        }
+      }
+      if (campFit(cliffX + 224)) { fire(cliffX + 196); busyR = cliffX + 224; fireX = cliffX + 196; }
       // where the campfire sits in the rig's rope-relative space, so he
       // knows where to walk once he's off the rope
       campX = fireX === null ? null : fireX - cliffX;
-      if (campFit(cliffX + 436)) { tent(cliffX + 380, 112); busyR = cliffX + 436; tentOn = true; }
-      if (campFit(cliffX + 447)) { flower(cliffX + 442, 148); busyR = cliffX + 447; }
+      if (campFit(cliffX + 366)) { tent(cliffX + 310, 112); busyR = cliffX + 366; tentOn = true; }
+      if (campFit(cliffX + 382)) { flower(cliffX + 377, 148); busyR = cliffX + 382; }
       // treeline growing in from the right edge
       if (fw - 221 > busyR + 15) bush(fw - 202, 38, 159);
       if (fw - 202 > busyR + 15) pine(fw - 175, 95, 149);
@@ -498,6 +514,7 @@
     const armBEl = shape('path', line(1.9));
     const torsoEl = shape('path', line(2.4));
     const legFEl = shape('path', line(2.2));
+    const stickEl = shape('path', line(1.7));
     const headEl = shape('circle', { r: 4.2, fill: '#000' });
     const armGEl = shape('path', line(2.2));
     const handGEl = shape('circle', { r: 1.6, fill: '#000' });
@@ -673,7 +690,6 @@
 
     let ropeX, startY, endY, restY, floorY, tailY, nodes, positions, mainTop;
     let standX = 0;
-    let campX = null;   // campfire x in rope-relative coords (buildFloor)
     let idleX = null;   // where he settled after the walk; null = standX
 
     // Anchor bolts: every second timeline dot, a ring on the face line.
@@ -911,10 +927,9 @@
       // The rope's true end: it runs live all the way down and
       // disappears into the turf — no static tail takes over
       tailY = floorY;
-      // His last stop sits low on the rope, close to the ground, so the
-      // final let-go is a short drop rather than a plunge; the strand
-      // below his brake hand still runs down into the turf, never up
-      restY = endY + 40;
+      // The bounce run-out ends where a landing puts his feet straight
+      // onto the turf: a grip at this height means feet on the ground
+      restY = floorY - 57;
       // The perches he rappels between: each timeline node, then the
       // last stop above the coil
       positions = nodes.map((n) => n.y).concat([restY]);
@@ -1097,22 +1112,8 @@
       };
     }
 
-    // Hanging straight down the rope, hand over hand, legs dangling
-    function hangPose(gy) {
-      return {
-        pelvis: [-3, gy + 30], chest: [-2, gy + 16], head: [-2.5, gy + 8],
-        handG: [0, gy], handB: [-0.5, gy + 6.5],
-        f1: [0, gy + 55], f2: [-3, gy + 56],
-        bendG: 1, bendB: 1, bendL: 1,
-        feetFast: false,
-      };
-    }
-
-    // At rest on the ground, just breathing. Stands at idleX if the
-    // walk set one (by the campfire), else at standX — the spot clear
-    // of the cliff base picked in measure
-    function standPose(now) {
-      const sx = idleX !== null ? idleX : standX;
+    // At rest on the ground, just breathing, at an arbitrary spot
+    function standPoseAt(sx, now) {
       const fy = floorY - 1;
       const br = Math.sin(now / 620);
       return {
@@ -1122,19 +1123,52 @@
         handG: [sx + 5.5, fy - 19 + br * 0.6],
         handB: [sx + 17.5, fy - 19 + br * 0.6],
         f1: [sx + 7.5, fy], f2: [sx + 15, fy],
-        bendG: 1, bendB: -1, bendL: 1,
+        bendG: -1, bendB: -1, bendL: 1,
+        feetFast: true,
+      };
+    }
+
+    // Stands at idleX if the walk set one, else at standX — the spot
+    // clear of the cliff base picked in measure
+    function standPose(now) {
+      return standPoseAt(idleX !== null ? idleX : standX, now);
+    }
+
+    // Seated on the stump facing the fire, feet out front. pk (0..1)
+    // is the poke: the stick hand drives forward into the coals and
+    // the torso leans in with it
+    function sitPose(now, pk) {
+      // stumpX is floor-relative; the rig's x=0 sits 30px left of the
+      // floor's, so +30 puts him truly on the stump
+      const sx = stumpX + 30;
+      const fy = floorY - 1;
+      const br = Math.sin(now / 620);
+      return {
+        pelvis: [sx - 1, fy - 12.5],
+        chest: [sx + 1.5 + 2.2 * pk, fy - 25 + br * 0.7 + 1.2 * pk],
+        head: [sx + 3.5 + 3.2 * pk, fy - 33.5 + br + 1.6 * pk],
+        handG: [sx + 15 + 6 * pk, fy - 17.5 + 2.6 * pk],
+        handB: [sx + 9, fy - 11],
+        f1: [sx + 15, fy], f2: [sx + 10.5, fy],
+        bendG: -1, bendB: -1, bendL: 1,
         feetFast: true,
       };
     }
 
     // states: wait -> perch (hopping between nodes, cleaning each ring
-    //   he passes) -> pause -> fall (lowering the last stretch on the
-    //   rope) -> touch (feet down, standing up, hand still on) ->
-    //   walk (letting go mid-stride, over to the camp) -> stand
+    //   he passes; the run-out bounces shrink and quicken until one
+    //   lands him on the turf) -> touch (feet down, standing up, hand
+    //   still on the rope) -> walk (letting go mid-stride, wiping his
+    //   brow on the way over) -> sitdown -> grab (picking his stick up
+    //   off the ground) -> sit (poking the fire, forever) -> stand
+    //   (fallback idle when the camp didn't fit the viewport)
     let state = 'wait';
     let y = -110;          // grip point on the rope, document y
-    let pauseT0 = 0, fallT0 = 0, standT0 = 0, releaseY = 0;
+    let fallT0 = 0, standT0 = 0;
     let touchT0 = 0, walkT0 = 0, walkFrom = 0, walkTo = 0;
+    let sitT0 = 0, grabT0 = 0;
+    let poke = null, pokeAt = 0;   // current poke beat, next poke time
+    let sweatMid = false, sweatFlick = false;
     let hop = null;        // in-flight hop tween
     let cleanPause = null; // paused at a ring, unclipping the strand below
 
@@ -1185,6 +1219,26 @@
       handGEl.setAttribute('cy', f1(S.handG.y));
       handBEl.setAttribute('cx', f1(S.handB.x));
       handBEl.setAttribute('cy', f1(S.handB.y));
+      // the fire stick, once he's picked it up: held in the guide
+      // fist, always aimed at the base of the flames
+      if (stickTaken) {
+        // aim point in rig space (floor-relative fire x plus the 30px
+        // offset between the two coordinate systems): over the bowl's
+        // rim, into the base of the flames themselves
+        const tx = (campX !== null ? campX + 30 : stumpX + 90) - 4;
+        const ty = floorY - 21;
+        let sdx = tx - S.handG.x, sdy = ty - S.handG.y;
+        const sdl = Math.hypot(sdx, sdy) || 1;
+        sdx /= sdl; sdy /= sdl;
+        // gripped at its butt end: just a short nub behind the fist,
+        // the length of it out in front toward the fire
+        stickTip = [S.handG.x + sdx * 31, S.handG.y + sdy * 31];
+        stickEl.setAttribute('d',
+          'M' + f1(S.handG.x - sdx * 2.5) + ' ' + f1(S.handG.y - sdy * 2.5) +
+          ' L' + f1(stickTip[0]) + ' ' + f1(stickTip[1]));
+      } else {
+        stickEl.setAttribute('d', '');
+      }
       // The strand above ends in his fist normally; while he reaches
       // for a ring the fist leaves the rope, so it eases over to end
       // at the harness device instead — the line always moves with him
@@ -1289,6 +1343,46 @@
       ]));
     }
 
+    // Sweat: short-lived droplets flicked off during the brow wipe —
+    // simple ballistic points drawn in the figure's own svg
+    const drops = [];
+    function spawnSweat(hx, hy, n) {
+      for (let i = 0; i < n; i++) {
+        const el = shape('circle', {
+          r: (0.8 + noise(drops.length * 7 + i + 61) * 0.5).toFixed(2),
+          fill: '#000',
+        });
+        drops.push({
+          el, t: 0,
+          x: hx + noise(i + 71) * 3 - 1,
+          y: hy - 1 - noise(i + 81) * 2,
+          vx: 20 + noise(i + 91) * 55,
+          vy: -30 - noise(i + 101) * 40,
+        });
+      }
+    }
+
+    // Embers knocked loose when he pokes the fire: a few slow motes
+    // that flutter upward like paper in the wind before fading
+    const embers = [];
+    let stickTip = [0, 0];   // where the stick ends, kept by render
+    function spawnEmbers(x, y) {
+      const n = 2 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < n; i++) {
+        const el = shape('circle', {
+          r: (0.7 + Math.random() * 0.5).toFixed(2), fill: '#000',
+        });
+        embers.push({
+          el, t: 0,
+          x: x + Math.random() * 6 - 3,
+          y: y - Math.random() * 4,
+          ph: Math.random() * 6.28,
+          dx: (Math.random() - 0.5) * 6,
+          life: 2.6 + Math.random() * 1.4,
+        });
+      }
+    }
+
     const bends = { g: -1, b: 1, l: -1 };
     // Debug knob: the whole rig — hops, cleaning beats, spring physics —
     // runs off one scaled clock. 1 = normal speed, 0.25 = quarter speed
@@ -1306,6 +1400,35 @@
       // the campfire burns on the real clock, independent of the rig's
       // scaled one
       if (floorFlame) floorFlame(realNow / 1000);
+      // sweat droplets fly ballistic and fade out
+      for (let i = drops.length - 1; i >= 0; i--) {
+        const d = drops[i];
+        d.t += dt;
+        d.vy += 380 * dt;
+        d.x += d.vx * dt;
+        d.y += d.vy * dt;
+        d.el.setAttribute('cx', f1(d.x));
+        d.el.setAttribute('cy', f1(d.y));
+        d.el.setAttribute('opacity', Math.max(0, 1 - d.t / 0.75).toFixed(2));
+        if (d.t > 0.75) {
+          d.el.remove();
+          drops.splice(i, 1);
+        }
+      }
+      // embers drift up slowly, swaying side to side as they go
+      for (let i = embers.length - 1; i >= 0; i--) {
+        const em = embers[i];
+        em.t += dt;
+        em.x += (Math.sin(em.t * 2.1 + em.ph) * 9 + em.dx) * dt;
+        em.y += (-13 + Math.sin(em.t * 1.6 + em.ph * 2) * 5) * dt;
+        em.el.setAttribute('cx', f1(em.x));
+        em.el.setAttribute('cy', f1(em.y));
+        em.el.setAttribute('opacity', Math.max(0, 1 - em.t / em.life).toFixed(2));
+        if (em.t > em.life) {
+          em.el.remove();
+          embers.splice(i, 1);
+        }
+      }
       let T = null;
       let airborne = false;
 
@@ -1333,10 +1456,12 @@
           const na = anchors[cleaned];
           if (na && na.y - 4 > y + 1 && na.y - 4 < wantY) target = na.y - 4;
           const dist = target - y;
-          // the last stretch down to the rest stop bounces shorter, so
-          // it gets an extra hop and the arrival reads as its own beat
-          const step = dist /
-            Math.max(1, Math.round(dist / (target === restY ? 88 : 130)));
+          // the run-out to the ground: each bounce covers about half of
+          // what's left, so the hops shrink and quicken until the last
+          // one simply sets him down on the turf
+          const step = target === restY
+            ? (dist <= 46 ? dist : Math.max(36, dist * 0.5))
+            : dist / Math.max(1, Math.round(dist / 130));
           hop = {
             t0: now,
             from: y,
@@ -1368,8 +1493,10 @@
               cleanPause = { t0: now, done: false, a: na };
             }
             if (Math.abs(y - restY) <= 1 && wantY === restY) {
-              state = 'pause';
-              pauseT0 = now;
+              // the last bounce set him down: straight into the
+              // touchdown crouch, grip still on the rope
+              state = 'touch';
+              touchT0 = now;
             }
           }
         }
@@ -1406,36 +1533,28 @@
           const c = bell(t, 0, 0.16);
           T.pelvis[0] += 3 * c; T.pelvis[1] += 2 * c;
           T.head[0] += 1.2 * c; T.head[1] += 0.8 * c;
-          if (t > 0.16 && t < 0.8) {
+          const finalHop = hop.to >= restY - 1;
+          if (t > 0.16 && (t < 0.8 || finalHop)) {
             // airborne: legs extended off the wall, gliding down the rope
             airborne = true;
-            T.f1 = [T.pelvis[0] + 15, T.pelvis[1] + 3];
-            T.f2 = [T.pelvis[0] + 16.5, T.pelvis[1] + 9];
+            if (finalHop && t > 0.55) {
+              // the ground is coming up: the legs swing forward under
+              // him to meet the turf instead of reaching for the wall
+              const q = easeInOut(clamp01((t - 0.55) / 0.45));
+              T.f1 = [T.pelvis[0] + 13 - 15 * q,
+                T.pelvis[1] + 3 + (floorY - 1 - T.pelvis[1] - 3) * q];
+              T.f2 = [T.pelvis[0] + 15 - 4 * q,
+                T.pelvis[1] + 9 + (floorY - 1 - T.pelvis[1] - 9) * q];
+            } else {
+              T.f1 = [T.pelvis[0] + 15, T.pelvis[1] + 3];
+              T.f2 = [T.pelvis[0] + 16.5, T.pelvis[1] + 9];
+            }
             T.feetFast = false;
           }
-          // catch: knees absorb the landing
-          const d = bell(t, 0.8, 1);
+          // catch: knees absorb the landing (the final hop hands that
+          // job to the touchdown crouch instead)
+          const d = finalHop ? 0 : bell(t, 0.8, 1);
           T.pelvis[0] += 1.2 * d; T.pelvis[1] += 2.2 * d;
-        }
-      } else if (state === 'pause') {
-        T = perchPose(y, 0.02 * Math.sin(now / 850));
-        if (now - pauseT0 > 280) {
-          state = 'fall';
-          fallT0 = now;
-          releaseY = y;
-        }
-      } else if (state === 'fall') {
-        // the last stretch is lowered, not dropped: he swings off the
-        // wall into a straight hang and rides the rope down, grip never
-        // leaving it, until his feet reach for the turf
-        const gEnd = floorY - 57;   // grip height that puts feet on the ground
-        const dur = 500 + (gEnd - releaseY) * 3.2;
-        const f = Math.min(1, (now - fallT0) / dur);
-        const g = releaseY + (gEnd - releaseY) * easeInOut(f);
-        T = hangPose(g);
-        if (f >= 1) {
-          state = 'touch';
-          touchT0 = now;
         }
       } else if (state === 'touch') {
         // feet down: knees soak up the arrival, and he rises out of
@@ -1463,11 +1582,14 @@
           // over the first steps, so there's no standing beat here
           releaseMorph = lastSlackPts;
           fallT0 = now;
-          if (campX !== null) {
+          if (stumpX !== null || campX !== null) {
             state = 'walk';
             walkT0 = now;
             walkFrom = 5;
-            walkTo = campX - 46;   // pull up short of the fire bowl
+            sweatMid = sweatFlick = false;
+            // to the stump when there is one, else short of the fire
+            // (+30 converts floor-relative x into the rig's space)
+            walkTo = stumpX !== null ? stumpX + 32 : campX - 46;
           } else {
             state = 'stand';
             standT0 = now;
@@ -1475,7 +1597,7 @@
           }
         }
       } else if (state === 'walk') {
-        // walks over to the campfire with planted feet: the stance
+        // walks over to the camp with planted feet: the stance
         // foot stays put while the other swings past it in an arc, the
         // body rides up over the planted leg and dips at each contact,
         // arms swinging opposite the legs
@@ -1489,34 +1611,46 @@
         // swing and the rise-and-fall in a single phase
         const s = Math.sin(Math.PI * (k + u));
         const rise = Math.abs(s);
+        // a little knee-give right at each contact, so the steps land
+        // soft instead of stiff-legged
+        const dip = bell(u, 0, 0.24) * 1.3;
         // feet: plant bases sit exactly one step length apart, so every
         // contact lands the same symmetric scissor (front +SL/2, back
         // -SL/2) — uneven bases make alternating long and stunted
-        // strides. Each step the rear foot arcs 2*SL past the planted one
+        // strides. Each step the rear foot arcs 2*SL past the planted
+        // one; the swing runs a touch quicker than the step beat so
+        // each stride ends with a brief settled plant instead of the
+        // foot dropping at the last instant
         const b1 = walkFrom - SL / 2, b2 = walkFrom + SL / 2;
         const stepTo = (b, m) => b + m * 2 * SL;
-        const arc = easeInOut(u);
+        const su = clamp01(u * 1.15);
+        const arc = easeInOut(su);
+        const lift = 5.5 * Math.sin(Math.PI * su);
         let f1t, f2t;
         if (k % 2 === 0) {
-          f1t = [stepTo(b1, k / 2) + 2 * SL * arc, fy - 4.5 * Math.sin(Math.PI * u)];
+          f1t = [stepTo(b1, k / 2) + 2 * SL * arc, fy - lift];
           f2t = [stepTo(b2, k / 2), fy];
         } else {
           f1t = [stepTo(b1, (k + 1) / 2), fy];
-          f2t = [stepTo(b2, (k - 1) / 2) + 2 * SL * arc, fy - 4.5 * Math.sin(Math.PI * u)];
+          f2t = [stepTo(b2, (k - 1) / 2) + 2 * SL * arc, fy - lift];
         }
         // torso stacked and upright, back straight. The pelvis height
         // is tied to the leg geometry: it vaults high over the planted
         // leg mid-step (stance leg straight) and dips at each contact,
         // keeping both scissored legs inside their reach — a target
         // past full extension draws as a stretched shank, never again
+        // a slight forward lean through chest and head, hands carried
+        // a touch higher so the elbows stay softly bent
         T = {
-          pelvis: [x, fy - 23.0 - 2.6 * rise],
-          chest: [x + 0.7 + 0.5 * s, fy - 36.0 - 2.3 * rise],
-          head: [x + 1.3, fy - 45.0 - 2.1 * rise],
-          handG: [x + 2 + 7 * s, fy - 18 - 2.2 * rise],
-          handB: [x + 2 - 7 * s, fy - 18 - 2.2 * rise],
+          pelvis: [x, fy - 23.0 - 2.4 * rise + dip],
+          chest: [x + 1.6 + 0.5 * s, fy - 36.0 - 2.1 * rise + dip * 0.7],
+          head: [x + 2.7, fy - 45.0 - 1.9 * rise + dip * 0.5],
+          handG: [x + 2.5 + 6.5 * s, fy - 20.5 - 2 * rise],
+          handB: [x + 2.5 - 6.5 * s, fy - 20.5 - 2 * rise],
           f1: f1t, f2: f2t,
-          bendG: 1, bendB: 1, bendL: 1,
+          // elbows trail the swing: the apex points back, so the
+          // forearm folds the way an arm actually can
+          bendG: -1, bendB: -1, bendL: 1,
           feetFast: true,
         };
         // over the first strides the guide hand is still trailing on
@@ -1529,11 +1663,103 @@
             (fy - 50) + (T.handG[1] - (fy - 50)) * rel,
           ];
         }
-        if (x >= walkTo) {
-          state = 'stand';
-          standT0 = now;
-          idleX = walkTo - 11.5;   // standPose pelvis lands right here
+        // a few strides in he wipes his brow with the free hand and
+        // flicks the sweat away
+        const wp = (t - 750) / 1350;
+        if (wp > 0 && wp < 1) {
+          const b = clamp01(Math.min(wp / 0.16, (1 - wp) / 0.2) * 1.2);
+          const hx = T.head[0], hy = T.head[1];
+          let wx, wy;
+          if (wp < 0.58) {
+            // drag the forearm across the forehead
+            const q = clamp01((wp - 0.16) / 0.42);
+            wx = hx + 4 - 7.5 * q;
+            wy = hy - 2.5 - Math.sin(Math.PI * q) * 1.2;
+          } else {
+            // then flick the hand down and away
+            const q = easeInOut(clamp01((wp - 0.58) / 0.26));
+            wx = hx - 3.5 + 14 * q;
+            wy = hy - 2.5 + 8 * q;
+          }
+          T.handG = [T.handG[0] + (wx - T.handG[0]) * b,
+                     T.handG[1] + (wy - T.handG[1]) * b];
+          T.head[1] += 0.9 * b;   // he ducks into the wipe a touch
+          if (!sweatMid && wp > 0.4) {
+            sweatMid = true;
+            spawnSweat(S.handG.x, S.handG.y, 2);
+          }
+          if (!sweatFlick && wp > 0.62) {
+            sweatFlick = true;
+            spawnSweat(S.handG.x, S.handG.y, 4);
+          }
         }
+        if (x >= walkTo) {
+          if (stumpX !== null) {
+            state = 'sitdown';
+            sitT0 = now;
+          } else {
+            state = 'stand';
+            standT0 = now;
+            idleX = walkTo - 11.5;   // standPose pelvis lands right here
+          }
+        }
+      } else if (state === 'sitdown') {
+        // at the stump: he eases down out of the stand onto it, the
+        // front foot stepping forward as the hips settle back
+        const e = easeInOut(clamp01((now - sitT0) / 700));
+        const A = standPoseAt(walkTo - 11.5, now);
+        const B = sitPose(now, 0);
+        T = { bendG: -1, bendB: -1, bendL: 1, feetFast: true };
+        for (const k2 of ['pelvis', 'chest', 'head', 'handG', 'handB', 'f1', 'f2'])
+          T[k2] = [A[k2][0] + (B[k2][0] - A[k2][0]) * e,
+                   A[k2][1] + (B[k2][1] - A[k2][1]) * e];
+        T.f1[1] -= 3.5 * Math.sin(Math.PI * e);   // the step, not a slide
+        if (e >= 1) {
+          state = 'grab';
+          grabT0 = now;
+        }
+      } else if (state === 'grab') {
+        // leans forward off the stump, picks the stick up off the
+        // ground, and settles back with it in hand
+        const u = clamp01((now - grabT0) / 800);
+        const r = bell(u, 0.05, 0.95);
+        T = sitPose(now, 0);
+        T.handG = [T.handG[0] + (stumpX + 45 - T.handG[0]) * r,
+                   T.handG[1] + (floorY - 3 - T.handG[1]) * r];
+        T.chest[0] += 4 * r; T.chest[1] += 4 * r;
+        T.head[0] += 6 * r; T.head[1] += 5.5 * r;
+        if (!stickTaken && u >= 0.5) {
+          stickTaken = true;
+          if (floorStick) floorStick.style.display = 'none';
+        }
+        if (u >= 1) {
+          state = 'sit';
+          pokeAt = now + 1500;
+        }
+      } else if (state === 'sit') {
+        // camp idle, forever: mostly just sitting and breathing; every
+        // little while — at random — he leans in and gives the fire a
+        // jab (sometimes two), knocking a few embers loose
+        let pk = 0;
+        if (!poke && now >= pokeAt) {
+          poke = { t0: now, jabs: Math.random() < 0.4 ? 2 : 1, spawned: false };
+        }
+        if (poke) {
+          const u = (now - poke.t0) / (poke.jabs > 1 ? 2100 : 1300);
+          pk = poke.jabs > 1
+            ? bell(u, 0.05, 0.55) + 0.85 * bell(u, 0.5, 0.95)
+            : bell(u, 0.06, 0.94);
+          if (!poke.spawned && u > 0.35) {
+            poke.spawned = true;
+            spawnEmbers(stickTip[0], stickTip[1]);
+          }
+          if (u >= 1) {
+            poke = null;
+            // next jab comes soon — a random 2, 3 or 4 second wait
+            pokeAt = now + (2 + Math.floor(Math.random() * 3)) * 1000;
+          }
+        }
+        T = sitPose(now, pk);
       } else if (state === 'stand') {
         T = standPose(now);
       }
@@ -1541,14 +1767,13 @@
       if (T) {
         // safety net: if the grip somehow ends up well past an
         // uncleaned ring (resize, huge scroll jump), clean immediately
-        if (state === 'perch' || state === 'pause') {
+        if (state === 'perch') {
           while (anchors[cleaned] && anchors[cleaned].y <= y - 6) doClean(now);
         }
         bends.g = T.bendG; bends.b = T.bendB; bends.l = T.bendL;
-        // he's on the rope right through the lower and the touchdown —
+        // he's on the rope right through the bounces and the touchdown —
         // the grip only opens in the release beat
-        const onRope = state === 'perch' || state === 'pause' ||
-          state === 'fall' || state === 'touch';
+        const onRope = state === 'perch' || state === 'touch';
         const fk = T.feetFast && !airborne ? 1000 : 320;
         const fd = T.feetFast && !airborne ? 50 : 30;
         // integrate in fixed substeps so a slow frame is subdivided,
