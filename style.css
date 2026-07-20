@@ -397,12 +397,10 @@ html.man body.page main:has(.rope) {
   pointer-events: none;
 }
 
-/* The slack coils at the foot of his rope, left of the wall, so the
-   heap is mirrored to spill away from the page */
+/* Stickman mode draws the rope live all the way into the turf, so the
+   static tail only reserves the layout space — its stroke is hidden */
 html.man .rope {
-  margin-left: -32px;
-  transform: scaleX(-1);
-  transform-origin: 1px 50%;
+  visibility: hidden;
 }
 
 .date {
