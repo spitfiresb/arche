@@ -681,9 +681,9 @@ ul.links li.li-hover.gh:focus-within {
     "Noto Sans", Helvetica, Arial, sans-serif;
   /* GitHub light theme: a light-gray card so it reads against the white
      page, with the green calendar carrying the color */
-  background: #e9edf1;
+  background: #c2c8cf;
   color: #1f2328;
-  border-color: #ccd3da;
+  border-color: #a9b1ba;
   -webkit-font-smoothing: antialiased;
 }
 
