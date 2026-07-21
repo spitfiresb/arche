@@ -71,11 +71,14 @@ ul.links li.li-hover {
   transition: width 0.6s ease;
 }
 
-/* The outer box is just the invisible growth frame — the card itself is
-   the 3d tile */
+/* The outer box is just the invisible growth frame — the card is revealed
+   as an overlay on top of the page, so nothing else shifts */
 ul.links li.li-hover:hover,
 ul.links li.li-hover:focus-within {
   width: 100%;
+  /* lift the hovered item so its expanding card paints over the links
+     below it instead of being covered by them */
+  z-index: 10;
 }
 
 /* On hover the link row collapses, the text shrinking into the LinkedIn
@@ -88,12 +91,6 @@ ul.links li.li-hover:focus-within {
 .li-morph {
   display: block;
   height: 1.3em;
-  transition: height 0.5s ease;
-}
-
-li.li-hover:hover .li-morph,
-li.li-hover:focus-within .li-morph {
-  height: 0;
 }
 
 .li-word {
@@ -109,7 +106,7 @@ li.li-hover:focus-within .li-morph {
   top: 0.45em;
   width: 1.2em;
   height: 1.2em;
-  z-index: 1;
+  z-index: 3;
   opacity: 0;
   transform: scale(0.3);
   transform-origin: left center;
@@ -131,7 +128,15 @@ li.li-hover:focus-within .li-logo {
   left: 1.35em;
 }
 
+/* The reveal is an absolute overlay pinned to the top of the link row, so
+   growing it opens the card downward over the page without moving any
+   other text. The grid row still animates its height from 0 to auto. */
 .li-hover-reveal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1;
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.6s ease;
@@ -162,30 +167,14 @@ li.li-hover:focus-within .li-hover-reveal {
 li.li-hover:hover .li-hover-card,
 li.li-hover:focus-within .li-hover-card {
   opacity: 1;
-  /* raised 3d tile: slight perspective tilt toward the viewer, stacked
-     solid shadow layers form its visible side wall (thickness), and the
-     soft shadows below are the light it blocks */
-  transform: perspective(800px) rotateX(2deg) translateY(0) scale(1.015);
-  box-shadow:
-    0 1px 0 #e0e0e0,
-    0 2px 0 #dadada,
-    0 3px 0 #d4d4d4,
-    0 4px 0 #cecece,
-    0 5px 0 #c8c8c8,
-    0 6px 0 #c2c2c2,
-    0 7px 0 #bcbcbc,
-    0 8px 0 #b6b6b6,
-    0 0 1px rgba(0, 0, 0, 0.12),
-    0 10px 6px -2px rgba(0, 0, 0, 0.10);
 }
 
 .li-hover-card {
   margin-top: 0;
   border-radius: 0.6em;
-  /* starts lifted by exactly the link row's height, easing to 0 in sync
-     with the row collapsing — the card's top edge stays pinned so the
-     expansion reads as downward-only */
-  transform: translateY(-1.3em);
+  /* flat card: a soft drop shadow and a hairline border, no 3d tilt */
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
 }
 
 .li-hover-card .li-banner {
