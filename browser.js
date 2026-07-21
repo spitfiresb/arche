@@ -205,8 +205,8 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var days = data.contributions;
-        // GitHub's dimmed-theme intensity ramp (grayish empty -> brightest)
-        var colors = ["#373e47", "#2f5c3a", "#3f9142", "#4bb14e", "#57d364"];
+        // Parchment + ink ramp: pale tan (empty) -> espresso (most active)
+        var colors = ["#e7dcc2", "#cdb488", "#a37f4e", "#6f4e2e", "#3d2a19"];
         var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         var fullMonths = ["January", "February", "March", "April", "May",
@@ -249,8 +249,8 @@
           rect.setAttribute("height", CELL);
           rect.setAttribute("rx", 2);
           rect.setAttribute("fill", colors[d.level]);
-          // GitHub's faint outline keeps even the empty cells defined
-          rect.setAttribute("stroke", "rgba(240, 246, 252, 0.06)");
+          // A faint ink outline keeps even the empty cells defined
+          rect.setAttribute("stroke", "rgba(43, 35, 24, 0.07)");
           var nice = new Date(d.date + "T00:00:00");
           rect.setAttribute("data-tip",
             (d.count === 0 ? "No" : d.count) +
