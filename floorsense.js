@@ -50,6 +50,10 @@
   const root = document.getElementById("fs-app");
   const mainEl = () => root.querySelector(".fs-main");
 
+  // When embedded in the fullscreen overlay (floorsense.html?embed=1) the host
+  // page supplies its own close control, so hide the header's back link/tagline.
+  const isEmbed = new URLSearchParams(location.search).get("embed") === "1";
+
   // ---- Analysis (port of lib/analysis.ts) -----------------------------
   async function analyzeFloorPlan(base64Image) {
     // base64 data-URL → Blob → File for multipart upload
@@ -146,9 +150,12 @@
     const brand = el("button", "fs-brand");
     brand.innerHTML = `${ICON.home}<h1>FloorSense</h1>`;
     brand.onclick = goHome;
-    const tag = el("div", "fs-tagline");
-    tag.innerHTML = `<a class="fs-back" href="work-personal.html">← Back to work</a><span>Intelligent Floorplan Analysis</span>`;
-    header.append(brand, tag);
+    header.append(brand);
+    if (!isEmbed) {
+      const tag = el("div", "fs-tagline");
+      tag.innerHTML = `<a class="fs-back" href="work-personal.html">← Back to work</a><span>Intelligent Floorplan Analysis</span>`;
+      header.append(tag);
+    }
 
     // Main
     const main = el("main", "fs-main");

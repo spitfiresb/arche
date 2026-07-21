@@ -18,53 +18,87 @@
   }
   .fs-thumb img {
     width: 100%;
-    height: 11em;
+    height: 12em;
     object-fit: cover;
-    object-position: center;
+    object-position: top center;
     display: block;
-    transition: transform 0.4s ease;
   }
-  .fs-thumb:hover img,
-  .fs-thumb:focus-visible img { transform: scale(1.03); }
   .fs-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
+
+  /* Icon-only expand button, bottom-right; grows on hover */
   .fs-expand {
     position: absolute;
-    top: 0.5em;
+    bottom: 0.5em;
     right: 0.5em;
-    display: inline-flex;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
-    gap: 0.35em;
-    padding: 0.3em 0.55em;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.7rem;
-    line-height: 1;
+    justify-content: center;
     color: #fff;
-    background: rgba(20, 20, 20, 0.7);
-    border-radius: 0.4em;
-    opacity: 0.85;
-    transition: opacity 0.2s, background 0.2s;
+    background: rgba(20, 20, 20, 0.5);
+    transform: scale(1);
+    transition: transform 0.25s ease, background 0.2s ease;
+    pointer-events: none;
   }
   .fs-thumb:hover .fs-expand,
-  .fs-thumb:focus-visible .fs-expand { opacity: 1; background: rgba(20, 20, 20, 0.92); }
+  .fs-thumb:focus-visible .fs-expand {
+    transform: scale(1.22);
+    background: rgba(20, 20, 20, 0.72);
+  }
   .fs-expand svg { width: 0.95em; height: 0.95em; }
 
-  /* Fullscreen overlay hosting the live app */
+  /* Fullscreen overlay: a dark backdrop, a still poster that grows from the
+     thumbnail's rectangle to fill the screen, then cross-fades to the live
+     app. Only the static poster is transformed, so the grow runs entirely on
+     the compositor and stays smooth even while the heavy app boots. */
   .fs-overlay {
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.75);
-    display: flex;
-    opacity: 0;
-    transition: opacity 0.2s ease;
   }
-  .fs-overlay.open { opacity: 1; }
-  .fs-overlay iframe {
+  .fs-overlay[hidden] { display: none; }
+  .fs-overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    opacity: 0;
+    transition: opacity 0.84s ease;
+  }
+  .fs-overlay.open .fs-overlay-backdrop { opacity: 1; }
+
+  /* The live app: pinned full-screen, never scaled, faded in when ready. */
+  .fs-overlay-frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #fdfbf7;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+  .fs-overlay.revealed .fs-overlay-frame { opacity: 1; }
+  .fs-overlay-frame iframe {
     width: 100%;
     height: 100%;
     border: none;
+    display: block;
+  }
+
+  /* The poster that performs the grow (a static image → compositor-smooth). */
+  .fs-overlay-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transform-origin: top left;
+    will-change: transform, opacity;
     background: #fdfbf7;
   }
+  .fs-overlay.revealed .fs-overlay-poster { opacity: 0; }
+
   .fs-overlay-close {
     position: fixed;
     top: 0.6em;
@@ -83,7 +117,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease 0.15s;
   }
+  .fs-overlay.open .fs-overlay-close { opacity: 1; }
   .fs-overlay-close:hover { background: rgba(20, 20, 20, 1); }
   body.fs-locked { overflow: hidden; }
 </style>
@@ -98,13 +135,13 @@
         <figure class="fs-thumb" data-fs-open tabindex="0" role="button"
         aria-label="Expand the FloorSense live demo to fullscreen">
           <img src="assets/floorsense/preview.png"
-          alt="FloorSense detecting rooms, doors, and windows on a floor plan">
+          alt="The FloorSense app landing page">
           <span class="fs-expand" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
             points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
             x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
-            y2="14"/></svg>Expand
+            y2="14"/></svg>
           </span>
         </figure>
         <p>A computer vision web app that identifies architectural elements in
@@ -145,39 +182,107 @@
 
   </main>
 
-  <!-- Fullscreen live-app overlay (iframe loads lazily on first expand) -->
+  <!-- Fullscreen live-app overlay. A still poster grows from the thumbnail's
+       rectangle to fill the viewport, then cross-fades to the live app. The
+       iframe is never scaled (it loads full-size, behind the poster) so the
+       grow is a pure compositor animation and never stutters. -->
   <div class="fs-overlay" id="fs-overlay" hidden>
+    <div class="fs-overlay-backdrop"></div>
+    <div class="fs-overlay-frame">
+      <iframe id="fs-frame" title="FloorSense — live demo" allow="fullscreen"></iframe>
+    </div>
+    <img class="fs-overlay-poster" id="fs-poster" src="assets/floorsense/preview.png" alt="">
     <button class="fs-overlay-close" type="button" data-fs-close
     aria-label="Close the live demo">&times;</button>
-    <iframe id="fs-frame" title="FloorSense — live demo" allow="fullscreen"></iframe>
   </div>
 
   <script>
     (function () {
       var overlay = document.getElementById('fs-overlay');
-      var frame = document.getElementById('fs-frame');
-      var loaded = false;
+      var poster  = document.getElementById('fs-poster');
+      var frame   = document.getElementById('fs-frame');
+      var thumb   = document.querySelector('[data-fs-open]');
+      var APP = 'floorsense.html?embed=1';
+      var GROW   = 'transform 0.88s cubic-bezier(0.22, 0.61, 0.36, 1)';
+      var SHRINK = 'transform 0.36s cubic-bezier(0.4, 0.0, 0.2, 1)';
+      var FADE   = 'opacity 0.45s ease';
+      var srcSet = false, ready = false, grown = false, revealT = null;
+
+      // Start loading the app (on hover/focus, or at open) — full-size and
+      // hidden behind the poster, so booting never touches the grow animation.
+      function preload() {
+        if (srcSet) return;
+        srcSet = true;
+        frame.addEventListener('load', function () { ready = true; maybeReveal(); });
+        frame.src = APP;
+      }
+
+      // Transform that maps the full-viewport poster onto the thumbnail's rect.
+      function collapsed() {
+        var r = thumb.getBoundingClientRect();
+        return 'translate(' + r.left + 'px, ' + r.top + 'px) scale('
+          + (r.width / window.innerWidth) + ', ' + (r.height / window.innerHeight) + ')';
+      }
+
+      // Cross-fade to the live app once the grow has finished AND it's loaded.
+      function maybeReveal() {
+        if (!grown || !ready || overlay.hidden || overlay.classList.contains('revealed')) return;
+        revealT = setTimeout(function () {
+          if (overlay.hidden) return;
+          poster.style.transition = FADE;
+          overlay.classList.add('revealed');
+        }, 300);
+      }
 
       function open() {
-        if (!loaded) { frame.src = 'floorsense.html?embed=1'; loaded = true; }
+        preload();
+        grown = false;
         overlay.hidden = false;
-        requestAnimationFrame(function () { overlay.classList.add('open'); });
+        overlay.classList.remove('revealed');
+        // Start collapsed onto the thumbnail (no animation yet)...
+        poster.style.transition = 'none';
+        poster.style.transform = collapsed();
+        void poster.offsetWidth;                       // commit the start state
+        // ...then grow to full screen while the backdrop fades in.
+        poster.style.transition = GROW;
+        poster.style.transform = 'translate(0px, 0px) scale(1, 1)';
+        overlay.classList.add('open');
         document.body.classList.add('fs-locked');
-      }
-      function close() {
-        overlay.classList.remove('open');
-        document.body.classList.remove('fs-locked');
-        setTimeout(function () { overlay.hidden = true; }, 200);
+        poster.addEventListener('transitionend', onGrown);
       }
 
-      document.querySelectorAll('[data-fs-open]').forEach(function (el) {
-        el.addEventListener('click', open);
-        el.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
-        });
+      function onGrown(e) {
+        if (e.propertyName !== 'transform' || !overlay.classList.contains('open')) return;
+        poster.removeEventListener('transitionend', onGrown);
+        grown = true;
+        maybeReveal();
+      }
+
+      function close() {
+        clearTimeout(revealT);
+        poster.removeEventListener('transitionend', onGrown);
+        // SHRINK is transform-only, so removing .revealed snaps the still
+        // poster back over the app instantly; then it shrinks to the thumb.
+        poster.style.transition = SHRINK;
+        overlay.classList.remove('revealed');
+        poster.style.transform = collapsed();
+        overlay.classList.remove('open');
+        document.body.classList.remove('fs-locked');
+        var done = function (e) {
+          if (e.propertyName !== 'transform') return;
+          poster.removeEventListener('transitionend', done);
+          overlay.hidden = true;
+        };
+        poster.addEventListener('transitionend', done);
+      }
+
+      thumb.addEventListener('mouseenter', preload);
+      thumb.addEventListener('focus', preload);
+      thumb.addEventListener('click', open);
+      thumb.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
       });
       document.querySelector('[data-fs-close]').addEventListener('click', close);
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && !overlay.hidden) close();
       });
