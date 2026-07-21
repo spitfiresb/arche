@@ -44,6 +44,11 @@
         scripts.</p>
       </li>
       <li>
+        <span class="date">2025</span>
+        <h2 class="entry-title">Joined the AI Club</h2>
+        <p>Became part of the University of Oregon's AI club.</p>
+      </li>
+      <li>
         <span class="date">June 2026</span>
         <h2 class="entry-title">Graduated</h2>
         <p>B.S. in Computer Science and Data Science, University of Oregon.</p>
@@ -2111,6 +2116,16 @@
     })();
 
     requestAnimationFrame(tick);
+  })();
+
+  // Make all page text editable in the browser (live preview only —
+  // reloading resets it; edit this file for permanent changes).
+  (function () {
+    document.querySelectorAll('.kicker, main h1, .timeline .date, .entry-title, .timeline p')
+      .forEach(function (el) {
+        el.setAttribute('contenteditable', 'true');
+        el.spellcheck = false;
+      });
   })();
   </script>
 </body>
