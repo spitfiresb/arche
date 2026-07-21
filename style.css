@@ -1,6 +1,23 @@
-/* Emil Kowalski's typeface: Inter, with his optical-size axis and the
-   cv01 / ss03 stylistic sets he ships it with */
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+/* Type, following paco.me's own stack:
+   --font-sans   Söhne (a licensed Klim face). It isn't hosted here, so when
+                 it isn't installed we fall to Helvetica Neue — the neo-
+                 grotesque Söhne descends from and reads almost identically —
+                 then to Inter as a hosted web-font backstop for other OSes.
+   --font-serif  Newsreader italic — the serif paco uses for emphasized
+                 lead-ins (loaded from Google Fonts). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap');
+
+:root {
+  /* Paco's dark theme + greys */
+  --bg: #1a1a1a;
+  --fg: #f2f2f2;
+  --muted: #a0a0a0;         /* gray11 — descriptions and intro body */
+  --faint: #7e7e7e;         /* gray10 — section labels */
+  --content-width: 48rem;   /* content column width (768px) */
+  --font-sans: "Sohne", "Helvetica Neue", "Inter", -apple-system,
+    BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
+}
 
 html, body {
   height: 100%;
@@ -8,13 +25,13 @@ html, body {
 }
 
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
-  font-feature-settings: "cv01", "ss03";
+  font-family: var(--font-sans);
+  font-feature-settings: "cv01", "ss03";  /* only affects the Inter fallback */
   font-optical-sizing: auto;
-  /* Paco Coursey's dark theme: --bg (#1a1a1a) and --fg (#f2f2f2) */
-  background: #1a1a1a;
-  color: #f2f2f2;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* plain links inherit the text color so they stay visible on the dark
@@ -37,6 +54,128 @@ body.home {
    narrow block and sit right of the home page's left edge. */
 body.home main {
   width: 24em;
+}
+
+/* Landing: paco.me layout — name, a wide intro, then work laid out across
+   three labelled columns. Top-anchored, left-aligned, sitting in a fixed
+   640px column centered on the page. */
+body.home.landing {
+  display: block;
+}
+
+body.home.landing main {
+  width: var(--content-width);
+  max-width: calc(100vw - 3rem);
+  margin: 0 auto;
+  padding: 14vh 1.5rem 6rem;
+  font-size: 1.0625rem;   /* paco's 17px body */
+  line-height: 1.5;
+}
+
+.name {
+  margin: 0 0 2rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Intro: near-white body with a serif-italic lead-in, like paco's */
+.intro {
+  margin: 0 0 1.4rem;
+  max-width: 42rem;
+}
+
+.intro-2 {
+  margin: 0;
+  max-width: 42rem;
+}
+
+.intro em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Three work columns */
+.work-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 4rem 0 4.5rem;
+}
+
+.col > h2 {
+  margin: 0 0 1.25rem;
+  font-size: 0.8125rem;   /* 13px — a step below the 17px item titles */
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.col ul.stack {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.col ul.stack li {
+  margin-bottom: 1.6rem;
+}
+
+.col ul.stack li:last-child {
+  margin-bottom: 0;
+}
+
+/* Item: an underlined title with a muted description stacked beneath it */
+.col .item-title {
+  display: inline-block;
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(242, 242, 242, 0.35);
+}
+
+.col .item-title:hover {
+  text-decoration-color: var(--fg);
+}
+
+.item-desc {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* Quiet placeholder for a column with no items yet */
+.col .soon {
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* Elsewhere: keep the About / LinkedIn / GitHub list narrow so the hover
+   preview cards stay a sensible size within the wide layout */
+.elsewhere > h2 {
+  margin: 0 0 1.1rem;
+  font-size: 0.8125rem;   /* match the work-column labels */
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.elsewhere ul.links {
+  max-width: 22rem;
+}
+
+/* Collapse the three columns to one on narrow screens */
+@media (max-width: 40rem) {
+  body.home.landing main {
+    width: auto;
+    max-width: none;
+    padding: 8vh 1.5rem 4rem;
+  }
+  .work-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
 }
 
 body.home a {
