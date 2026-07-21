@@ -16,7 +16,7 @@
   --line: rgba(242, 242, 242, 0.1);   /* hairline: artifact frames, plate rules */
   --plate: #141414;         /* one step below the page — recessed panels */
   --content-width: 48rem;   /* content column width (768px) */
-  --work-width: 60rem;      /* wider column for the two-up work bands (960px) */
+  --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
   --font-sans: "Sohne", "Helvetica Neue", "Inter", -apple-system,
     BlinkMacSystemFont, Helvetica, Arial, sans-serif;
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
@@ -617,8 +617,8 @@ ul.bands {
 
 ul.bands > li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 3rem;
+  grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+  gap: 4.5rem;
   align-items: center;
   margin-bottom: 5.5rem;
 }
@@ -627,6 +627,9 @@ ul.bands > li:last-child {
   margin-bottom: 0;
 }
 
+/* The artifact takes the larger share: a live demo parked at half the band
+   was too small to read anything in. Prose still clears ~440px, which keeps
+   the summary and the spec sheet at a sane measure. */
 /* Placed explicitly rather than by source order, so the columns can swap
    without the markup moving — the prose always follows the title for a
    screen reader, whichever side it's painted on. */
@@ -653,6 +656,12 @@ ul.bands > li.solo .band-prose {
 }
 
 .band-prose p {
+/* Sides swap on even bands, so the wide track has to swap with them —
+   otherwise every other artifact lands in the narrow column. */
+ul.bands > li:nth-child(even) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+}
+
   margin: 0;
   color: var(--muted);
   line-height: 1.55;
@@ -670,6 +679,26 @@ ul.bands > li.solo .band-prose {
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   text-decoration-color: rgba(242, 242, 242, 0.35);
+/* Which part of a multi-band project this is. Set down a size and into the
+   faint colour so three consecutive bands read as one project seen three
+   ways, not as three projects that happen to share a name. */
+.band-part {
+  font-size: 0.9375rem;
+  color: var(--faint);
+}
+
+.band-part::before {
+  content: "\00b7";
+  margin: 0 0.5em;
+}
+
+/* A caveat under a demo: what the visitor is looking at isn't real data */
+.band-note {
+  margin-top: 0.9rem;
+  font-size: 0.875rem;
+  color: var(--faint);
+}
+
 }
 
 .band-link:hover {
@@ -701,6 +730,50 @@ ul.bands > li.solo .band-prose {
 
 .plate h3 {
   margin: 0 0 1.1rem;
+/* Technical specifications: the reference layer under a band's summary.
+   Set a step down in size and colour from the prose so a skimmer reads the
+   summary and stops, and anyone who wants the build details reads on. */
+.band-spec {
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+}
+
+.band-spec h3 {
+  margin: 0 0 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* Label column fixed rather than auto-sized, so the values line up on one
+   edge instead of stepping in and out with each label's length. The row
+   wrappers are display:contents — they exist to pair a dt with its dd for
+   the single-column collapse below, not to lay anything out. */
+.band-spec dl {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 0.85rem 1.4rem;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.band-spec dl > div {
+  display: contents;
+}
+
+.band-spec dt {
+  color: var(--faint);
+}
+
+.band-spec dd {
+  margin: 0;
+  color: var(--muted);
+}
+
   font-size: 0.8125rem;
   font-weight: 400;
   color: var(--faint);
@@ -728,8 +801,10 @@ ul.bands > li.solo .band-prose {
   padding-bottom: 0;
 }
 
-/* Narrow screens: bands stack, artifact above prose every time */
-@media (max-width: 52rem) {
+/* Narrow screens: bands stack, artifact above prose every time. The
+   threshold tracks the band width — once the two-up can't give the prose
+   ~440px it stops being two-up. */
+@media (max-width: 64rem) {
   body.page.work main {
     padding-top: 4em;
   }
@@ -770,6 +845,22 @@ ul.bands > li.solo .band-prose {
 }
 
 .toggle button.active {
+  /* Too narrow for a label column — stack each label over its value. The row
+     wrappers stop being display:contents here and become the blocks that
+     carry the spacing, since a dt and its dd are never DOM siblings. */
+  .band-spec dl {
+    display: block;
+  }
+  .band-spec dl > div {
+    display: block;
+    margin-bottom: 0.9rem;
+  }
+  .band-spec dl > div:last-child {
+    margin-bottom: 0;
+  }
+  .band-spec dt {
+    margin-bottom: 0.2rem;
+  }
   border-bottom-color: #000;
   font-weight: bold;
 }
