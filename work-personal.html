@@ -41,24 +41,112 @@
         </div>
       </li>
 
-      <li>
+      <li id="unpak-system">
         <div class="band-artifact">
           <div class="plate">
             <h3>Built with</h3>
             <ul>
               <li>Rust</li>
-              <li>Supabase</li>
-              <li>pgvector</li>
-              <li>PM4Py</li>
+              <li>Swift</li>
+              <li>Python</li>
+              <li>SQLite</li>
+              <li>Neon Postgres</li>
+              <li>Modal &middot; Cloudflare R2</li>
             </ul>
           </div>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak</h2>
+          <h2 class="band-title">Unpak <span class="band-part">System</span></h2>
           <p>A workforce intelligence platform that surfaces how work actually
           happens by observing human&ndash;computer and human&ndash;AI
           interaction. I designed the full capture and processing architecture
           and built the pipeline behind it.</p>
+          <p>A Rust agent on each machine reads the focused window, the
+          accessibility tree, and screen text, keeping the text and discarding
+          the image. Nothing leaves until a scrubbing pass has run over a
+          throwaway copy of the local database &mdash; credentials, card
+          numbers and personal data are stripped by checksum-gated patterns
+          rather than a model, because a hard guarantee cannot be built on
+          something that is usually right.</p>
+          <p>The pipeline behind it reduces raw activity through a funnel:
+          atoms, then grouped steps, then whole procedures, then a plain-language
+          overview. Every count and duration is computed deterministically;
+          language models only write the prose and do the grouping, and each
+          stage uses the smallest model that holds up. A nightly pass clusters
+          recurring procedures across the workforce into families with a
+          canonical path, so a workflow can be counted even when six people run
+          it six slightly different ways.</p>
+        </div>
+      </li>
+
+      <li id="unpak-dashboard">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/unpak-dashboard/"
+          data-bg="#FCFCFB" data-title="Unpak dashboard &mdash; live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Unpak dashboard live demo to fullscreen">
+            <img src="assets/unpak/dashboard-preview.png"
+            alt="The Unpak dashboard overview: a composition ring of work areas, AI adoption dials, and ranked bars of where the hours are going">
+            <span class="ld-expand" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
+              points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
+              x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
+              y2="14"/></svg>
+            </span>
+          </figure>
+          <p class="stack-caption">Astro &middot; hand-written SVG &middot; Cloudflare Pages</p>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Unpak <span class="band-part">Dashboard</span></h2>
+          <p>The console a customer reads their own operating picture from:
+          which procedures their workforce actually repeats, where the hours
+          go, how much run times vary, and where AI has already turned up in
+          the work without anyone deciding it should.</p>
+          <p>No framework and no charting library &mdash; every ring, dial,
+          sparkline, box plot and trunk-and-branch diagram is SVG written by
+          hand, which is what let the run-shape rows sit on the same station
+          grid as the procedure they describe and visibly add up to its run
+          count. The numbers hold themselves to the same standard: a comparison
+          that lacks the runs to support it says <em>measuring</em> and names
+          what it is waiting for, rather than printing a figure that reads as
+          settled.</p>
+          <p class="band-note">The demo runs on fabricated data for a fictional
+          freight brokerage. It is the shipped build, served from a static
+          file instead of the live database.</p>
+        </div>
+      </li>
+
+      <li id="unpak-website">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/unpak-site/"
+          data-ready="canvas" data-bg="#FCFCFB"
+          data-title="Unpak website &mdash; live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Unpak website live demo to fullscreen">
+            <img src="assets/unpak/site-preview.png"
+            alt="The Unpak website landing page: the headline What can AI do for your agency over a soft rippling canvas">
+            <span class="ld-expand" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
+              points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
+              x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
+              y2="14"/></svg>
+            </span>
+          </figure>
+          <p class="stack-caption">Astro &middot; WebGL &middot; Cloudflare Pages</p>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Unpak <span class="band-part">Website</span></h2>
+          <p>The product site: twenty routes across three product lines, a
+          pricing page, an essay, a help centre and a two-step intake form.</p>
+          <p>The hero sits on a WebGL ripple shader behind a headline that
+          rolls through the word it is asking about. Below it every section
+          carries its own diagram &mdash; scattered activity resolving into an
+          ordered procedure, work streaming in from four departments, a stack
+          of layers that writes its own labels a character at a time as it
+          scrolls into view. Fonts are self-hosted and nothing is fetched from
+          a CDN, so the whole site is a directory of flat files.</p>
         </div>
       </li>
 

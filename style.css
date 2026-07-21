@@ -74,7 +74,7 @@ body.home.landing main {
   max-width: calc(100vw - 3rem);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 20vh 1.5rem 6rem;
+  padding: 20vh 1.5rem 4rem;
   font-size: 1.0625rem;   /* paco's 17px body */
   line-height: 1.5;
   display: flex;
@@ -96,10 +96,10 @@ body.home.landing main {
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   /* auto top/bottom absorbs the leftover height, centering the columns in
-     the space under the links; the 5rem floor keeps them clear of the
+     the space under the links; the 3rem floor keeps them clear of the
      greeting when the window is too short to have any slack */
   margin: auto 0;
-  padding-top: 5rem;
+  padding-top: 3rem;
 }
 
 .col > h2 {
@@ -116,7 +116,7 @@ body.home.landing main {
 }
 
 .col ul.stack li {
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.15rem;
 }
 
 .col ul.stack li:last-child {
@@ -137,6 +137,18 @@ body.home.landing main {
   text-decoration-color: var(--fg);
 }
 
+/* One project split across several entries: the shared name stays the link,
+   the part rides alongside it unlinked so the underline still reads as one
+   title rather than a title-plus-qualifier */
+.item-part {
+  color: var(--faint);
+}
+
+.item-part::before {
+  content: "\00b7";
+  margin: 0 0.4em;
+}
+
 .item-desc {
   display: block;
   margin-top: 0.35rem;
@@ -155,7 +167,7 @@ body.home.landing main {
    Keep the list narrow so the hover preview cards stay a sensible size
    within the wide layout */
 .elsewhere {
-  margin-top: 2.5rem;
+  margin-top: 1.9rem;
 }
 
 .elsewhere ul.links {
@@ -615,6 +627,9 @@ ul.bands {
   list-style: none;
 }
 
+/* The artifact takes the larger share: a live demo parked at half the band
+   was too small to read anything in. Prose still clears ~440px, which keeps
+   the summary and the spec sheet at a sane measure. */
 ul.bands > li {
   display: grid;
   grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
@@ -627,9 +642,12 @@ ul.bands > li:last-child {
   margin-bottom: 0;
 }
 
-/* The artifact takes the larger share: a live demo parked at half the band
-   was too small to read anything in. Prose still clears ~440px, which keeps
-   the summary and the spec sheet at a sane measure. */
+/* Deep-linked from the landing grid: leave air above so the band doesn't
+   land jammed against the top of the viewport */
+ul.bands > li[id] {
+  scroll-margin-top: 3rem;
+}
+
 /* Placed explicitly rather than by source order, so the columns can swap
    without the markup moving — the prose always follows the title for a
    screen reader, whichever side it's painted on. */
@@ -637,6 +655,12 @@ ul.bands > li:last-child {
 .band-prose    { grid-row: 1; grid-column: 2; }
 ul.bands > li:nth-child(even) .band-artifact { grid-column: 2; }
 ul.bands > li:nth-child(even) .band-prose    { grid-column: 1; }
+
+/* Sides swap on even bands, so the wide track has to swap with them —
+   otherwise every other artifact lands in the narrow column. */
+ul.bands > li:nth-child(even) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+}
 
 /* A project with nothing to show yet: one column, natural measure */
 ul.bands > li.solo {
@@ -655,30 +679,6 @@ ul.bands > li.solo .band-prose {
   line-height: 1.3;
 }
 
-.band-prose p {
-/* Sides swap on even bands, so the wide track has to swap with them —
-   otherwise every other artifact lands in the narrow column. */
-ul.bands > li:nth-child(even) {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
-}
-
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.55;
-}
-
-.band-prose p + p {
-  margin-top: 0.9rem;
-}
-
-.band-link {
-  display: inline-block;
-  margin-top: 1.1rem;
-  font-size: 0.9375rem;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-  text-decoration-color: rgba(242, 242, 242, 0.35);
 /* Which part of a multi-band project this is. Set down a size and into the
    faint colour so three consecutive bands read as one project seen three
    ways, not as three projects that happen to share a name. */
@@ -699,6 +699,24 @@ ul.bands > li:nth-child(even) {
   color: var(--faint);
 }
 
+.band-prose p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.band-prose p + p {
+  margin-top: 0.9rem;
+}
+
+.band-link {
+  display: inline-block;
+  margin-top: 1.1rem;
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(242, 242, 242, 0.35);
 }
 
 .band-link:hover {
@@ -712,24 +730,6 @@ ul.bands > li:nth-child(even) {
   border-radius: 4px;
 }
 
-/* Stack, set as a caption under a preview */
-.stack-caption {
-  margin: 0.85rem 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--faint);
-}
-
-/* Stack plate: the artifact for a project with no interface to screenshot */
-.plate {
-  padding: 1.75rem 1.9rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--plate);
-}
-
-.plate h3 {
-  margin: 0 0 1.1rem;
 /* Technical specifications: the reference layer under a band's summary.
    Set a step down in size and colour from the prose so a skimmer reads the
    summary and stops, and anyone who wants the build details reads on. */
@@ -774,6 +774,24 @@ ul.bands > li:nth-child(even) {
   color: var(--muted);
 }
 
+/* Stack, set as a caption under a preview */
+.stack-caption {
+  margin: 0.85rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+/* Stack plate: the artifact for a project with no interface to screenshot */
+.plate {
+  padding: 1.75rem 1.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--plate);
+}
+
+.plate h3 {
+  margin: 0 0 1.1rem;
   font-size: 0.8125rem;
   font-weight: 400;
   color: var(--faint);
@@ -827,6 +845,22 @@ ul.bands > li:nth-child(even) {
     grid-row: 2;
     grid-column: 1;
   }
+  /* Too narrow for a label column — stack each label over its value. The row
+     wrappers stop being display:contents here and become the blocks that
+     carry the spacing, since a dt and its dd are never DOM siblings. */
+  .band-spec dl {
+    display: block;
+  }
+  .band-spec dl > div {
+    display: block;
+    margin-bottom: 0.9rem;
+  }
+  .band-spec dl > div:last-child {
+    margin-bottom: 0;
+  }
+  .band-spec dt {
+    margin-bottom: 0.2rem;
+  }
 }
 
 /* Work page: toggle between Interfaces and Systems */
@@ -845,22 +879,6 @@ ul.bands > li:nth-child(even) {
 }
 
 .toggle button.active {
-  /* Too narrow for a label column — stack each label over its value. The row
-     wrappers stop being display:contents here and become the blocks that
-     carry the spacing, since a dt and its dd are never DOM siblings. */
-  .band-spec dl {
-    display: block;
-  }
-  .band-spec dl > div {
-    display: block;
-    margin-bottom: 0.9rem;
-  }
-  .band-spec dl > div:last-child {
-    margin-bottom: 0;
-  }
-  .band-spec dt {
-    margin-bottom: 0.2rem;
-  }
   border-bottom-color: #000;
   font-weight: bold;
 }
