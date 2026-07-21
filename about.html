@@ -2118,14 +2118,68 @@
     requestAnimationFrame(tick);
   })();
 
-  // Make all page text editable in the browser (live preview only —
-  // reloading resets it; edit this file for permanent changes).
+  // ---- In-browser editing workspace -------------------------------------
+  // Every text field on the page is made editable so you can rewrite copy
+  // live, then hit "Copy text" to grab a structured dump of everything and
+  // paste it back to me — I'll bake it into the file permanently.
+  // (Edits themselves are preview-only and reset on reload.)
   (function () {
     document.querySelectorAll('.kicker, main h1, .timeline .date, .entry-title, .timeline p')
       .forEach(function (el) {
         el.setAttribute('contenteditable', 'true');
         el.spellcheck = false;
       });
+
+    var t = function (el) { return el ? el.textContent.trim().replace(/\s+/g, ' ') : ''; };
+
+    function dumpText() {
+      var lines = [];
+      lines.push('KICKER: ' + t(document.querySelector('.kicker')));
+      lines.push('HEADING: ' + t(document.querySelector('main h1')));
+      lines.push('');
+      lines.push('TIMELINE:');
+      document.querySelectorAll('.timeline > li').forEach(function (li, i) {
+        lines.push('');
+        lines.push('[' + (i + 1) + ']');
+        lines.push('  date:  ' + t(li.querySelector('.date')));
+        lines.push('  title: ' + t(li.querySelector('.entry-title')));
+        lines.push('  desc:  ' + t(li.querySelector('p')));
+      });
+      return lines.join('\n');
+    }
+
+    var btn = document.createElement('button');
+    btn.textContent = 'Copy text';
+    btn.type = 'button';
+    btn.style.cssText =
+      'position:fixed;bottom:20px;right:20px;z-index:9999;' +
+      'font:500 13px/1 system-ui,-apple-system,sans-serif;' +
+      'padding:9px 14px;border:1px solid #000;border-radius:8px;' +
+      'background:#000;color:#fff;cursor:pointer;' +
+      'box-shadow:0 2px 10px rgba(0,0,0,.18);transition:opacity .15s;';
+    btn.addEventListener('click', function () {
+      var text = dumpText();
+      var done = function () {
+        var old = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        setTimeout(function () { btn.textContent = old; }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+      } else {
+        fallback(text, done);
+      }
+    });
+    function fallback(text, done) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:-1000px;left:-1000px;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { window.prompt('Copy this:', text); }
+      document.body.removeChild(ta);
+    }
+    document.body.appendChild(btn);
   })();
   </script>
 </body>
