@@ -5,140 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Contract — Zain Saeed</title>
 <link rel="stylesheet" href="style.css">
-<style>
-  /* PapeAgNet: preview thumbnail that expands into the live app */
-  .pa-thumb {
-    position: relative;
-    margin: 0.75em 0;
-    border: 1px solid #ccc;
-    overflow: hidden;
-    cursor: pointer;
-    line-height: 0;
-    background: #0d0d0d;
-  }
-  .pa-thumb img {
-    width: 100%;
-    /* Aspect ratio is matched to the viewport in JS (see syncThumbAspect) so the
-       expand grows as a uniform, distortion-free zoom; 16/10 is the no-JS fallback. */
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-  }
-  .pa-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
-
-  /* Icon-only expand button, bottom-right; grows on hover */
-  .pa-expand {
-    position: absolute;
-    bottom: 0.5em;
-    right: 0.5em;
-    width: 2em;
-    height: 2em;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    background: rgba(20, 20, 20, 0.5);
-    transform: scale(1);
-    transition: transform 0.25s ease, background 0.2s ease;
-    pointer-events: none;
-  }
-  .pa-thumb:hover .pa-expand,
-  .pa-thumb:focus-visible .pa-expand {
-    transform: scale(1.22);
-    background: rgba(20, 20, 20, 0.72);
-  }
-  .pa-expand svg { width: 0.95em; height: 0.95em; }
-
-  /* Fullscreen overlay: a dark backdrop, a still poster that grows from the
-     thumbnail's rectangle to fill the screen, then cross-fades to the live
-     app. Only the static poster is transformed, so the grow runs entirely on
-     the compositor and stays smooth even while the heavy app boots. */
-  .pa-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-  }
-  .pa-overlay[hidden] { display: none; }
-  .pa-overlay-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.78);
-    opacity: 0;
-    transition: opacity 0.84s ease;
-  }
-  .pa-overlay.open .pa-overlay-backdrop { opacity: 1; }
-
-  /* The live app: pinned full-screen, never scaled, faded in when ready. */
-  .pa-overlay-frame {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    background: #0d0d0d;
-    opacity: 0;
-    transition: opacity 0.45s ease;
-  }
-  .pa-overlay.revealed .pa-overlay-frame { opacity: 1; }
-  .pa-overlay-frame iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-  }
-
-  /* The poster that performs the grow (a static image → compositor-smooth). */
-  .pa-overlay-poster {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transform-origin: top left;
-    will-change: transform, opacity;
-    background: #0d0d0d;
-  }
-  .pa-overlay.revealed .pa-overlay-poster { opacity: 0; }
-
-  .pa-overlay-close {
-    position: fixed;
-    top: 0.6em;
-    right: 0.7em;
-    z-index: 1001;
-    width: 1.9em;
-    height: 1.9em;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 1.3rem;
-    line-height: 1;
-    color: #fff;
-    background: rgba(20, 20, 20, 0.8);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease 0.15s;
-  }
-  .pa-overlay.open .pa-overlay-close { opacity: 1; }
-  .pa-overlay-close:hover { background: rgba(20, 20, 20, 1); }
-  body.pa-locked { overflow: hidden; }
-</style>
+<link rel="stylesheet" href="live-demo.css">
 </head>
 <body class="page">
   <main>
-    <a class="back" href="work.html">Back</a>
+    <a class="back" href="index.html">Back</a>
 
     <ul class="entries">
       <li>
         <h2 class="entry-title">PapeAgNet</h2>
-        <figure class="pa-thumb" data-pa-open tabindex="0" role="button"
+        <figure class="ld-thumb" data-live-demo="papeagnet/index.html"
+        data-ready="canvas" data-title="PapeAgNet — live demo"
+        tabindex="0" role="button"
         aria-label="Expand the PapeAgNet live demo to fullscreen">
           <img src="assets/papeagnet/preview.png"
           alt="PapeAgNet dashboard: Pacific Northwest dealer regions and county agriculture metrics on an interactive map">
-          <span class="pa-expand" aria-hidden="true">
+          <span class="ld-expand" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
             points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
@@ -151,6 +33,17 @@
         architecture and feature set from zero specifications.</p>
         <p class="meta">React, TypeScript, MapLibre GL &middot;
         <a href="https://papeagnet.com">papeagnet.com</a></p>
+      </li>
+      <li>
+        <h2 class="entry-title">AI Sales Assistant</h2>
+        <p>A streaming chat agent that turns plain-English questions into live
+        ERP lookups across catalog, inventory, and orders. Traffic is routed
+        through a fixed-IP proxy server to clear the ERP vendor's allowlist
+        while the rest of the app stays fully serverless. Ships Microsoft SSO
+        with role-based access and per-member data permissions, managed from a
+        drag-and-drop admin board.</p>
+        <p class="meta">Next.js, TypeScript, Anthropic Claude, Neon Postgres,
+        Drizzle, Qdrant</p>
       </li>
       <li>
         <h2 class="entry-title">Cashflow forecasting pipeline &mdash; Trimble</h2>
@@ -170,124 +63,6 @@
 
   </main>
 
-  <!-- Fullscreen live-app overlay. A still poster grows from the thumbnail's
-       rectangle to fill the viewport, then cross-fades to the live app. The
-       iframe is never scaled (it loads full-size, behind the poster) so the
-       grow is a pure compositor animation and never stutters. -->
-  <div class="pa-overlay" id="pa-overlay" hidden>
-    <div class="pa-overlay-backdrop"></div>
-    <div class="pa-overlay-frame">
-      <iframe id="pa-frame" title="PapeAgNet — live demo" allow="fullscreen"></iframe>
-    </div>
-    <img class="pa-overlay-poster" id="pa-poster" src="assets/papeagnet/preview.png" alt="">
-    <button class="pa-overlay-close" type="button" data-pa-close
-    aria-label="Close the live demo">&times;</button>
-  </div>
-
-  <script>
-    (function () {
-      var overlay = document.getElementById('pa-overlay');
-      var poster  = document.getElementById('pa-poster');
-      var frame   = document.getElementById('pa-frame');
-      var thumb   = document.querySelector('[data-pa-open]');
-      var APP = 'papeagnet/index.html';
-      var GROW   = 'transform 0.88s cubic-bezier(0.22, 0.61, 0.36, 1)';
-      var SHRINK = 'transform 0.36s cubic-bezier(0.4, 0.0, 0.2, 1)';
-      var FADE   = 'opacity 0.45s ease';
-      var srcSet = false, ready = false, grown = false, revealT = null;
-      var thumbImg = thumb.querySelector('img');
-
-      // Keep the thumbnail's aspect ratio equal to the viewport's so collapsed()
-      // maps the poster onto it with a single uniform scale (sx === sy): the grow
-      // is a clean zoom with no stretch, and the two object-fit:cover crops line
-      // up so there's no jump on the first frame. Clamped so a portrait phone
-      // doesn't produce an absurdly tall preview card.
-      function syncThumbAspect() {
-        var ar = window.innerWidth / window.innerHeight;
-        thumbImg.style.aspectRatio = Math.max(1.2, Math.min(ar, 2.2));
-      }
-      syncThumbAspect();
-      window.addEventListener('resize', syncThumbAspect);
-
-      // Start loading the app (on hover/focus, or at open) — full-size and
-      // hidden behind the poster, so booting never touches the grow animation.
-      function preload() {
-        if (srcSet) return;
-        srcSet = true;
-        frame.addEventListener('load', function () { ready = true; maybeReveal(); });
-        frame.src = APP;
-      }
-
-      // Transform that maps the full-viewport poster onto the thumbnail's rect.
-      function collapsed() {
-        var r = thumb.getBoundingClientRect();
-        return 'translate(' + r.left + 'px, ' + r.top + 'px) scale('
-          + (r.width / window.innerWidth) + ', ' + (r.height / window.innerHeight) + ')';
-      }
-
-      // Cross-fade to the live app once the grow has finished AND it's loaded.
-      function maybeReveal() {
-        if (!grown || !ready || overlay.hidden || overlay.classList.contains('revealed')) return;
-        revealT = setTimeout(function () {
-          if (overlay.hidden) return;
-          poster.style.transition = FADE;
-          overlay.classList.add('revealed');
-        }, 300);
-      }
-
-      function open() {
-        preload();
-        grown = false;
-        overlay.hidden = false;
-        overlay.classList.remove('revealed');
-        // Start collapsed onto the thumbnail (no animation yet)...
-        poster.style.transition = 'none';
-        poster.style.transform = collapsed();
-        void poster.offsetWidth;                       // commit the start state
-        // ...then grow to full screen while the backdrop fades in.
-        poster.style.transition = GROW;
-        poster.style.transform = 'translate(0px, 0px) scale(1, 1)';
-        overlay.classList.add('open');
-        document.body.classList.add('pa-locked');
-        poster.addEventListener('transitionend', onGrown);
-      }
-
-      function onGrown(e) {
-        if (e.propertyName !== 'transform' || !overlay.classList.contains('open')) return;
-        poster.removeEventListener('transitionend', onGrown);
-        grown = true;
-        maybeReveal();
-      }
-
-      function close() {
-        clearTimeout(revealT);
-        poster.removeEventListener('transitionend', onGrown);
-        // SHRINK is transform-only, so removing .revealed snaps the still
-        // poster back over the app instantly; then it shrinks to the thumb.
-        poster.style.transition = SHRINK;
-        overlay.classList.remove('revealed');
-        poster.style.transform = collapsed();
-        overlay.classList.remove('open');
-        document.body.classList.remove('pa-locked');
-        var done = function (e) {
-          if (e.propertyName !== 'transform') return;
-          poster.removeEventListener('transitionend', done);
-          overlay.hidden = true;
-        };
-        poster.addEventListener('transitionend', done);
-      }
-
-      thumb.addEventListener('mouseenter', preload);
-      thumb.addEventListener('focus', preload);
-      thumb.addEventListener('click', open);
-      thumb.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
-      });
-      document.querySelector('[data-pa-close]').addEventListener('click', close);
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !overlay.hidden) close();
-      });
-    })();
-  </script>
+  <script src="live-demo.js"></script>
 </body>
 </html>
