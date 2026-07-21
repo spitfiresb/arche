@@ -421,13 +421,20 @@
         // contact — drawn over the car so the dirt reads in FRONT of the
         // sunk wheel (grass, drawn later, still fronts it all)
         if (sink) {
-          const tw = 14;                          // tyre half-width, scene px
-          [412, 1113].forEach(function (wx) {     // wheel centres in art space
+          const tw = 15;                          // tyre half-width, scene px
+          [500, 1294].forEach(function (wx) {     // wheel centres in art space
             const c = x + (wx - CAR.bx) * s;
             // mask the buried tyre bottom behind the dirt
             fel('path', { fill: '#fff', stroke: 'none', d:
               FM(c - tw - 2, gy + 0.5) + FL(c + tw + 2, gy + 0.5) +
               FL(c + tw + 2, gy + sink + 5) + FL(c - tw - 2, gy + sink + 5) + 'Z' });
+            // the white tyre body occludes the main ground edge at the contact,
+            // so re-lay it across the patch (buildFloor's own formula) to keep
+            // the dirt line unbroken where the tyre sits
+            let d1 = '';
+            for (let px = Math.floor((c - tw - 10) / 12) * 12; px <= c + tw + 10; px += 12)
+              d1 += (d1 ? 'L' : 'M') + ff(px) + ' ' + ff(gy + (fn(px) - 0.5) * 2.5);
+            fel('path', Object.assign(fln(1.8), { d: d1 }));
             // re-lay the lower dirt edge across the masked patch, reusing the
             // ground's own formula so it rejoins the line seamlessly
             let d2 = '';
@@ -488,11 +495,6 @@
       if (fw - 150 > busyR + 15) flower(fw - 145, 153);
       if (fw - 93 > busyR + 15) pine(fw - 62, 110, 151);
       if (fw - 61 > busyR + 15) pine(fw - 18, 155, 152);
-      if (tentOn) {
-        bird(cliffX + 75, gy - 135, 1);
-        bird(cliffX + 105, gy - 147, 0.8);
-      }
-      if (fw - 157 > busyR + 15) bird(fw - 110, gy - 161, 1);
       // drawn last of the scenery so it sits in front of the treeline;
       // the turf below then fronts its tyres
       if (carPlan) drawCar(carPlan.x, carPlan.h, carPlan.sink);
@@ -598,6 +600,18 @@
     // keep the floor above the wall so the turf and scree sit over the
     // cliff base where they meet
     main.appendChild(floorSvg);
+
+    // Overlay that shares the figure's coordinate space but paints ABOVE
+    // the floor, so his fire-poking stick and the embers it knocks loose
+    // sit in front of the flames instead of vanishing behind them
+    const overlay = document.createElementNS(NS, 'svg');
+    overlay.setAttribute('class', 'stickman');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.classList.add('on');
+    overlay.style.pointerEvents = 'none';
+    main.appendChild(overlay);
+    // the stick lives in the overlay so it draws over the fire
+    overlay.appendChild(stickEl);
 
     // Deterministic per-index noise so the rock keeps its shape across
     // resizes instead of reshuffling
@@ -997,6 +1011,12 @@
       rig.setAttribute('height', floorY + 40);
       rig.style.left = (ropeX - 64) + 'px';
       rig.style.top = '0px';
+      // overlay tracks the figure exactly so stick/ember coords line up
+      overlay.setAttribute('viewBox', '-34 0 90 ' + (floorY + 40));
+      overlay.setAttribute('width', 90);
+      overlay.setAttribute('height', floorY + 40);
+      overlay.style.left = (ropeX - 64) + 'px';
+      overlay.style.top = '0px';
       wall.setAttribute('viewBox', '0 0 ' + WALL_W + ' ' + floorY);
       wall.setAttribute('width', WALL_W);
       wall.setAttribute('height', floorY);
@@ -1058,6 +1078,13 @@
     // one arch of a sine inside [a,b], zero outside — for anticipation,
     // landing absorption etc.
     const bell = (t, a, b) => (t <= a || t >= b) ? 0 : Math.sin(Math.PI * (t - a) / (b - a));
+    // like bell but with zero SLOPE at both ends — ramps in/out with no
+    // velocity kick, so a knee tuck can't jolt the leg the instant it starts
+    const sbump = (t, a, b) => (t <= a || t >= b) ? 0 : 0.5 - 0.5 * Math.cos(2 * Math.PI * (t - a) / (b - a));
+    // smooth minimum: like Math.min but rounds the corner over blend width k,
+    // so the hip height has no velocity kink when the support leg hands off
+    const smin = (a, b, k) => { const h = Math.max(0, Math.min(1, 0.5 + 0.5 * (b - a) / k)); return b + (a - b) * h - k * h * (1 - h); };
+    const frac = (v) => v - Math.floor(v);
 
     function sp() { return { x: 0, y: 0, vx: 0, vy: 0 }; }
     // Spring with exponential damping: unconditionally stable no matter
@@ -1114,6 +1141,9 @@
 
     // Bone lengths
     const ARM1 = 9.5, ARM2 = 9.5, LEG1 = 13, LEG2 = 13.5;
+    // how long (ms) he keeps gripping the rope after his feet plant, before
+    // letting go on the dismount
+    const RELEASE_AFTER = 190;
 
     // Joint springs — stiffness/damping tuned per part: feet plant
     // crisply, the head is loose and lags, the rope tail is looser still
@@ -1220,6 +1250,7 @@
     let sitT0 = 0, grabT0 = 0;
     let poke = null, pokeAt = 0;   // current poke beat, next poke time
     let sweatMid = false, sweatFlick = false;
+    let released = false;  // has he let go of the rope on the dismount?
     let hop = null;        // in-flight hop tween
     let cleanPause = null; // paused at a ring, unclipping the strand below
 
@@ -1244,6 +1275,12 @@
       ]));
       put(S.r1, [0, 0]); put(S.r2, [0, 0]);
       put(S.r3, [0, 0]); put(S.r4, [0, 0]);
+      // park the elbow springs on the IK solve of the seeded pose, so an FK
+      // arm eases in from there instead of snapping to the swing target
+      const sh = { x: S.chest.x + (S.head.x - S.chest.x) * 0.25,
+        y: S.chest.y + (S.head.y - S.chest.y) * 0.25 };
+      put(S.elbowG, ik(sh, [S.handG.x, S.handG.y], ARM1, ARM2, T.bendG));
+      put(S.elbowB, ik(sh, [S.handB.x, S.handB.y], ARM1, ARM2, T.bendB));
     }
 
     function render(onRope, now) {
@@ -1258,13 +1295,11 @@
         ' Q' + f1(tcx) + ' ' + f1(tcy) + ' ' + f1(S.pelvis.x) + ' ' + f1(S.pelvis.y));
       headEl.setAttribute('cx', f1(S.head.x));
       headEl.setAttribute('cy', f1(S.head.y));
-      // arms: a driven elbow during the walk (whole arm swings), else IK
-      armGEl.setAttribute('d', armFK.g
-        ? limbPath(shoulder, [S.elbowG.x, S.elbowG.y], [S.handG.x, S.handG.y])
-        : limbPath(shoulder, ik(shoulder, [S.handG.x, S.handG.y], ARM1, ARM2, bends.g), [S.handG.x, S.handG.y]));
-      armBEl.setAttribute('d', armFK.b
-        ? limbPath(shoulder, [S.elbowB.x, S.elbowB.y], [S.handB.x, S.handB.y])
-        : limbPath(shoulder, ik(shoulder, [S.handB.x, S.handB.y], ARM1, ARM2, bends.b), [S.handB.x, S.handB.y]));
+      // arms: drawn through the sprung elbow in both modes. The elbow is spring-
+      // driven (in the sim step) toward the FK swing target or the IK solve, so
+      // it never pops when the two-bone IK flips sides as the hand nears the shoulder
+      armGEl.setAttribute('d', limbPath(shoulder, [S.elbowG.x, S.elbowG.y], [S.handG.x, S.handG.y]));
+      armBEl.setAttribute('d', limbPath(shoulder, [S.elbowB.x, S.elbowB.y], [S.handB.x, S.handB.y]));
       legFEl.setAttribute('d', limbPath(S.pelvis,
         ik(S.pelvis, [S.f1.x, S.f1.y], LEG1, LEG2, bends.l), [S.f1.x, S.f1.y]));
       legBEl.setAttribute('d', limbPath(S.pelvis,
@@ -1359,8 +1394,17 @@
             pts.push([fx + (toPost[i][0] - fx) * e, fy + (toPost[i][1] - fy) * e]);
           }
         } else {
+          // the belay-device waypoint: his harness while he's reclined on the
+          // rope, but eased onto the fist→brake-hand chord as he stands, so the
+          // strand doesn't dip into a hairpin below his raised brake hand
+          let dev = [S.pelvis.x - 1, S.pelvis.y + 2];
+          if (state === 'touch') {
+            const du = clamp01((now - touchT0) / 380);
+            const mx = (bx + S.handB.x) / 2, my = (by + S.handB.y) / 2;
+            dev = [dev[0] + (mx - dev[0]) * du, dev[1] + (my - dev[1]) * du];
+          }
           pts.push(
-            [S.pelvis.x - 1, S.pelvis.y + 2],
+            dev,
             [S.handB.x, S.handB.y],
             [S.b1.x, S.b1.y], [S.b2.x, S.b2.y],
             [S.b3.x, S.b3.y], [S.b4.x, S.b4.y],
@@ -1426,7 +1470,7 @@
       for (let i = 0; i < n; i++) {
         const el = shape('circle', {
           r: (0.7 + Math.random() * 0.5).toFixed(2), fill: '#000',
-        });
+        }, overlay);
         embers.push({
           el, t: 0,
           x: x + Math.random() * 6 - 3,
@@ -1446,7 +1490,6 @@
     // IK solve; the *Prev flags let the elbow spring seed cleanly the first
     // frame FK takes over so it doesn't snap in from the origin.
     const armFK = { g: false, b: false };
-    let armFKgPrev = false, armFKbPrev = false;
     // Debug knob: the whole rig — hops, cleaning beats, spring physics —
     // runs off one scaled clock. 1 = normal speed, 0.25 = quarter speed
     const SPEED = 1;
@@ -1545,21 +1588,33 @@
           sway += 0.27 * Math.sin(Math.PI * clamp01((t - 0.12) / 0.78));
           gx = -13 * bell(t, 0.08, 0.96);
           if (t >= 1) {
-            y = hop.to;
-            hop = null;
-            for (let i = 0; i < nodes.length; i++) {
-              if (positions[i] <= y + 2) reveal(i);
-            }
-            // landed at the next uncleaned ring: pause and clean it
-            const na = anchors[cleaned];
-            if (na && Math.abs(y - (na.y - 4)) <= 3) {
-              cleanPause = { t0: now, done: false, a: na };
-            }
-            if (Math.abs(y - restY) <= 1 && wantY === restY) {
-              // the last bounce set him down: straight into the
-              // touchdown crouch, grip still on the rope
-              state = 'touch';
-              touchT0 = now;
+            const finalHop = hop.to >= restY - 1 && wantY === restY;
+            if (finalHop) {
+              // the last bounce has run its course. Hold the reclined pose (feet
+              // driving firmly onto the turf) until they're actually PLANTED, then
+              // stand up — so he never uprights in mid-air. hop stays non-null so
+              // this frame's leg-swing keeps his feet on the turf (it's nulled on
+              // the first touch frame), avoiding a one-frame wall-snap.
+              y = restY;
+              const grounded = (floorY - 1 - S.f1.y) < 2 && (floorY - 1 - S.f2.y) < 2;
+              if (grounded) {
+                state = 'touch';
+                touchT0 = now;
+                for (let i = 0; i < nodes.length; i++) {
+                  if (positions[i] <= y + 2) reveal(i);
+                }
+              }
+            } else {
+              y = hop.to;
+              hop = null;
+              for (let i = 0; i < nodes.length; i++) {
+                if (positions[i] <= y + 2) reveal(i);
+              }
+              // landed at the next uncleaned ring: pause and clean it
+              const na = anchors[cleaned];
+              if (na && Math.abs(y - (na.y - 4)) <= 3) {
+                cleanPause = { t0: now, done: false, a: na };
+              }
             }
           }
         }
@@ -1597,42 +1652,49 @@
           T.pelvis[0] += 3 * c; T.pelvis[1] += 2 * c;
           T.head[0] += 1.2 * c; T.head[1] += 0.8 * c;
           const finalHop = hop.to >= restY - 1;
-          if (t > 0.16 && (t < 0.8 || finalHop)) {
-            // airborne: legs extended off the wall, gliding down the rope
-            airborne = true;
-            if (finalHop && t > 0.55) {
-              // the ground is coming up: the legs swing forward under
-              // him to meet the turf instead of reaching for the wall
-              const q = easeInOut(clamp01((t - 0.55) / 0.45));
+          if (finalHop) {
+            if (t > 0.16) {
+              // glide down, then reach the feet onto the turf and commit. Soft
+              // (gliding) early, then FIRM once they're headed for the floor, so
+              // they actually plant on time instead of hanging under him in the air
+              const q = easeInOut(clamp01((t - 0.5) / 0.42));
               T.f1 = [T.pelvis[0] + 13 - 15 * q,
                 T.pelvis[1] + 3 + (floorY - 1 - T.pelvis[1] - 3) * q];
               T.f2 = [T.pelvis[0] + 15 - 4 * q,
                 T.pelvis[1] + 9 + (floorY - 1 - T.pelvis[1] - 9) * q];
-            } else {
+              airborne = t < 0.5;
+              T.feetFast = t >= 0.5;
+            }
+          } else {
+            if (t > 0.16 && t < 0.8) {
+              // airborne: legs extended off the wall, gliding down the rope
+              airborne = true;
               T.f1 = [T.pelvis[0] + 15, T.pelvis[1] + 3];
               T.f2 = [T.pelvis[0] + 16.5, T.pelvis[1] + 9];
+              T.feetFast = false;
             }
-            T.feetFast = false;
+            // catch: knees absorb the landing
+            const d = bell(t, 0.8, 1);
+            T.pelvis[0] += 1.2 * d; T.pelvis[1] += 2.2 * d;
           }
-          // catch: knees absorb the landing (the final hop hands that
-          // job to the touchdown crouch instead)
-          const d = finalHop ? 0 : bell(t, 0.8, 1);
-          T.pelvis[0] += 1.2 * d; T.pelvis[1] += 2.2 * d;
         }
       } else if (state === 'touch') {
-        // feet down: knees soak up the arrival, and he rises out of
-        // the hang into standing beside the rope — the guide hand
-        // stays on the rope the whole time
+        hop = null;   // clean up the held final-hop tween on the first touch frame
+        // feet down: knees soak up the arrival, and he rises out of the hang,
+        // gripping the rope until the let-go delay, then letting go and walking
         const fy = floorY - 1;
         const u = clamp01((now - touchT0) / 380);
         const e = easeInOut(u);
         const c = bell(u, 0, 0.65);   // the absorbing crouch
+        // guide hand: grips the rope (x≈0) until RELEASE_AFTER, then eases off to
+        // the walk's neutral position. Both hands only ever drop — no reaching up.
+        const g = easeInOut(clamp01((now - touchT0 - RELEASE_AFTER) / 180));
         T = {
           pelvis: [-3 + 8 * e, fy - 26 + 2 * e + 6 * c],
           chest: [-2 + 6.5 * e, fy - 41 + 4.5 * e + 5 * c],
           head: [-2.5 + 6.8 * e, fy - 49 + 3.5 * e + 4 * c],
-          handG: [0, floorY - 57 + 7 * e],
-          handB: [-0.5 + 6 * e, fy - 50.5 + 23.5 * e],
+          handG: [9 * g, (floorY - 54) + 32 * g],       // gripping [0,restY+3] → neutral
+          handB: [-3.7 + 15.7 * e, floorY - 26.5 + 4.5 * e],  // behind the back → neutral
           // he lands in a step-out stance, feet exactly on the walk
           // cycle's first plant spots, so the first stride flows out
           // of the touchdown with neither foot sliding
@@ -1640,11 +1702,15 @@
           bendG: -1, bendB: -1, bendL: 1,
           feetFast: true,
         };
-        if (u >= 1) {
-          // straight into the walk: he lets go of the rope mid-stride
-          // over the first steps, so there's no standing beat here
+        // the moment the let-go delay elapses, the rope drops off his hand and
+        // settles to plumb — it stayed attached to his grip right up to here
+        if (!released && (now - touchT0) >= RELEASE_AFTER) {
+          released = true;
           releaseMorph = lastSlackPts;
           fallT0 = now;
+        }
+        // walk once he's fully up AND has let go (so the let-go delay isn't cut off)
+        if (u >= 1 && (now - touchT0) >= RELEASE_AFTER + 180) {
           if (stumpX !== null || campX !== null) {
             state = 'walk';
             walkT0 = now;
@@ -1660,92 +1726,90 @@
           }
         }
       } else if (state === 'walk') {
-        // walks over to the camp with planted feet: the stance
-        // foot stays put while the other swings past it in an arc, the
-        // body rides up over the planted leg and dips at each contact,
-        // arms swinging opposite the legs
+        // He crosses to the camp with a real walking gait: each planted
+        // foot lands in front, the body rides forward over it until the
+        // foot is well BEHIND the hip at toe-off, then it lifts and swings
+        // through. The hip height is driven by the leg geometry, so he
+        // vaults up over a near-straight stance leg and dips at each
+        // contact — which is what lets the trailing leg extend cleanly
+        // behind him instead of staying tucked underneath. These are the
+        // numbers dialled in on walk-sandbox.html.
         const fy = floorY - 1;
-        const SL = 18, ST = 430;        // step length px, step time ms
+        const STEP = 560, DUTY = 0.55, A = 11;      // ms/step, stance fraction, half stride
+        const LIFT = 3.5, TUCK = 3;                 // swing clearance, early-swing knee tuck
+        const LEGLEN = 26.5, PASS = 0.10;           // stance-leg reach, mid-stance knee softening
+        const LEAN = 0.01, SWAY = 1.0, BOB = 0.9;   // torso tilt / sway / head bob
         const t = now - walkT0;
-        const k = Math.floor(t / ST);   // which step
-        const u = clamp01(t / ST - k);  // progress within it
-        const x = Math.min(walkTo, walkFrom + (t / ST) * SL);
-        // one continuous wave that flips each step: drives the arm
-        // swing and the rise-and-fall in a single phase
-        const s = Math.sin(Math.PI * (k + u));
-        const rise = Math.abs(s);
-        // a little knee-give right at each contact, so the steps land
-        // soft instead of stiff-legged
-        const dip = bell(u, 0, 0.24) * 1.3;
-        // feet: plant bases sit exactly one step length apart, so every
-        // contact lands the same symmetric scissor (front +SL/2, back
-        // -SL/2) — uneven bases make alternating long and stunted
-        // strides. Each step the rear foot arcs 2*SL past the planted
-        // one; the swing runs a touch quicker than the step beat so
-        // each stride ends with a brief settled plant instead of the
-        // foot dropping at the last instant
-        const b1 = walkFrom - SL / 2, b2 = walkFrom + SL / 2;
-        const stepTo = (b, m) => b + m * 2 * SL;
-        const su = clamp01(u * 1.15);
-        const arc = easeInOut(su);
-        const lift = 5.5 * Math.sin(Math.PI * su);
-        let f1t, f2t;
-        if (k % 2 === 0) {
-          f1t = [stepTo(b1, k / 2) + 2 * SL * arc, fy - lift];
-          f2t = [stepTo(b2, k / 2), fy];
-        } else {
-          f1t = [stepTo(b1, (k + 1) / 2), fy];
-          f2t = [stepTo(b2, (k - 1) / 2) + 2 * SL * arc, fy - lift];
-        }
-        // torso stacked and upright, back straight. The pelvis height
-        // is tied to the leg geometry: it vaults high over the planted
-        // leg mid-step (stance leg straight) and dips at each contact,
-        // keeping both scissored legs inside their reach — a target
-        // past full extension draws as a stretched shank, never again
-        // a slight forward lean through chest and head, hands carried
-        // a touch higher so the elbows stay softly bent
+        // forward hip speed that keeps a planted foot fixed in the world
+        // while it slides from +A (front) to -A (back) over the stance phase
+        const vHip = A / (DUTY * STEP);
+        const x = Math.min(walkTo, walkFrom + vHip * t);
+        // +0.5 starts him mid-stride so the very first frame matches the
+        // dismount's step-out stance (near foot rear, far foot front) — the
+        // first stride flows straight out of the touchdown with no foot pop
+        const phi = t / (2 * STEP) + 0.5;           // strides elapsed
+        // one foot's fore/aft offset (dx, relative to the hip) and lift (h)
+        const foot = (p) => {
+          if (p < DUTY) {                           // stance: planted, sliding back under the body
+            const s2 = p / DUTY;
+            return { dx: A * (1 - 2 * s2), h: 0 };  // +A (heel strike) -> -A (toe-off, behind)
+          }
+          const s2 = (p - DUTY) / (1 - DUTY);       // swing: lift, arc forward, soft landing
+          const dx = -A + 2 * A * easeInOut(s2);
+          // pow 1.3 sets the foot down with zero vertical speed; the sbump
+          // knee-tuck eases in with no velocity kick as the foot toes off
+          const h = LIFT * Math.pow(Math.sin(Math.PI * s2), 1.3) + TUCK * sbump(s2, 0, 0.6);
+          return { dx, h };
+        };
+        const fA = foot(frac(phi)), fB = foot(frac(phi + 0.5));
+        // hip height: as high as EACH leg can still reach its foot (the
+        // straight-leg reach shrinks as the foot gets further fore/aft),
+        // softened a touch under the hips at mid-stance. The binding leg
+        // wins, rounded at the handoff so there's no kink at contact — so
+        // the hips ride up over the straight stance leg and dip as it passes.
+        const reach = (f) => {
+          const straight = Math.sqrt(Math.max(1, LEGLEN * LEGLEN - f.dx * f.dx));
+          const flex = PASS * Math.max(0, 1 - (f.dx * f.dx) / (A * A));
+          return f.h + straight - flex;
+        };
+        const ph = smin(reach(fA), reach(fB), 0.7);
+        const pelvisY = fy - ph;
+        const swayR = Math.sin(2 * Math.PI * phi) * SWAY;
+        // torso near-vertical (LEAN is a tiny forward tangent), chest and
+        // head swaying gently side to side, head bobbing twice a stride
         T = {
-          pelvis: [x, fy - 23.0 - 2.4 * rise + dip],
-          chest: [x + 1.6 + 0.5 * s, fy - 36.0 - 2.1 * rise + dip * 0.7],
-          head: [x + 2.7, fy - 45.0 - 1.9 * rise + dip * 0.5],
-          f1: f1t, f2: f2t,
+          pelvis: [x, pelvisY],
+          chest: [x + 13 * LEAN + swayR * 0.4, pelvisY - 13],
+          head: [x + 22 * LEAN + swayR * 0.8, pelvisY - 22 + BOB * Math.sin(4 * Math.PI * phi)],
+          f1: [x + fA.dx, fy - fA.h],
+          f2: [x + fB.dx, fy - fB.h],
           bendG: -1, bendB: -1, bendL: 1,
           feetFast: true,
           armFKg: true, armFKb: true,   // whole-arm swing, not IK-to-hand
         };
         // The N arm rig picked in walk-options: the whole arm swings from the
-        // shoulder. `a` is the arm-forward metric (+1 throws the arm forward,
-        // -1 back); the guide arm runs on +s and the far arm on -s, so each
-        // swings opposite its own leg. thU rotates the upper arm about the
-        // shoulder; the elbow flexes more up front (a>0) and straightens
-        // toward the back — so both segments move together instead of a stiff
-        // shoulder with only the forearm folding.
+        // shoulder. `a` is the arm-forward metric (+1 forward, -1 back) — the
+        // negated same-side foot offset, so each arm swings opposite its own
+        // leg. thU rotates the upper arm about the shoulder; the elbow flexes
+        // more up front (a>0) and straightens toward the back — so both
+        // segments move together instead of a stiff shoulder with only the
+        // forearm folding.
         const shX = T.chest[0] + (T.head[0] - T.chest[0]) * 0.25;
         const shY = T.chest[1] + (T.head[1] - T.chest[1]) * 0.25;
         const D2R = Math.PI / 180;
-        const swingArm = (a) => {
+        const swingArm = (n) => {
+          const a = -n;
           const thU = (4 + 22 * a) * D2R;                    // upper-arm angle, +x = forward
-          const flex = (14 + 34 * Math.max(0, a)) * D2R;     // elbow: 14° at back, folds up front
+          const flex = (6 + 34 * Math.max(0, a)) * D2R;      // elbow: 6° at back, folds up front
           const ex = shX + ARM1 * Math.sin(thU), ey = shY + ARM1 * Math.cos(thU);
           const thF = thU + flex;
           return { elbow: [ex, ey], hand: [ex + ARM2 * Math.sin(thF), ey + ARM2 * Math.cos(thF)] };
         };
-        const gArm = swingArm(s), bArm = swingArm(-s);
+        const gArm = swingArm(fA.dx / A), bArm = swingArm(fB.dx / A);
         T.handG = gArm.hand; T.elbowG = gArm.elbow;
         T.handB = bArm.hand; T.elbowB = bArm.elbow;
-        // over the first strides the guide hand is still trailing on the rope
-        // behind him, easing off it — release blends into the walk instead of
-        // being its own pause. While it reaches off the rope the guide arm
-        // reads better as IK to the hand, so FK only takes over once the
-        // swing is free (rel === 1).
-        const rel = easeInOut(clamp01((now - walkT0) / 420));
-        if (rel < 1) {
-          T.handG = [
-            T.handG[0] * rel,
-            (fy - 50) + (T.handG[1] - (fy - 50)) * rel,
-          ];
-          T.armFKg = false;
-        }
+        // he already let go on the dismount, so both arms swing freely from the
+        // first stride — no peeling the guide hand off the rope here
         // a few strides in he wipes his brow with the free hand and
         // flicks the sweat away
         const wp = (t - 750) / 1350;
@@ -1866,9 +1930,9 @@
         }
         bends.g = T.bendG; bends.b = T.bendB; bends.l = T.bendL;
         armFK.g = !!T.armFKg; armFK.b = !!T.armFKb;
-        // he's on the rope right through the bounces and the touchdown —
-        // the grip only opens in the release beat
-        const onRope = state === 'perch' || state === 'touch';
+        // he keeps his grip through the bounces and the landing hold, so the
+        // rope stays routed through his hand until the let-go delay elapses
+        const onRope = state === 'perch' || (state === 'touch' && !released);
         const fk = T.feetFast && !airborne ? 1000 : 320;
         const fd = T.feetFast && !airborne ? 50 : 30;
         // integrate in fixed substeps so a slow frame is subdivided,
@@ -1881,11 +1945,22 @@
           drive(S.head, T.head, 200, 21, h);
           drive(S.handG, T.handG, 900, 52, h);
           drive(S.handB, T.handB, 500, 36, h);
-          // the swinging elbows track a touch softer than the hands so the
-          // forearm trails through the turns; seed (put) on the first FK
-          // frame so the upper arm doesn't snap in from the origin
-          if (armFK.g) { armFKgPrev ? drive(S.elbowG, T.elbowG, 600, 40, h) : put(S.elbowG, T.elbowG); }
-          if (armFK.b) { armFKbPrev ? drive(S.elbowB, T.elbowB, 600, 40, h) : put(S.elbowB, T.elbowB); }
+          // elbows: exact IK where motion is fast and stable; spring-driven
+          // toward the IK/FK target through the touchdown and walk, so the elbow
+          // never teleports when the hand crosses near the shoulder (IK flip)
+          const shx = S.chest.x + (S.head.x - S.chest.x) * 0.25;
+          const shy = S.chest.y + (S.head.y - S.chest.y) * 0.25;
+          const smoothE = state === 'touch' || state === 'walk';
+          if (armFK.g) drive(S.elbowG, T.elbowG, 600, 40, h);
+          else {
+            const eG = ik({ x: shx, y: shy }, [S.handG.x, S.handG.y], ARM1, ARM2, bends.g);
+            smoothE ? drive(S.elbowG, eG, 900, 60, h) : put(S.elbowG, eG);
+          }
+          if (armFK.b) drive(S.elbowB, T.elbowB, 600, 40, h);
+          else {
+            const eB = ik({ x: shx, y: shy }, [S.handB.x, S.handB.y], ARM1, ARM2, bends.b);
+            smoothE ? drive(S.elbowB, eB, 900, 60, h) : put(S.elbowB, eB);
+          }
           drive(S.f1, T.f1, fk, fd, h);
           drive(S.f2, T.f2, fk * 0.85, fd * 0.9, h);
           // the strand below the brake hand: loose springs with a bowed
@@ -1947,7 +2022,6 @@
             if (s2.x > fx) { s2.x = fx; if (s2.vx > 0) s2.vx = 0; }
           });
         }
-        armFKgPrev = armFK.g; armFKbPrev = armFK.b;
         render(onRope, now);
       }
       requestAnimationFrame(tick);

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rabbit sandbox — ink</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #fff; }
+  main { min-height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+  .note { position: fixed; top: 12px; left: 14px; font-family: "Times New Roman", serif;
+    font-style: italic; color: #999; font-size: 13px; }
+  .meadow { display: block; width: 100%; }
+  /* ink language: white-filled silhouettes, black line, fine hatch shading */
+  .fillw { fill: #fff; stroke: #000; stroke-linejoin: round; stroke-linecap: round; }
+  .det   { fill: none; stroke: #000; stroke-width: 0.8; stroke-linejoin: round; stroke-linecap: round; }
+  .hatch { fill: none; stroke: #000; stroke-linecap: round; }
+  .shade { fill: none; stroke: none; }   /* measured, then swapped for clipped hatch */
+</style>
+</head>
+<body>
+  <main>
+    <p class="note">rabbit sandbox — ink · hops, grazes, twitches</p>
+    <svg class="meadow" aria-hidden="true">
+      <defs></defs>
+      <g class="scene"></g>
+
+      <!-- ============ THE RABBIT ============
+           Local coords: origin at the feet-centre on the ground line,
+           x right, y up = negative. Facing right; #rbFlip mirrors it to
+           travel left. Each form is a white silhouette with a black
+           outline; overlaps read as internal division lines. -->
+      <g id="rabbit">
+        <g id="rbLift">
+        <g id="rbFlip">
+        <g id="rbSquash">
+
+          <!-- far-side legs, tucked behind the body -->
+          <g id="legHindFar" class="fillw" stroke-width="1">
+            <path transform="translate(-7,-2)" d="M -46,-40 C -51,-25 -51,-10 -44,-2 L -33,-4 C -29,-18 -29,-30 -34,-42 C -39,-47 -44,-45 -46,-40 Z"/>
+            <path transform="translate(-7,-2)" d="M -48,-2 C -50,2 -46,6 -39,6 L -12,6 C -6,6 -4,1 -9,-3 C -21,-9 -35,-8 -45,-5 C -48,-4 -48,-3 -48,-2 Z"/>
+          </g>
+          <g id="legFrontFar" class="fillw" stroke-width="1">
+            <path transform="translate(-8,-1)" d="M 46,-50 C 48,-36 48,-16 45,-1 C 45,2 39,2 37,-1 C 35,-16 35,-36 38,-50 C 40,-54 44,-54 46,-50 Z"/>
+          </g>
+
+          <!-- cottontail -->
+          <path id="tail" class="fillw" stroke-width="1.1"
+            d="M -58,-58 C -66,-64 -74,-60 -74,-51 C -76,-49 -76,-43 -72,-41 C -71,-35 -64,-33 -59,-36 C -54,-34 -47,-38 -48,-45 C -45,-50 -50,-58 -58,-58 Z"/>
+          <path class="shade" data-sp="3.4" d="M -70,-44 C -73,-48 -73,-52 -70,-55 C -68,-50 -66,-45 -63,-42 C -66,-41 -69,-42 -70,-44 Z"/>
+
+          <!-- body: torso, belly, chest -->
+          <path id="body" class="fillw" stroke-width="1.5"
+            d="M 27,-70 C 24,-83 8,-91 -14,-90 C -35,-90 -49,-85 -58,-75
+               C -68,-65 -71,-51 -66,-39 C -62,-27 -52,-21 -40,-21
+               C -22,-21 -2,-24 16,-26 C 31,-28 41,-35 45,-47
+               C 48,-55 47,-62 43,-68 C 39,-72 33,-72 27,-70 Z"/>
+          <!-- core shadows on the body: top of the back, and the underbelly -->
+          <path class="shade" data-sp="3.4" d="M 16,-82 C -6,-89 -34,-89 -54,-79 C -34,-85 -8,-85 14,-79 C 16,-80 16,-81 16,-82 Z"/>
+          <path class="shade" data-sp="3.6" d="M -42,-22 C -22,-24 -2,-25 16,-27 C 2,-21 -20,-20 -40,-20 C -42,-20 -42,-21 -42,-22 Z"/>
+
+          <!-- haunch: the big folded thigh, its own round volume -->
+          <path id="thigh" class="fillw" stroke-width="1.2"
+            d="M -20,-82 C -42,-84 -60,-70 -63,-48 C -65,-32 -56,-18 -40,-15
+               C -28,-13 -19,-19 -17,-31 C -14,-49 -10,-72 -20,-82 Z"/>
+          <path class="det" opacity="0.75" d="M -18,-74 C -10,-58 -9,-40 -16,-22"/>
+          <!-- the round core shadow that makes the haunch read as a sphere -->
+          <path class="shade" data-sp="2.7" d="M -55,-58 C -63,-44 -58,-26 -42,-18 C -50,-32 -52,-48 -47,-64 C -52,-64 -54,-61 -55,-58 Z"/>
+
+          <!-- near hind leg: lower leg + long flat foot -->
+          <g id="legHind" class="fillw" stroke-width="1.1">
+            <path d="M -44,-42 C -49,-27 -49,-11 -42,-2 L -30,-4 C -26,-19 -26,-31 -31,-44 C -36,-49 -42,-47 -44,-42 Z"/>
+            <path d="M -47,-1 C -49,4 -44,7 -37,7 L -9,7 C -2,7 0,1 -5,-3 C -18,-10 -33,-9 -44,-5 C -47,-4 -47,-3 -47,-1 Z"/>
+            <path class="det" opacity="0.7" d="M -30,3 L -22,3 M -18,3 L -11,3"/>
+          </g>
+
+          <!-- near front leg -->
+          <g id="legFront" class="fillw" stroke-width="1.1">
+            <path d="M 47,-52 C 49,-37 49,-16 46,0 C 46,3 39,3 37,0 C 35,-16 35,-37 38,-52 C 40,-56 45,-56 47,-52 Z"/>
+            <path class="det" opacity="0.7" d="M 39,3 L 39,-2 M 43,3 L 43,-2"/>
+          </g>
+
+          <!-- ============ HEAD (swings at the neck to graze / look) ============ -->
+          <g id="head">
+            <!-- far ear, behind the head -->
+            <g id="earFar">
+              <path class="fillw" stroke-width="1.1"
+                d="M 48,-82 C 43,-96 41,-112 45,-126 C 47,-131 52,-129 54,-124 C 57,-110 56,-94 54,-82 Z"/>
+              <path class="shade" data-sp="2.6" d="M 50,-84 C 45,-97 44,-110 47,-122 C 49,-126 52,-124 53,-120 C 54,-107 54,-94 53,-84 Z"/>
+            </g>
+
+            <!-- skull + muzzle -->
+            <path id="skull" class="fillw" stroke-width="1.4"
+              d="M 30,-63 C 25,-72 27,-83 37,-87 C 45,-90 55,-88 61,-82
+                 C 67,-77 71,-71 72,-65 C 73,-61 71,-58 67,-57
+                 C 63,-56 59,-57 55,-59 C 49,-61 43,-62 39,-63
+                 C 35,-64 32,-64 30,-63 Z"/>
+            <!-- core shadow: back of the skull + under the jaw -->
+            <path class="shade" data-sp="3" d="M 32,-64 C 28,-72 30,-82 38,-86 C 34,-78 34,-70 40,-64 C 37,-63 34,-63 32,-64 Z"/>
+            <path class="shade" data-sp="3.4" d="M 45,-59 C 52,-56 60,-56 67,-58 C 60,-53 50,-53 44,-57 Z"/>
+            <path class="det" opacity="0.5" d="M 34,-80 C 44,-85 54,-84 61,-79"/>
+
+            <!-- eye: solid with a catch-light -->
+            <circle id="eyeball" cx="50.5" cy="-75.5" r="4.4" fill="#000"/>
+            <circle id="eyeglint" cx="49" cy="-77" r="1.2" fill="#fff"/>
+            <path class="det" opacity="0.85" d="M 45.5,-79.5 C 49,-82 53.5,-81.5 56,-78"/>
+
+            <!-- nose + mouth + whiskers -->
+            <g id="muzzle">
+              <path fill="#000" d="M 68,-61 C 71,-61 72,-59 70,-57 C 69,-56 67,-56 66,-57 C 65,-59 66,-61 68,-61 Z"/>
+              <path class="det" d="M 68,-56 L 68,-53 M 68,-53 C 66,-51 64,-51 62,-52 M 68,-53 C 69,-51 71,-51 72,-53"/>
+              <g fill="none" stroke="#000" stroke-width="0.55" stroke-linecap="round">
+                <path d="M 66,-58 C 74,-60 82,-61 90,-59"/>
+                <path d="M 66,-56 C 75,-56 84,-55 91,-53"/>
+                <path d="M 66,-54 C 74,-52 82,-50 89,-46"/>
+              </g>
+            </g>
+
+            <!-- near ear, in front -->
+            <g id="earNear">
+              <path class="fillw" stroke-width="1.2"
+                d="M 56,-82 C 61,-96 63,-113 59,-127 C 57,-132 51,-130 49,-124 C 46,-110 47,-93 50,-82 Z"/>
+              <path class="det" opacity="0.85"
+                d="M 55,-84 C 59,-97 60,-111 56,-123"/>
+              <path class="shade" data-sp="2.4" d="M 55,-84 C 59,-97 60,-111 56,-123 C 54,-127 51,-125 50,-120 C 48,-108 49,-94 52,-84 Z"/>
+            </g>
+          </g>
+
+        </g></g></g>
+      </g>
+    </svg>
+  </main>
+<script>
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.querySelector('.meadow');
+  const defs = svg.querySelector('defs');
+  const scene = svg.querySelector('.scene');
+  const $ = (id) => document.getElementById(id);
+  const rabbit = $('rabbit'), rbLift = $('rbLift'), rbFlip = $('rbFlip'),
+    rbSquash = $('rbSquash'), head = $('head'), earNear = $('earNear'),
+    earFar = $('earFar'), legHind = $('legHind'), legFront = $('legFront'),
+    legHindFar = $('legHindFar'), legFrontFar = $('legFrontFar'),
+    muzzle = $('muzzle'), eyeball = $('eyeball'), eyeglint = $('eyeglint');
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const clamp01 = (v) => clamp(v, 0, 1);
+  const smooth = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+  const smoother = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * t * (t * (t * 6 - 15) + 10));
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  const H = 260, GY = 214;
+  let W = 0;
+  const S = 0.62, rbHalf = 74 * S;
+
+  // ---- turn each .shade region into a clipped fine-hatch fill (engraving
+  // shading in the wall's language: parallel 60° rules trimmed to the form) ----
+  let hatchId = 0;
+  function decorateInk() {
+    svg.querySelectorAll('.shade').forEach((sh) => {
+      const bb = sh.getBBox();
+      const sp = parseFloat(sh.getAttribute('data-sp')) || 3;
+      const id = 'clip' + (hatchId++);
+      const cp = document.createElementNS(NS, 'clipPath');
+      cp.setAttribute('id', id);
+      cp.setAttribute('clipPathUnits', 'userSpaceOnUse');
+      const cpath = document.createElementNS(NS, 'path');
+      cpath.setAttribute('d', sh.getAttribute('d'));
+      cp.appendChild(cpath); defs.appendChild(cp);
+      // parallel diagonal rules across the bbox; the clip trims to the region
+      const tanInv = 0.577;                 // 60° from horizontal
+      const step = sp / 0.866;
+      let d = '';
+      for (let X = bb.x - bb.height * tanInv - 2; X < bb.x + bb.width + 2; X += step)
+        d += `M ${X.toFixed(1)} ${bb.y.toFixed(1)} L ${(X + bb.height * tanInv).toFixed(1)} ${(bb.y + bb.height).toFixed(1)} `;
+      const g = document.createElementNS(NS, 'g');
+      g.setAttribute('clip-path', 'url(#' + id + ')');
+      const hp = document.createElementNS(NS, 'path');
+      hp.setAttribute('class', 'hatch'); hp.setAttribute('d', d);
+      hp.setAttribute('stroke-width', '0.55');
+      g.appendChild(hp);
+      sh.parentNode.insertBefore(g, sh);
+      sh.remove();
+    });
+  }
+
+  // ---- meadow (ink) ----
+  let tufts = [];
+  function buildScene() {
+    W = document.documentElement.clientWidth;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('width', W); svg.setAttribute('height', H);
+    scene.textContent = '';
+    const el = (n, a) => { const e = document.createElementNS(NS, n);
+      for (const k in a) e.setAttribute(k, a[k]); scene.appendChild(e); return e; };
+    const fn = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+    // doubled ground edge, like the about-page floor
+    let d1 = '', d2 = '';
+    for (let px = 0; px <= W + 12; px += 12) {
+      const y = GY + (fn(px) - 0.5) * 2.5;
+      d1 += (px ? 'L' : 'M') + px + ' ' + y.toFixed(1);
+      d2 += (px ? 'L' : 'M') + px + ' ' + (y + 5.5 + fn(px / 12) * 2.5).toFixed(1);
+    }
+    el('path', { d: d1, fill: 'none', stroke: '#000', 'stroke-width': 1.8, 'stroke-linejoin': 'round' });
+    el('path', { d: d2, fill: 'none', stroke: '#000', 'stroke-width': 0.8, 'stroke-linejoin': 'round' });
+    // grass tufts (also feeding spots)
+    tufts = [];
+    const n = Math.max(6, Math.floor(W / 90));
+    for (let i = 0; i < n; i++) {
+      const x = W * (i + 0.5) / n + rnd(-24, 24);
+      const g = el('g', {});
+      const blades = 4 + Math.floor(Math.random() * 4);
+      let d = '';
+      for (let b = 0; b < blades; b++) {
+        const bx = x + (b - blades / 2) * 2.6;
+        const len = rnd(8, 17), lean = (b - blades / 2) * 1.3 + rnd(-1, 1);
+        d += `M ${bx.toFixed(1)} ${GY + 1.5} Q ${(bx + lean * 2).toFixed(1)} ${(GY - len * 0.6).toFixed(1)} ${(bx + lean * 4).toFixed(1)} ${(GY - len).toFixed(1)} `;
+      }
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d); p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', '#000'); p.setAttribute('stroke-width', '0.9');
+      p.setAttribute('stroke-linecap', 'round');
+      g.appendChild(p);
+      tufts.push({ x, el: g, full: true });
+    }
+  }
+
+  // ---- behaviour ----
+  const rb = { x: 0, face: 1, state: 'idle', t0: 0, dur: 1400,
+    hop: null, target: 0, eatTuft: null, blink: 0, nextBlink: 1600, blinkOff: 0, earTwT: 0 };
+
+  function nextAction(now) {
+    const r = Math.random();
+    if (r < 0.55) { const t = tufts[Math.floor(Math.random() * tufts.length)];
+      rb.eatTuft = t; startHopSeq(t.x - rb.face * 4, now); }
+    else if (r < 0.85) { rb.eatTuft = null; startHopSeq(rnd(rbHalf + 6, W - rbHalf - 6), now); }
+    else { rb.state = 'idle'; rb.t0 = now; rb.dur = rnd(1600, 3400); }
+  }
+  function startHopSeq(tx, now) { rb.state = 'hop';
+    rb.target = clamp(tx, rbHalf + 4, W - rbHalf - 4); startHop(now); }
+  function startHop(now) {
+    const remain = rb.target - rb.x; rb.face = remain >= 0 ? 1 : -1;
+    const dist = clamp(Math.abs(remain), 12, 58);
+    rb.hop = { x0: rb.x, x1: rb.x + rb.face * dist, t0: now, dur: 360 + dist * 4.2, apex: 20 + dist * 0.55 };
+  }
+
+  function frame(now) {
+    if (!rb.booted) { rb.booted = 1; rb.t0 = now; rb.nextBlink = now + 1800; }
+    if (now > rb.nextBlink && !rb.blink) { rb.blink = 1; rb.blinkOff = now + 110; }
+    if (rb.blink && now > rb.blinkOff) { rb.blink = 0; rb.nextBlink = now + rnd(1800, 4200); }
+
+    let lift = 0, pitch = 0, str = 0, sq = 0, headAng = 0, earN = 0, earF = 0,
+        hind = 0, front = 0, breath = 0, noseWig = Math.sin(now / 260) * 0.5;
+
+    if (rb.state === 'hop') {
+      const h = rb.hop, t = clamp01((now - h.t0) / h.dur);
+      lift = Math.sin(Math.PI * t) * h.apex;
+      rb.x = lerp(h.x0, h.x1, smoother(t));
+      const air = clamp01(lift / (h.apex * 0.45));
+      pitch = -13 * Math.cos(Math.PI * t) * rb.face;
+      str = 0.14 * Math.sin(Math.PI * t);
+      if (t < 0.14) sq = (0.14 - t) / 0.14 * 0.16;
+      else if (t > 0.86) sq = (t - 0.86) / 0.14 * 0.2;
+      hind = lerp(6, -46, air); front = lerp(-4, 34, air);
+      earN = 26 * air; earF = 30 * air; headAng = -6 * air;
+      if (t >= 1) {
+        if (Math.abs(rb.target - rb.x) > 8) { startHop(now); rb.hop.t0 = now + rnd(70, 190); }
+        else if (rb.eatTuft) { rb.state = 'graze'; rb.t0 = now; rb.dur = rnd(2400, 4200); }
+        else { rb.state = 'idle'; rb.t0 = now; rb.dur = rnd(900, 1800); }
+      }
+    } else if (rb.state === 'graze') {
+      const t = clamp01((now - rb.t0) / rb.dur);
+      const on = Math.min(smooth(t / 0.16), smooth((1 - t) / 0.16));
+      const nibble = Math.sin((now - rb.t0) / 85) * 0.5 + 0.5;
+      headAng = on * (34 + nibble * 5) * rb.face;
+      sq = on * 0.12; earN = on * -8; earF = on * -6;
+      if (rb.eatTuft && on > 0.6 && rb.eatTuft.full && Math.random() < 0.02) {
+        rb.eatTuft.el.style.transition = 'opacity .6s'; rb.eatTuft.el.style.opacity = '0.25';
+        rb.eatTuft.full = false;
+      }
+      if (t >= 1) { rb.eatTuft = null; nextAction(now); }
+    } else {
+      const e = now - rb.t0;
+      breath = Math.sin(e / 900) * 0.02;
+      headAng = Math.sin(e / 1300) * 4 * rb.face;
+      if (Math.random() < 0.006) rb.earTwT = now;
+      if (e > rb.dur) nextAction(now);
+    }
+    if (rb.earTwT) { const te = now - rb.earTwT;
+      if (te < 240) earN += Math.sin(te / 34) * 9 * (1 - te / 240); else rb.earTwT = 0; }
+
+    rabbit.setAttribute('transform', `translate(${rb.x.toFixed(2)} ${GY}) scale(${S})`);
+    rbLift.setAttribute('transform', `translate(0 ${(-lift).toFixed(2)})`);
+    rbFlip.setAttribute('transform', `scale(${rb.face} 1)`);
+    rbSquash.setAttribute('transform',
+      `rotate(${pitch.toFixed(2)}) scale(${(1 + str).toFixed(3)} ${(1 - sq + breath).toFixed(3)})`);
+    head.setAttribute('transform', `rotate(${headAng.toFixed(2)} 30 -60)`);
+    earNear.setAttribute('transform', `rotate(${earN.toFixed(2)} 52 -82)`);
+    earFar.setAttribute('transform', `rotate(${earF.toFixed(2)} 50 -82)`);
+    legHind.setAttribute('transform', `rotate(${hind.toFixed(2)} -38 -44)`);
+    legHindFar.setAttribute('transform', `rotate(${(hind * 0.9).toFixed(2)} -38 -44)`);
+    legFront.setAttribute('transform', `rotate(${front.toFixed(2)} 42 -52)`);
+    legFrontFar.setAttribute('transform', `rotate(${(front * 0.9).toFixed(2)} 42 -52)`);
+    muzzle.setAttribute('transform', `translate(${(noseWig * 0.6).toFixed(2)} ${(Math.abs(noseWig) * 0.4).toFixed(2)})`);
+    eyeball.setAttribute('transform', rb.blink ? 'translate(0 -75.5) scale(1 0.12) translate(0 75.5)' : '');
+    eyeglint.setAttribute('opacity', rb.blink ? 0 : 1);
+
+    requestAnimationFrame(frame);
+  }
+
+  buildScene();
+  decorateInk();
+  rb.x = W * 0.4;
+  requestAnimationFrame(frame);
+  addEventListener('resize', () => { buildScene(); rb.x = clamp(rb.x, rbHalf + 4, W - rbHalf - 4); });
+})();
+</script>
+</body>
+</html>
