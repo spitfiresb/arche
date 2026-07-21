@@ -5,6 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personal — Zain Saeed</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  /* FloorSense: preview thumbnail that expands into the live app */
+  .fs-thumb {
+    position: relative;
+    margin: 0.75em 0;
+    border: 1px solid #ccc;
+    overflow: hidden;
+    cursor: pointer;
+    line-height: 0;
+    background: #eee;
+  }
+  .fs-thumb img {
+    width: 100%;
+    height: 11em;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .fs-thumb:hover img,
+  .fs-thumb:focus-visible img { transform: scale(1.03); }
+  .fs-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
+  .fs-expand {
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.3em 0.55em;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.7rem;
+    line-height: 1;
+    color: #fff;
+    background: rgba(20, 20, 20, 0.7);
+    border-radius: 0.4em;
+    opacity: 0.85;
+    transition: opacity 0.2s, background 0.2s;
+  }
+  .fs-thumb:hover .fs-expand,
+  .fs-thumb:focus-visible .fs-expand { opacity: 1; background: rgba(20, 20, 20, 0.92); }
+  .fs-expand svg { width: 0.95em; height: 0.95em; }
+
+  /* Fullscreen overlay hosting the live app */
+  .fs-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .fs-overlay.open { opacity: 1; }
+  .fs-overlay iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fdfbf7;
+  }
+  .fs-overlay-close {
+    position: fixed;
+    top: 0.6em;
+    right: 0.7em;
+    z-index: 1001;
+    width: 1.9em;
+    height: 1.9em;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: #fff;
+    background: rgba(20, 20, 20, 0.8);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fs-overlay-close:hover { background: rgba(20, 20, 20, 1); }
+  body.fs-locked { overflow: hidden; }
+</style>
 </head>
 <body class="page">
   <main>
@@ -13,12 +95,22 @@
     <ul class="entries">
       <li>
         <h2 class="entry-title">ML Floorplan Analysis</h2>
-        <div class="shot">[ screenshot ]</div>
+        <figure class="fs-thumb" data-fs-open tabindex="0" role="button"
+        aria-label="Expand the FloorSense live demo to fullscreen">
+          <img src="assets/floorsense/preview.png"
+          alt="FloorSense detecting rooms, doors, and windows on a floor plan">
+          <span class="fs-expand" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
+            points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
+            x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
+            y2="14"/></svg>Expand
+          </span>
+        </figure>
         <p>A computer vision web app that identifies architectural elements in
         floorplan images using YOLO-based object detection, with real-time
         detection visualization and correction tools.</p>
-        <p class="meta">Next.js, React, YOLO, Roboflow &middot;
-        <a href="floorsense.html">try the live demo</a></p>
+        <p class="meta">Next.js, React, YOLO, Roboflow</p>
       </li>
       <li>
         <h2 class="entry-title">Unpak</h2>
@@ -52,5 +144,44 @@
     </ul>
 
   </main>
+
+  <!-- Fullscreen live-app overlay (iframe loads lazily on first expand) -->
+  <div class="fs-overlay" id="fs-overlay" hidden>
+    <button class="fs-overlay-close" type="button" data-fs-close
+    aria-label="Close the live demo">&times;</button>
+    <iframe id="fs-frame" title="FloorSense — live demo" allow="fullscreen"></iframe>
+  </div>
+
+  <script>
+    (function () {
+      var overlay = document.getElementById('fs-overlay');
+      var frame = document.getElementById('fs-frame');
+      var loaded = false;
+
+      function open() {
+        if (!loaded) { frame.src = 'floorsense.html?embed=1'; loaded = true; }
+        overlay.hidden = false;
+        requestAnimationFrame(function () { overlay.classList.add('open'); });
+        document.body.classList.add('fs-locked');
+      }
+      function close() {
+        overlay.classList.remove('open');
+        document.body.classList.remove('fs-locked');
+        setTimeout(function () { overlay.hidden = true; }, 200);
+      }
+
+      document.querySelectorAll('[data-fs-open]').forEach(function (el) {
+        el.addEventListener('click', open);
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+      });
+      document.querySelector('[data-fs-close]').addEventListener('click', close);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !overlay.hidden) close();
+      });
+    })();
+  </script>
 </body>
 </html>
