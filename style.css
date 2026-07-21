@@ -15,6 +15,15 @@ body.home {
   justify-content: center;
 }
 
+/* Home-style pages (home + the Work index) share the centered layout.
+   Pin the content column to a fixed width so a page with only short
+   links (Work) fills the same column as the home page instead of
+   shrinking to fit its labels — otherwise its links get centered as a
+   narrow block and sit right of the home page's left edge. */
+body.home main {
+  width: 24em;
+}
+
 body.home a {
   text-decoration: none;
 }
@@ -134,8 +143,11 @@ li.li-hover:focus-within .li-logo {
 .li-hover-reveal {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  /* inset by the li's own padding so the card spans exactly the content
+     width (--liw / --ghw) — otherwise the box is 1.7em wider than the
+     banner and a strip of card shows past the image's right edge */
+  left: 0.85em;
+  width: calc(100% - 1.7em);
   z-index: 1;
   display: grid;
   grid-template-rows: 0fr;
@@ -647,10 +659,10 @@ ul.entries p {
    the growing box and the content laid out inside it, so the card can
    never clip its own right edge. */
 ul.links li.li-hover.gh {
-  /* wide as the design allows, but never past the right viewport edge:
-     the card's left edge sits at 50vw - 12em when main is centered, or
-     ~1.5em from the left once the viewport is narrower than main */
-  --ghw: min(37em, 100vw - 4em, 50vw + 10.5em);
+  /* compact: only as wide as the calendar needs, never past the right
+     viewport edge (the card's left edge sits ~0.85em right of the text
+     column once inset by the li padding) */
+  --ghw: min(29em, 100vw - 4em, 50vw + 9.5em);
 }
 
 ul.links li.li-hover.gh:hover,
@@ -667,8 +679,10 @@ ul.links li.li-hover.gh:focus-within {
 .gh-card {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Noto Sans", Helvetica, Arial, sans-serif;
-  background: #fff;
-  color: #1f2328;
+  /* GitHub dark theme */
+  background: #0d1117;
+  color: #e6edf3;
+  border-color: #30363d;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -676,16 +690,16 @@ ul.links li.li-hover.gh:focus-within {
   /* padding counts inside the width, so the inner layout is exactly as
      wide as the card box and nothing clips at the right edge */
   box-sizing: border-box;
-  padding: 12px 16px 16px;
+  padding: 10px 12px 12px;
 }
 
 .gh-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 9px;
+  margin-bottom: 8px;
   /* clear the octocat, which lands in the card's top-left on hover */
-  padding-left: 30px;
+  padding-left: 28px;
 }
 
 /* The octocat parks vertically centered on the avatar row */
@@ -695,10 +709,10 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 }
 
 .gh-avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid rgba(31, 35, 40, 0.15);
+  border: 1px solid rgba(240, 246, 252, 0.1);
 }
 
 .gh-name {
@@ -711,19 +725,19 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 .gh-login {
   margin: 0;
   font-size: 12px;
-  color: #656d76;
+  color: #8b949e;
 }
 
 .gh-graph {
   position: relative; /* anchors the day tooltip */
-  border: 1px solid #d1d9e0;
+  border: 1px solid #30363d;
   border-radius: 6px;
-  padding: 8px;
+  padding: 6px;
 }
 
 /* The hovered day lights up its outline immediately */
 .gh-graph rect:hover {
-  stroke: rgba(27, 31, 35, 0.45);
+  stroke: rgba(240, 246, 252, 0.3);
 }
 
 /* Instant per-day tooltip (GitHub's dark bubble) */
@@ -767,12 +781,12 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 
 .gh-month {
   font-size: 9px;
-  fill: #656d76;
+  fill: #8b949e;
 }
 
 .gh-graph-fallback {
   font-size: 13px;
-  color: #656d76;
+  color: #8b949e;
   text-align: center;
   padding: 1.5em 8px;
 }
@@ -780,8 +794,8 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 /* The headline stat rides the header row, pushed to the right edge */
 .gh-total {
   margin: 0 0 0 auto;
-  font-size: 14px;
-  color: #1f2328;
+  font-size: 13px;
+  color: #8b949e;
 }
 
 /* Screenshot placeholder until real images go in */
