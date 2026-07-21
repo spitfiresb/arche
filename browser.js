@@ -182,11 +182,32 @@
   /* --- Hover card: lay out the inner content at the card's final width,
          so the box uncovers it as it grows instead of squishing it --- */
 
+  // The LinkedIn card opens leftward, so it can only be as wide as the
+  // page margin left of its mark. Below this it would be too cramped to
+  // read, and the card opens rightward instead (narrow windows, phones).
+  var OPEN_LEFT_MIN = 260;
+  var EDGE_GUTTER = 12;   // never touch the viewport's left edge
+
   function sizeHoverCards() {
     var cards = document.querySelectorAll(".li-hover-card");
     for (var i = 0; i < cards.length; i++) {
-      var list = cards[i].closest("ul");
-      cards[i].style.setProperty("--liw", list.clientWidth + "px");
+      var list = cards[i].closest("ul.links");
+      if (!list) continue;
+      /* set on the item, not the card: the reveal wrapper is the card's
+         parent and widens out to --liw as well */
+      var host = cards[i].closest("li.li-hover") || cards[i];
+      var width = list.clientWidth;
+
+      if (!cards[i].classList.contains("gh-card")) {
+        // room between the viewport edge and the mark's right edge —
+        // exactly the span a leftward-opening card has to live in
+        var room = host.getBoundingClientRect().right - EDGE_GUTTER;
+        var opensLeft = room >= Math.min(OPEN_LEFT_MIN, width);
+        host.classList.toggle("opens-left", opensLeft);
+        if (opensLeft) width = Math.min(width, room);
+      }
+
+      host.style.setProperty("--liw", width + "px");
     }
   }
 
@@ -205,8 +226,8 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var days = data.contributions;
-        // GitHub's light-theme green intensity ramp (empty -> brightest)
-        var colors = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
+        // GitHub's dark-theme green intensity ramp (empty -> brightest)
+        var colors = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"];
         var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         var fullMonths = ["January", "February", "March", "April", "May",
@@ -250,7 +271,7 @@
           rect.setAttribute("rx", 2);
           rect.setAttribute("fill", colors[d.level]);
           // GitHub's faint outline keeps even the empty cells defined
-          rect.setAttribute("stroke", "rgba(27, 31, 35, 0.06)");
+          rect.setAttribute("stroke", "rgba(255, 255, 255, 0.05)");
           var nice = new Date(d.date + "T00:00:00");
           rect.setAttribute("data-tip",
             (d.count === 0 ? "No" : d.count) +
