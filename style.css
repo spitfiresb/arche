@@ -13,7 +13,10 @@
   --fg: #f2f2f2;
   --muted: #a0a0a0;         /* gray11 — descriptions and intro body */
   --faint: #7e7e7e;         /* gray10 — section labels */
+  --line: rgba(242, 242, 242, 0.1);   /* hairline: artifact frames, plate rules */
+  --plate: #141414;         /* one step below the page — recessed panels */
   --content-width: 48rem;   /* content column width (768px) */
+  --work-width: 60rem;      /* wider column for the two-up work bands (960px) */
   --font-sans: "Sohne", "Helvetica Neue", "Inter", -apple-system,
     BlinkMacSystemFont, Helvetica, Arial, sans-serif;
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
@@ -56,43 +59,35 @@ body.home main {
   width: 24em;
 }
 
-/* Landing: paco.me layout — name, a wide intro, then work laid out across
-   three labelled columns. Top-anchored, left-aligned, sitting in a fixed
-   640px column centered on the page. */
+/* Landing: paco.me layout — a greeting, the links, then work laid out
+   across three labelled columns. Left-aligned in a fixed 640px column
+   centered on the page. The greeting block is anchored near the top and
+   the work grid floats in the space left below it, so the columns sit
+   vertically centered on tall screens. */
 body.home.landing {
   display: block;
 }
 
 body.home.landing main {
+  box-sizing: border-box;
   width: var(--content-width);
   max-width: calc(100vw - 3rem);
+  min-height: 100vh;
   margin: 0 auto;
-  padding: 14vh 1.5rem 6rem;
+  padding: 20vh 1.5rem 6rem;
   font-size: 1.0625rem;   /* paco's 17px body */
   line-height: 1.5;
+  display: flex;
+  flex-direction: column;
 }
 
-.name {
-  margin: 0 0 2rem;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-/* Intro: near-white body with a serif-italic lead-in, like paco's */
-.intro {
-  margin: 0 0 1.4rem;
-  max-width: 42rem;
-}
-
-.intro-2 {
+/* The page opens on the greeting and goes straight into the links */
+.greeting {
   margin: 0;
   max-width: 42rem;
-}
-
-.intro em {
-  font-family: var(--font-serif);
-  font-style: italic;
+  font-size: inherit;     /* sit at body size, like the old name line */
   font-weight: 400;
+  line-height: 1.5;
 }
 
 /* Three work columns */
@@ -100,7 +95,11 @@ body.home.landing main {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  margin: 4rem 0 4.5rem;
+  /* auto top/bottom absorbs the leftover height, centering the columns in
+     the space under the links; the 5rem floor keeps them clear of the
+     greeting when the window is too short to have any slack */
+  margin: auto 0;
+  padding-top: 5rem;
 }
 
 .col > h2 {
@@ -152,13 +151,11 @@ body.home.landing main {
   font-style: italic;
 }
 
-/* Elsewhere: keep the About / LinkedIn / GitHub list narrow so the hover
-   preview cards stay a sensible size within the wide layout */
-.elsewhere > h2 {
-  margin: 0 0 1.1rem;
-  font-size: 0.8125rem;   /* match the work-column labels */
-  font-weight: 400;
-  color: var(--faint);
+/* About / LinkedIn / GitHub sit between the intro and the work columns.
+   Keep the list narrow so the hover preview cards stay a sensible size
+   within the wide layout */
+.elsewhere {
+  margin-top: 2.5rem;
 }
 
 .elsewhere ul.links {
@@ -569,23 +566,187 @@ ul.timeline p {
   margin: 0;
 }
 
-/* Work entries: no timeline rule, just stacked items */
-ul.entries {
+/* ── Work pages: alternating artifact / prose bands ───────────────────
+   Each project is a two-column band, and the columns swap sides down the
+   page: artifact left on odd bands, right on even ones.
+
+   The artifact column always carries the evidence. When a project has a
+   UI, that's a live preview (see live-demo.css) with its stack set as a
+   caption underneath. When it has no interface to show — a pipeline, an
+   agent, infrastructure — the stack itself fills the column as a
+   recessed plate, so the rhythm holds without falling back on an empty
+   placeholder frame. A project that's still a stub uses .solo and runs
+   as a single quiet column.
+
+   Adding a project means copying an <li>; alternation is positional, so
+   nothing downstream needs renumbering. */
+
+body.page.work main {
+  max-width: var(--work-width);
+  padding-top: 5em;
+}
+
+.page-head {
+  margin-bottom: 5rem;
+}
+
+.page-head .back {
+  margin-bottom: 2.25rem;
+}
+
+/* The page label repeats the landing page's column heading verbatim —
+   you clicked "Personal" over there, you're under "Personal" here. */
+.page-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+ul.bands {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-ul.entries li {
-  margin-bottom: 2.5em;
+ul.bands > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 5.5rem;
 }
 
-ul.entries p {
-  margin: 0 0 0.5em;
+ul.bands > li:last-child {
+  margin-bottom: 0;
 }
 
-.meta {
-  font-style: italic;
+/* Placed explicitly rather than by source order, so the columns can swap
+   without the markup moving — the prose always follows the title for a
+   screen reader, whichever side it's painted on. */
+.band-artifact { grid-row: 1; grid-column: 1; }
+.band-prose    { grid-row: 1; grid-column: 2; }
+ul.bands > li:nth-child(even) .band-artifact { grid-column: 2; }
+ul.bands > li:nth-child(even) .band-prose    { grid-column: 1; }
+
+/* A project with nothing to show yet: one column, natural measure */
+ul.bands > li.solo {
+  grid-template-columns: 1fr;
+}
+
+ul.bands > li.solo .band-prose {
+  grid-column: 1;
+  max-width: 34rem;
+}
+
+.band-title {
+  margin: 0 0 0.8rem;
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.band-prose p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.band-prose p + p {
+  margin-top: 0.9rem;
+}
+
+.band-link {
+  display: inline-block;
+  margin-top: 1.1rem;
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(242, 242, 242, 0.35);
+}
+
+.band-link:hover {
+  text-decoration-color: var(--fg);
+}
+
+/* Live preview sits flush in the band, framed by a hairline */
+.band-artifact .ld-thumb {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+/* Stack, set as a caption under a preview */
+.stack-caption {
+  margin: 0.85rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+/* Stack plate: the artifact for a project with no interface to screenshot */
+.plate {
+  padding: 1.75rem 1.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--plate);
+}
+
+.plate h3 {
+  margin: 0 0 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.plate ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plate li {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.plate li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.plate li:last-child {
+  padding-bottom: 0;
+}
+
+/* Narrow screens: bands stack, artifact above prose every time */
+@media (max-width: 52rem) {
+  body.page.work main {
+    padding-top: 4em;
+  }
+  .page-head {
+    margin-bottom: 3rem;
+  }
+  ul.bands > li,
+  ul.bands > li.solo {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+  .band-artifact,
+  ul.bands > li:nth-child(even) .band-artifact {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .band-prose,
+  ul.bands > li:nth-child(even) .band-prose {
+    grid-row: 2;
+    grid-column: 1;
+  }
 }
 
 /* Work page: toggle between Interfaces and Systems */
@@ -952,16 +1113,4 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   margin: 0 0 0 auto;
   font-size: 13px;
   color: #656d76;
-}
-
-/* Screenshot placeholder until real images go in */
-.shot {
-  background: #eee;
-  border: 1px solid #ccc;
-  height: 8em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  margin: 0.75em 0;
 }

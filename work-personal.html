@@ -7,60 +7,105 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="live-demo.css">
 </head>
-<body class="page">
+<body class="page work">
   <main>
-    <a class="back" href="index.html">Back</a>
+    <header class="page-head">
+      <a class="back" href="index.html">Back</a>
+      <h1 class="page-title">Personal</h1>
+    </header>
 
-    <ul class="entries">
+    <ul class="bands">
       <li>
-        <h2 class="entry-title">ML Floorplan Analysis</h2>
-        <figure class="ld-thumb" data-live-demo="floorsense.html?embed=1"
-        data-bg="#fdfbf7" data-title="FloorSense — live demo"
-        tabindex="0" role="button"
-        aria-label="Expand the FloorSense live demo to fullscreen">
-          <img src="assets/floorsense/preview.png"
-          alt="The FloorSense app landing page">
-          <span class="ld-expand" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
-            points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
-            x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
-            y2="14"/></svg>
-          </span>
-        </figure>
-        <p>A computer vision web app that identifies architectural elements in
-        floorplan images using YOLO-based object detection, with real-time
-        detection visualization and correction tools.</p>
-        <p class="meta">Next.js, React, YOLO, Roboflow</p>
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="floorsense.html?embed=1"
+          data-bg="#fdfbf7" data-title="FloorSense — live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the FloorSense live demo to fullscreen">
+            <img src="assets/floorsense/preview.png"
+            alt="The FloorSense app landing page">
+            <span class="ld-expand" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
+              points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
+              x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
+              y2="14"/></svg>
+            </span>
+          </figure>
+          <p class="stack-caption">Next.js &middot; React &middot; YOLO &middot; Roboflow</p>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">ML Floorplan Analysis</h2>
+          <p>A computer vision web app that identifies architectural elements in
+          floorplan images using YOLO-based object detection, with real-time
+          detection visualization and correction tools.</p>
+        </div>
       </li>
+
       <li>
-        <h2 class="entry-title">Unpak</h2>
-        <p>A workforce intelligence platform that surfaces how work actually
-        happens by observing human&ndash;computer and human&ndash;AI
-        interaction. I designed the full capture and processing architecture
-        and built the pipeline behind it.</p>
-        <p class="meta">Rust, Supabase, pgvector, PM4Py</p>
+        <div class="band-artifact">
+          <div class="plate">
+            <h3>Built with</h3>
+            <ul>
+              <li>Rust</li>
+              <li>Supabase</li>
+              <li>pgvector</li>
+              <li>PM4Py</li>
+            </ul>
+          </div>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Unpak</h2>
+          <p>A workforce intelligence platform that surfaces how work actually
+          happens by observing human&ndash;computer and human&ndash;AI
+          interaction. I designed the full capture and processing architecture
+          and built the pipeline behind it.</p>
+        </div>
       </li>
+
       <li>
-        <h2 class="entry-title">Notch</h2>
-        <div class="shot">[ screenshot ]</div>
-        <p>A macOS utility that turns the display notch into an interactive
-        hub. Hover it and the black blob expands into Now Playing controls, a
-        screenshot shelf, and clipboard history. A menu-bar-less SwiftUI/AppKit
-        app that lives entirely in the notch.</p>
-        <p class="meta">Swift, SwiftUI, AppKit</p>
+        <div class="band-artifact">
+          <div class="plate">
+            <h3>Built with</h3>
+            <ul>
+              <li>Swift</li>
+              <li>SwiftUI</li>
+              <li>AppKit</li>
+            </ul>
+          </div>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Notch</h2>
+          <p>A macOS utility that turns the display notch into an interactive
+          hub. Hover it and the black blob expands into Now Playing controls, a
+          screenshot shelf, and clipboard history. A menu-bar-less SwiftUI/AppKit
+          app that lives entirely in the notch.</p>
+        </div>
       </li>
+
       <li>
-        <h2 class="entry-title">Steward AI</h2>
-        <p>[ description to come ]</p>
-        <p class="meta">[ stack &middot; link ]</p>
+        <div class="band-artifact">
+          <div class="plate">
+            <h3>Built with</h3>
+            <ul>
+              <li>HTML</li>
+              <li>CSS</li>
+              <li>Vanilla JavaScript</li>
+            </ul>
+          </div>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">This website</h2>
+          <p>The site you're reading now &mdash; hand-built with no framework,
+          down to the interactive hover cards and small easter eggs scattered
+          through the pages.</p>
+        </div>
       </li>
-      <li>
-        <h2 class="entry-title">This website</h2>
-        <p>The site you're reading now &mdash; hand-built with no framework,
-        down to the interactive hover cards and small easter eggs scattered
-        through the pages.</p>
-        <p class="meta">HTML, CSS, vanilla JavaScript</p>
+
+      <li class="solo">
+        <div class="band-prose">
+          <h2 class="band-title">Steward AI</h2>
+          <p>[ description to come ]</p>
+        </div>
       </li>
     </ul>
 

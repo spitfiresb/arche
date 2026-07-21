@@ -7,57 +7,104 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="live-demo.css">
 </head>
-<body class="page">
+<body class="page work">
   <main>
-    <a class="back" href="index.html">Back</a>
+    <header class="page-head">
+      <a class="back" href="index.html">Back</a>
+      <h1 class="page-title">Contract</h1>
+    </header>
 
-    <ul class="entries">
+    <ul class="bands">
       <li>
-        <h2 class="entry-title">PapeAgNet</h2>
-        <figure class="ld-thumb" data-live-demo="papeagnet/index.html"
-        data-ready="canvas" data-title="PapeAgNet — live demo"
-        tabindex="0" role="button"
-        aria-label="Expand the PapeAgNet live demo to fullscreen">
-          <img src="assets/papeagnet/preview.png"
-          alt="PapeAgNet dashboard: Pacific Northwest dealer regions and county agriculture metrics on an interactive map">
-          <span class="ld-expand" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
-            points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
-            x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
-            y2="14"/></svg>
-          </span>
-        </figure>
-        <p>A geospatial analytics platform for Oregon's largest equipment
-        dealer, serving 1,500 employees across six states. Designed the product
-        architecture and feature set from zero specifications.</p>
-        <p class="meta">React, TypeScript, MapLibre GL &middot;
-        <a href="https://papeagnet.com">papeagnet.com</a></p>
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="papeagnet/index.html"
+          data-ready="canvas" data-title="PapeAgNet — live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the PapeAgNet live demo to fullscreen">
+            <img src="assets/papeagnet/preview.png"
+            alt="PapeAgNet dashboard: Pacific Northwest dealer regions and county agriculture metrics on an interactive map">
+            <span class="ld-expand" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
+              points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
+              x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
+              y2="14"/></svg>
+            </span>
+          </figure>
+          <p class="stack-caption">React &middot; TypeScript &middot; MapLibre GL</p>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">PapeAgNet</h2>
+          <p>A geospatial analytics platform for Oregon's largest equipment
+          dealer, serving 1,500 employees across six states. Designed the product
+          architecture and feature set from zero specifications.</p>
+          <a class="band-link" href="https://papeagnet.com">papeagnet.com</a>
+        </div>
       </li>
+
       <li>
-        <h2 class="entry-title">AI Sales Assistant</h2>
-        <p>A streaming chat agent that turns plain-English questions into live
-        ERP lookups across catalog, inventory, and orders. Traffic is routed
-        through a fixed-IP proxy server to clear the ERP vendor's allowlist
-        while the rest of the app stays fully serverless. Ships Microsoft SSO
-        with role-based access and per-member data permissions, managed from a
-        drag-and-drop admin board.</p>
-        <p class="meta">Next.js, TypeScript, Anthropic Claude, Neon Postgres,
-        Drizzle, Qdrant</p>
+        <div class="band-artifact">
+          <div class="plate">
+            <h3>Built with</h3>
+            <ul>
+              <li>Next.js</li>
+              <li>TypeScript</li>
+              <li>Anthropic Claude</li>
+              <li>Neon Postgres</li>
+              <li>Drizzle</li>
+              <li>Qdrant</li>
+            </ul>
+          </div>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">AI Sales Assistant</h2>
+          <p>A streaming chat agent that turns plain-English questions into live
+          ERP lookups across catalog, inventory, and orders. Traffic is routed
+          through a fixed-IP proxy server to clear the ERP vendor's allowlist
+          while the rest of the app stays fully serverless.</p>
+          <p>Ships Microsoft SSO with role-based access and per-member data
+          permissions, managed from a drag-and-drop admin board.</p>
+        </div>
       </li>
+
       <li>
-        <h2 class="entry-title">Cashflow forecasting pipeline &mdash; Trimble</h2>
-        <p>Sourced data via Snowflake and SQL Server for later-stage reporting,
-        and cut deployment diagnostics by over 90% with automated bulk
-        deployment scripts.</p>
-        <p class="meta">Azure, Snowflake, Helm, Kubernetes</p>
+        <div class="band-artifact">
+          <div class="plate">
+            <h3>Built with</h3>
+            <ul>
+              <li>Azure</li>
+              <li>Snowflake</li>
+              <li>Helm</li>
+              <li>Kubernetes</li>
+            </ul>
+          </div>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Cashflow forecasting pipeline &mdash; Trimble</h2>
+          <p>Sourced data via Snowflake and SQL Server for later-stage reporting,
+          and cut deployment diagnostics by over 90% with automated bulk
+          deployment scripts.</p>
+        </div>
       </li>
+
       <li>
-        <h2 class="entry-title">Data pipelines &mdash; ExpertFlow</h2>
-        <p>Built pipelines in a Medallion architecture, migrated workflows from
-        Airflow to Prefect, and automated JSON transfers from MongoDB to
-        ClickHouse.</p>
-        <p class="meta">Prefect, ClickHouse, MongoDB, Docker</p>
+        <div class="band-artifact">
+          <div class="plate">
+            <h3>Built with</h3>
+            <ul>
+              <li>Prefect</li>
+              <li>ClickHouse</li>
+              <li>MongoDB</li>
+              <li>Docker</li>
+            </ul>
+          </div>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Data pipelines &mdash; ExpertFlow</h2>
+          <p>Built pipelines in a Medallion architecture, migrated workflows from
+          Airflow to Prefect, and automated JSON transfers from MongoDB to
+          ClickHouse.</p>
+        </div>
       </li>
     </ul>
 

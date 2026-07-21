@@ -22,9 +22,16 @@
 (function () {
   'use strict';
 
-  var GROW   = 'transform 1.15s cubic-bezier(0.55, 0, 0.55, 0.55)';
-  var SHRINK = 'transform 0.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
-  var FADE   = 'opacity 0.45s ease';
+  // Reduced motion collapses the durations rather than removing the
+  // transitions: open/close still finish on 'transitionend', which a
+  // `transition: none` override would never fire.
+  var still = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var GROW   = still ? 'transform 0.01s linear'
+                     : 'transform 1.15s cubic-bezier(0.55, 0, 0.55, 0.55)';
+  var SHRINK = still ? 'transform 0.01s linear'
+                     : 'transform 0.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
+  var FADE   = still ? 'opacity 0.01s linear' : 'opacity 0.45s ease';
 
   function init(thumb) {
     var app      = thumb.getAttribute('data-live-demo');
@@ -70,19 +77,45 @@
     }
     syncThumbAspect();
 
-    // Transform that maps the viewport-sized overlay onto the thumbnail's
-    // rect — in DOCUMENT coordinates, so the parked miniature scrolls with
-    // the page natively instead of chasing it from a scroll handler.
+    // Where the overlay's own origin sits relative to the viewport. Parked,
+    // the overlay is a normal absolutely-positioned box at the top of the
+    // document, so that's the live scroll offset — and the miniature then
+    // scrolls with the page natively, no scroll handler, no lag. Open, the
+    // body is pinned and the offset is frozen at whatever it was when the
+    // lock went on.
+    var lockX = 0, lockY = 0, locked = false;
+    function originX() { return locked ? lockX : window.scrollX; }
+    function originY() { return locked ? lockY : window.scrollY; }
+
+    function lockScroll() {
+      if (locked) return;
+      lockX = window.scrollX;
+      lockY = window.scrollY;
+      locked = true;
+      document.body.style.top = -lockY + 'px';
+      document.body.style.left = -lockX + 'px';
+      document.body.classList.add('ld-locked');
+    }
+    function unlockScroll() {
+      if (!locked) return;
+      locked = false;
+      document.body.classList.remove('ld-locked');
+      document.body.style.top = '';
+      document.body.style.left = '';
+      window.scrollTo(lockX, lockY);
+    }
+
+    // Transform that maps the viewport-sized overlay onto the thumbnail's rect.
     function collapsed() {
       var r = thumb.getBoundingClientRect();
-      return 'translate(' + (r.left + window.scrollX) + 'px, '
-        + (r.top + window.scrollY) + 'px) scale('
+      return 'translate(' + (r.left + originX()) + 'px, '
+        + (r.top + originY()) + 'px) scale('
         + (r.width / overlay.clientWidth) + ', '
         + (r.height / overlay.clientHeight) + ')';
     }
-    // Fullscreen = the overlay shifted down to the current viewport.
+    // Fullscreen = the overlay shifted back over the visible viewport.
     function expanded() {
-      return 'translate(' + window.scrollX + 'px, ' + window.scrollY + 'px)';
+      return 'translate(' + originX() + 'px, ' + originY() + 'px)';
     }
 
     // Start loading the app — full-size and hidden behind the preview, so
@@ -158,9 +191,9 @@
       preload();
       grown = false;
       overlay.hidden = false;
-      // Lock scroll BEFORE measuring: removing the scrollbar can reflow the
-      // page, and the start rect must match what's actually on screen.
-      document.body.classList.add('ld-locked');
+      // Lock BEFORE measuring: the lock freezes the coordinate origin that
+      // collapsed()/expanded() are both computed against.
+      lockScroll();
 
       if (ready) {
         // The app is already parked on the thumbnail: just grow it.
@@ -198,8 +231,9 @@
     function close() {
       clearTimeout(revealT);
       poster.removeEventListener('transitionend', onGrown);
-      // Unlock BEFORE measuring, for the same reflow reason as open().
-      document.body.classList.remove('ld-locked');
+      // Unlock BEFORE measuring: this restores the exact scroll position the
+      // lock froze, so the thumbnail is back where collapsed() expects it.
+      unlockScroll();
 
       if (mode === 'frame') {
         // Shrink the live iframe back onto the thumbnail and leave it

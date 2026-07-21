@@ -133,4 +133,13 @@ body.ld-locked .ld-expand { opacity: 0; }
 }
 .ld-overlay.open .ld-overlay-close { opacity: 1; pointer-events: auto; }
 .ld-overlay-close:hover { background: rgba(20, 20, 20, 1); }
-body.ld-locked { overflow: hidden; }
+
+/* Scroll lock while the demo is open. Pinning the body (with its top set
+   to -scrollY in JS) rather than just hiding overflow: on a full-height
+   body, `overflow: hidden` alone collapses the scrollable area and the
+   page silently jumps to the top under the overlay. */
+body.ld-locked {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
