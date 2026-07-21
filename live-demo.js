@@ -65,7 +65,29 @@
     document.body.appendChild(overlay);
 
     var srcSet = false, ready = false, grown = false, revealT = null;
+    var shown = false;     // has the live miniature been revealed at least once
+    var rescueT = null;
     var mode = 'poster';   // which element performed the grow this open
+
+    // The screenshot is a fixed-resolution capture; the parked miniature is a
+    // live render at the visitor's own viewport. A responsive app laid out at
+    // 1512x800 is NOT the same picture as the same app captured at 1440x900,
+    // so the two can never be made to line up — showing the screenshot first
+    // and the app a moment later always reads as a zoom/jump.
+    //
+    // So the screenshot is not shown at rest at all: the thumb starts as the
+    // app's own background colour and the real thing fades in on top, which is
+    // the app painting rather than one picture replacing a different one.
+    // `visibility` (not `display`) keeps the image's aspect-ratio box, which is
+    // what gives the thumb its height. Without JS the image just stays visible.
+    thumb.style.background = bg;
+    thumbImg.style.visibility = 'hidden';
+
+    // ...unless the app never boots. Better a slightly-off screenshot than an
+    // empty rectangle, so put it back if we're still waiting after 2.5s.
+    rescueT = setTimeout(function () {
+      if (!ready) thumbImg.style.visibility = '';
+    }, 2500);
 
     // Keep the thumbnail's aspect ratio equal to the viewport's so collapsed()
     // maps the overlay onto it with a uniform scale (sx === sy): the grow is a
@@ -133,22 +155,59 @@
             var cv = doc && doc.querySelector('canvas');
             if (cv && cv.width > 0) {
               clearInterval(poll);
-              setTimeout(becomeReady, 400);
+              setTimeout(becomeReady, 120);
             }
-          }, 120);
+          }, 40);
           // fallback: never wedge the overlay if the canvas probe misses
           setTimeout(function () { clearInterval(poll); becomeReady(); }, 8000);
         } else {
-          setTimeout(becomeReady, 300);
+          setTimeout(becomeReady, 80);
         }
       });
       frame.src = app;
     }
+    // A failed navigation still fires 'load' on the iframe (on the blank or
+    // error document), so "it loaded" is not the same as "it rendered". If we
+    // can see it's empty, treat the app as dead and hand the thumb back to the
+    // screenshot rather than revealing an empty rectangle.
+    // A cross-origin frame is opaque (contentDocument is null and there's
+    // nothing to inspect), so only same-origin apps can be checked — and a
+    // failed navigation nulls contentDocument too, which is why the origin
+    // test comes first rather than reading a null document as "cross-origin".
+    var ownApp = (function () {
+      try { return new URL(app, location.href).origin === location.origin; }
+      catch (e) { return false; }
+    })();
+
+    function frameAlive() {
+      if (!ownApp) return true;
+      var doc;
+      try { doc = frame.contentDocument; } catch (e) { return true; }
+      return !!(doc && doc.body && doc.body.childElementCount > 0);
+    }
+
     function becomeReady() {
       if (ready) return;
+      if (!frameAlive()) {
+        clearTimeout(rescueT);
+        thumbImg.style.visibility = '';
+        return;
+      }
       ready = true;
+      clearTimeout(rescueT);
       maybeReveal();
+      if (overlay.classList.contains('open')) return;   // fallback grow owns it
       park();
+      // Two frames so the browser has committed the parked transform before
+      // the opacity transition starts — otherwise it fades in from the wrong
+      // place on the very first reveal.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          shown = true;
+          thumbImg.style.visibility = 'hidden';
+          overlay.classList.add('revealed');
+        });
+      });
     }
 
     // Park the live app scaled-down over the thumbnail. From here on the
@@ -157,23 +216,14 @@
     // permanent backstop; the miniature just fades in over it.
     function park() {
       if (!ready || overlay.classList.contains('open')) return;
-      var first = !overlay.classList.contains('parked');
       overlay.hidden = false;
       overlay.classList.add('parked');
       poster.hidden = true;
       fw.style.transition = 'none';
       fw.style.transform = collapsed();
-      if (first) {
-        // First park: fade the live miniature in over the screenshot — it
-        // reads as the preview waking up, not snapping between two states.
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            overlay.classList.add('revealed');
-          });
-        });
-      } else {
-        overlay.classList.add('revealed');
-      }
+      // becomeReady() owns the very first reveal (it fades in); every later
+      // park is a return to a state the visitor has already seen, so snap.
+      if (shown) overlay.classList.add('revealed');
     }
 
     // Cross-fade to the live app once the poster grow has finished AND the
@@ -183,6 +233,7 @@
       revealT = setTimeout(function () {
         if (overlay.hidden) return;
         poster.style.transition = FADE;
+        shown = true;
         overlay.classList.add('revealed');
       }, 300);
     }
@@ -286,10 +337,10 @@
       if (e.key === 'Escape' && overlay.classList.contains('open')) close();
     });
 
-    // Boot the app while the visitor is still reading the page, so the
-    // live miniature takes over from the screenshot as soon as possible.
-    if (document.readyState === 'complete') setTimeout(preload, 300);
-    else window.addEventListener('load', function () { setTimeout(preload, 300); });
+    // Boot immediately — one frame's delay so the host page gets its own first
+    // paint in first, and no longer. Every millisecond here is a millisecond
+    // the thumb sits as a flat colour instead of showing the running app.
+    requestAnimationFrame(preload);
   }
 
   document.querySelectorAll('[data-live-demo]').forEach(init);

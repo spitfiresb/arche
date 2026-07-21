@@ -21,7 +21,12 @@
      uniform, distortion-free zoom; 16/10 is the no-JS fallback. */
   aspect-ratio: 16 / 10;
   object-fit: cover;
-  object-position: center;
+  /* Top-anchored, NOT centered: the box is the viewport's aspect ratio but the
+     screenshot is the capture's, so cover always trims some height. A live
+     viewport that's shorter than the capture drops content off the BOTTOM —
+     centering instead trims the top too, which reads as a zoom-in that pops
+     back out the moment the real app parks over it. */
+  object-position: top center;
   display: block;
 }
 .ld-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
@@ -100,7 +105,7 @@ body.ld-locked .ld-expand { opacity: 0; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: top center;   /* same framing as the thumb — see above */
   transform-origin: top left;
   will-change: transform, opacity;
   background: #0d0d0d;
