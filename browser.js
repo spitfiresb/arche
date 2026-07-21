@@ -205,8 +205,8 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var days = data.contributions;
-        // GitHub's dark-theme intensity ramp (empty -> brightest)
-        var colors = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"];
+        // GitHub's dimmed-theme intensity ramp (grayish empty -> brightest)
+        var colors = ["#373e47", "#2f5c3a", "#3f9142", "#4bb14e", "#57d364"];
         var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         var fullMonths = ["January", "February", "March", "April", "May",
