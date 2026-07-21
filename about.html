@@ -11,7 +11,7 @@
   <main>
     <a class="back" href="index.html">Back</a>
 
-    <p class="kicker">my story</p>
+    <p class="kicker">my story.</p>
 
     <ul class="timeline">
       <li>
@@ -1248,6 +1248,10 @@
     let fallT0 = 0, standT0 = 0;
     let touchT0 = 0, walkT0 = 0, walkFrom = 0, walkTo = 0;
     let sitT0 = 0, grabT0 = 0;
+    // 0 = the stick still lies flat where he grasped it, 1 = fully raised
+    // into the poking grip. Drives the pickup so the stick tracks his hand
+    // up off the ground instead of snapping into place.
+    let stickLift = 1;
     let poke = null, pokeAt = 0;   // current poke beat, next poke time
     let sweatMid = false, sweatFlick = false;
     let released = false;  // has he let go of the rope on the dismount?
@@ -1318,11 +1322,25 @@
         const ty = floorY - 17;
         let sdx = tx - S.handG.x, sdy = ty - S.handG.y;
         const sdl = Math.hypot(sdx, sdy) || 1;
-        sdx /= sdl; sdy /= sdl;
+        sdx /= sdl; sdy /= sdl;                       // fire-aim direction
+        // While he is still lifting it (stickLift < 1) the stick reads as
+        // just picked up: it starts lying flat along the ground (pointing to
+        // the fire side) and rotates toward the aim as his hand carries it
+        // up, so the tip sweeps up off the turf instead of the whole stick
+        // snapping into the poking pose.
+        if (stickLift < 1) {
+          const flx = 1, fly = 0.05;                  // lying-flat direction
+          const bx2 = flx + (sdx - flx) * stickLift;
+          const by2 = fly + (sdy - fly) * stickLift;
+          const bl = Math.hypot(bx2, by2) || 1;
+          sdx = bx2 / bl; sdy = by2 / bl;
+        }
         // gripped at its butt end: just a short nub behind the fist, the
         // length of it out in front — long enough to reach the flames
-        // rising from the bowl's centre rather than falling short at the rim
-        stickTip = [S.handG.x + sdx * 40, S.handG.y + sdy * 40];
+        // rising from the bowl's centre rather than falling short at the rim.
+        // A touch shorter while lying flat (34), growing to 40 as it comes up.
+        const sLen = 34 + 6 * stickLift;
+        stickTip = [S.handG.x + sdx * sLen, S.handG.y + sdy * sLen];
         stickEl.setAttribute('d',
           'M' + f1(S.handG.x - sdx * 2.5) + ' ' + f1(S.handG.y - sdy * 2.5) +
           ' L' + f1(stickTip[0]) + ' ' + f1(stickTip[1]));
@@ -1872,22 +1890,43 @@
           grabT0 = now;
         }
       } else if (state === 'grab') {
-        // leans forward off the stump, picks the stick up off the
-        // ground, and settles back with it in hand
-        const u = clamp01((now - grabT0) / 800);
-        const r = bell(u, 0.05, 0.95);
+        // He bows down off the stump, takes hold of the stick where it
+        // lies, then raises it into the poking grip. The hand reaches down
+        // (ease in), dwells a beat to grasp, then lifts back up (ease out);
+        // the stick itself is handed off from the floor to his fist at the
+        // grasp and tracks his hand the whole way up — no teleport.
+        const u = clamp01((now - grabT0) / 1100);
         T = sitPose(now, 0);
-        T.handG = [T.handG[0] + (stumpX + 45 - T.handG[0]) * r,
-                   T.handG[1] + (floorY - 3 - T.handG[1]) * r];
-        T.chest[0] += 4 * r; T.chest[1] += 4 * r;
-        T.head[0] += 6 * r; T.head[1] += 5.5 * r;
-        if (!stickTaken && u >= 0.5) {
+        const rest = T.handG;                       // resting grip on the stump
+        // grip point: the near (left) end of the stick as it lies in rig
+        // space — floor stick spans ~169..203, so grasp it around 171
+        const grip = [stumpX + 38, floorY - 2.5];
+        let hx, hy;
+        if (u < 0.46) {                             // reach down and grasp
+          const e = easeInOut(clamp01(u / 0.42));
+          hx = rest[0] + (grip[0] - rest[0]) * e;
+          hy = rest[1] + (grip[1] - rest[1]) * e;
+        } else {                                    // lift the stick up to poke
+          const e = easeInOut(clamp01((u - 0.5) / 0.5));
+          hx = grip[0] + (rest[0] - grip[0]) * e;
+          hy = grip[1] + (rest[1] - grip[1]) * e;
+        }
+        T.handG = [hx, hy];
+        // torso bows toward the stick as he reaches, straightening on the lift
+        const bow = Math.sin(Math.PI * clamp01(u / 0.92));
+        T.chest = [T.chest[0] + 4 * bow, T.chest[1] + 4.5 * bow];
+        T.head = [T.head[0] + 6 * bow, T.head[1] + 6 * bow];
+        // hand off the floor stick to the held stick at the grasp
+        if (!stickTaken && u >= 0.44) {
           stickTaken = true;
           if (floorStick) floorStick.style.display = 'none';
         }
+        // the held stick rises and rotates from lying flat toward the aim
+        stickLift = stickTaken ? easeInOut(clamp01((u - 0.5) / 0.5)) : 0;
         if (u >= 1) {
+          stickLift = 1;
           state = 'sit';
-          pokeAt = now + 1500;
+          pokeAt = now + 900;
         }
       } else if (state === 'sit') {
         // camp idle, forever: mostly just sitting and breathing; every
@@ -2040,7 +2079,8 @@
         typed.textContent = label.slice(0, ++i);
         setTimeout(type, 65 + Math.random() * 55);
       } else {
-        setTimeout(() => caret.classList.add('done'), 1200);
+        // four blinks (1s each) after the text lands, then it fades out
+        setTimeout(() => caret.classList.add('done'), 4000);
         setTimeout(() => {
           // he enters already in his rappel position, bouncing in from
           // above the top edge of the page
