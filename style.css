@@ -708,10 +708,10 @@ ul.links li.li-hover.gh:focus-within {
   padding-left: 28px;
 }
 
-/* The octocat parks vertically centered on the avatar row */
+/* The octocat parks vertically centered on the avatar's center */
 li.li-hover:hover .li-logo[src*="gh-logo"],
 li.li-hover:focus-within .li-logo[src*="gh-logo"] {
-  top: 1.6em;
+  top: 1.05em;
 }
 
 .gh-avatar {
@@ -736,7 +736,7 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 
 .gh-graph {
   position: relative; /* anchors the day tooltip */
-  border: 1px solid #444c56;
+  border: 1px solid #e6edf3;
   border-radius: 6px;
   padding: 6px;
 }
@@ -787,7 +787,7 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 
 .gh-month {
   font-size: 9px;
-  fill: #8b949e;
+  fill: #e6edf3;
 }
 
 .gh-graph-fallback {
