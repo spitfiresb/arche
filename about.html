@@ -80,7 +80,7 @@
 
     <!-- The rope's tail: a straight drop that disappears into the turf -->
     <svg class="rope" width="160" height="150" viewBox="0 0 160 150" aria-hidden="true">
-      <path d="M1 0 L1 149" fill="none" stroke="#000" stroke-width="2"/>
+      <path d="M1 0 L1 149" fill="none" stroke="#f2f2f2" stroke-width="2"/>
     </svg>
 
   </main>
@@ -119,7 +119,7 @@
       const FM = (a, b) => 'M' + ff(a) + ' ' + ff(b);
       const FL = (a, b) => 'L' + ff(a) + ' ' + ff(b);
       const FQ = (a, b, c, d) => 'Q' + ff(a) + ' ' + ff(b) + ' ' + ff(c) + ' ' + ff(d);
-      const fln = (w) => ({ fill: 'none', stroke: '#000', 'stroke-width': w,
+      const fln = (w) => ({ fill: 'none', stroke: '#f2f2f2', 'stroke-width': w,
         'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
       const fn = (i) => {
         const s = Math.sin(i * 127.1 + 311.7) * 43758.5453;
@@ -186,7 +186,7 @@
           d += FL(x + tw[t - 1], cy[t - 1]);
         }
         d += FQ(x, cy[0] + h * 0.05, x - tw[0], cy[0]) + 'Z';
-        fel('path', Object.assign(fln(1.4), { d, fill: '#fff' }));
+        fel('path', Object.assign(fln(1.4), { d, fill: '#1a1a1a' }));
       }
 
       // round-canopy tree: forked trunk, lobed cloud filled white on top
@@ -213,7 +213,7 @@
           d += FQ(mx + (mx - x) / dl * r * 0.42,
                   my + (my - cy2) / dl * r * 0.42, p1[0], p1[1]);
         }
-        fel('path', Object.assign(fln(1.3), { d: d + 'Z', fill: '#fff' }));
+        fel('path', Object.assign(fln(1.3), { d: d + 'Z', fill: '#1a1a1a' }));
       }
 
       // bush: one closed run of humps rooted in the turf
@@ -231,7 +231,7 @@
           d += FQ(mx + (mx - x) * 0.3, (p0[1] + p1[1]) / 2 - h * 0.32,
                   p1[0], i === n ? gy + 1 : p1[1]);
         }
-        fel('path', Object.assign(fln(1.2), { d: d + 'Z', fill: '#fff' }));
+        fel('path', Object.assign(fln(1.2), { d: d + 'Z', fill: '#1a1a1a' }));
       }
 
       // stump with the growth ring showing on the cut face
@@ -240,7 +240,7 @@
         fel('path', Object.assign(fln(1.3), {
           d: FM(x - w / 2, gy + 1) + FL(x - w / 2 + 1, gy - h) +
              FQ(x, gy - h - 2.5, x + w / 2 - 1, gy - h) +
-             FL(x + w / 2, gy + 1) + 'Z', fill: '#fff' }));
+             FL(x + w / 2, gy + 1) + 'Z', fill: '#1a1a1a' }));
         fel('path', Object.assign(fln(0.8), {
           d: FM(x - w / 2 + 1, gy - h) + FQ(x, gy - h + 2.5, x + w / 2 - 1, gy - h) +
              FM(x - w * 0.2, gy - h + 0.8) +
@@ -281,7 +281,7 @@
         fel('path', Object.assign(fln(1), {
           d: FM(x, gy) + FQ(x + 1.5, gy - h * 0.6, x, gy - h) }));
         fel('circle', { cx: x, cy: gy - h - 1.5, r: 1.8, fill: 'none',
-          stroke: '#000', 'stroke-width': 1 });
+          stroke: '#f2f2f2', 'stroke-width': 1 });
       }
 
       // scree: angular rubble where the cliff meets the meadow
@@ -308,7 +308,7 @@
         fel('path', Object.assign(fln(1.6), {
           d: FM(lx, gy) + FQ(x - w * 0.17, gy - h * 0.18, x, ay) +
              FL(shX, shY) + FQ(x + w * 0.22, gy - h * 0.16, rx, gy) +
-             FL(lx, gy) + 'Z', fill: '#fff' }));
+             FL(lx, gy) + 'Z', fill: '#1a1a1a' }));
         fel('path', Object.assign(fln(1.2), { d: FM(x - 0.5, ay) + FL(x - 0.5, ay - 4.5) }));
         fel('path', Object.assign(fln(0.85), { d: FM(x, ay + 3) + FL(x, gy) }));
         fel('path', Object.assign(fln(1), {
@@ -326,12 +326,12 @@
       // stub legs, one smoke squiggle above; the layers morph on their
       // own phases via the returned updater
       function fire(x) {
-        const inner = fel('path', Object.assign(fln(1.4), { fill: '#fff' }));
+        const inner = fel('path', Object.assign(fln(1.4), { fill: '#1a1a1a' }));
         const core = fel('path', fln(1));
         fel('path', Object.assign(fln(1.5), {
           d: FM(x - 25, gy - 15) + FQ(x, gy - 11.5, x + 25, gy - 15) +
              FQ(x + 21, gy - 4, x + 7, gy - 3) + FL(x - 7, gy - 3) +
-             FQ(x - 21, gy - 4, x - 25, gy - 15) + 'Z', fill: '#fff' }));
+             FQ(x - 21, gy - 4, x - 25, gy - 15) + 'Z', fill: '#1a1a1a' }));
         fel('path', Object.assign(fln(2.2), {
           d: FM(x - 13, gy - 4) + FL(x - 17, gy + 1) +
              FM(x + 13, gy - 4) + FL(x + 17, gy + 1) +
@@ -430,8 +430,8 @@
           'translate(' + ff(x - CAR.bx * s) + ' ' +
           ff(gy + (sink || 0) - CAR.groundY * s) + ') scale(' + s.toFixed(4) + ')' });
         g.innerHTML =
-          '<g fill="#fff"><g transform="' + CAR.tr + '">' + CAR.sil + '</g></g>' +
-          '<g fill="#000" stroke="#000" stroke-width="0.45"><g transform="' +
+          '<g fill="#1a1a1a"><g transform="' + CAR.tr + '">' + CAR.sil + '</g></g>' +
+          '<g fill="#f2f2f2" stroke="#f2f2f2" stroke-width="0.45"><g transform="' +
           CAR.tr + '">' + CAR.line + '</g></g>';
         // settle the tyres into the dirt: for each wheel, mask the buried
         // bottom behind the ground and heap a little displaced soil at the
@@ -442,7 +442,7 @@
           [500, 1294].forEach(function (wx) {     // wheel centres in art space
             const c = x + (wx - CAR.bx) * s;
             // mask the buried tyre bottom behind the dirt
-            fel('path', { fill: '#fff', stroke: 'none', d:
+            fel('path', { fill: '#1a1a1a', stroke: 'none', d:
               FM(c - tw - 2, gy + 0.5) + FL(c + tw + 2, gy + 0.5) +
               FL(c + tw + 2, gy + sink + 5) + FL(c - tw - 2, gy + sink + 5) + 'Z' });
             // the white tyre body occludes the main ground edge at the contact,
@@ -572,7 +572,7 @@
       return e;
     }
     const line = (w) => ({
-      fill: 'none', stroke: '#000', 'stroke-width': w,
+      fill: 'none', stroke: '#f2f2f2', 'stroke-width': w,
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
     });
     // Paint order = depth: the rope svg sits behind the figure svg;
@@ -585,10 +585,10 @@
     const torsoEl = shape('path', line(2.4));
     const legFEl = shape('path', line(2.2));
     const stickEl = shape('path', line(1.7));
-    const headEl = shape('circle', { r: 4.2, fill: '#000' });
+    const headEl = shape('circle', { r: 4.2, fill: '#f2f2f2' });
     const armGEl = shape('path', line(2.2));
-    const handGEl = shape('circle', { r: 1.6, fill: '#000' });
-    const handBEl = shape('circle', { r: 1.6, fill: '#000' });
+    const handGEl = shape('circle', { r: 1.6, fill: '#f2f2f2' });
+    const handBEl = shape('circle', { r: 1.6, fill: '#f2f2f2' });
 
     // The cliff face he rappels against: a jagged outer edge doubled by
     // an inner echo line, the band between them filled with parallel
@@ -969,7 +969,7 @@
       const a = anchors[cleaned];
       if (!a) return;
       cleaned++;
-      a.ring.setAttribute('fill', '#000');
+      a.ring.setAttribute('fill', '#f2f2f2');
       a.ring.setAttribute('r', 2.6);
       buildBelow();
       const nxt = anchors[cleaned]
@@ -1055,14 +1055,14 @@
           const ring = document.createElementNS(NS, 'circle');
           ring.setAttribute('cx', (FACE_X + wallOff(dy)).toFixed(1));
           ring.setAttribute('cy', dy);
-          ring.setAttribute('stroke', '#000');
+          ring.setAttribute('stroke', '#f2f2f2');
           ring.setAttribute('stroke-width', 1.5);
           if (anchors.length < cleaned) {
             // already cleaned: a bare bolt, same look as a plain dot
-            ring.setAttribute('fill', '#000');
+            ring.setAttribute('fill', '#f2f2f2');
             ring.setAttribute('r', 2.6);
           } else {
-            ring.setAttribute('fill', '#fff');
+            ring.setAttribute('fill', '#1a1a1a');
             ring.setAttribute('r', 3.4);
           }
           rig.appendChild(ring);
@@ -1484,7 +1484,7 @@
       for (let i = 0; i < n; i++) {
         const el = shape('circle', {
           r: (0.8 + noise(drops.length * 7 + i + 61) * 0.5).toFixed(2),
-          fill: '#000',
+          fill: '#f2f2f2',
         });
         drops.push({
           el, t: 0,
@@ -1504,7 +1504,7 @@
       const n = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < n; i++) {
         const el = shape('circle', {
-          r: (0.7 + Math.random() * 0.5).toFixed(2), fill: '#000',
+          r: (0.7 + Math.random() * 0.5).toFixed(2), fill: '#f2f2f2',
         }, overlay);
         embers.push({
           el, t: 0,

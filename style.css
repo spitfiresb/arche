@@ -1,11 +1,26 @@
+/* Emil Kowalski's typeface: Inter, with his optical-size axis and the
+   cv01 / ss03 stylistic sets he ships it with */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
 html, body {
   height: 100%;
   margin: 0;
 }
 
 body {
-  font-family: "Times New Roman", Times, serif;
-  color: #000;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  font-feature-settings: "cv01", "ss03";
+  font-optical-sizing: auto;
+  /* Paco Coursey's dark theme: --bg (#1a1a1a) and --fg (#f2f2f2) */
+  background: #1a1a1a;
+  color: #f2f2f2;
+}
+
+/* plain links inherit the text color so they stay visible on the dark
+   background; cards set their own link colors at higher specificity */
+a {
+  color: inherit;
 }
 
 /* Home: block centered both horizontally and vertically */
@@ -212,7 +227,7 @@ li.li-hover:focus-within .li-hover-card {
   height: 1.1em;
   margin-left: 2px;
   vertical-align: -0.18em;
-  background: #000;
+  background: currentColor;
   animation: caret-blink 1s steps(1) infinite;
 }
 
@@ -254,7 +269,7 @@ ul.timeline li::before {
   top: 0.4em;
   width: 0.42em;
   height: 0.42em;
-  background: #000;
+  background: #f2f2f2;
   border-radius: 50%;
 }
 
@@ -266,7 +281,7 @@ ul.timeline li::after {
   top: 0.4em;
   width: 2px;
   height: 100%;
-  background: #000;
+  background: #f2f2f2;
   transform-origin: top;
 }
 

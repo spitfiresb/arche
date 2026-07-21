@@ -18,7 +18,9 @@
   }
   .pa-thumb img {
     width: 100%;
-    height: 12em;
+    /* Aspect ratio is matched to the viewport in JS (see syncThumbAspect) so the
+       expand grows as a uniform, distortion-free zoom; 16/10 is the no-JS fallback. */
+    aspect-ratio: 16 / 10;
     object-fit: cover;
     object-position: center;
     display: block;
@@ -193,6 +195,19 @@
       var SHRINK = 'transform 0.36s cubic-bezier(0.4, 0.0, 0.2, 1)';
       var FADE   = 'opacity 0.45s ease';
       var srcSet = false, ready = false, grown = false, revealT = null;
+      var thumbImg = thumb.querySelector('img');
+
+      // Keep the thumbnail's aspect ratio equal to the viewport's so collapsed()
+      // maps the poster onto it with a single uniform scale (sx === sy): the grow
+      // is a clean zoom with no stretch, and the two object-fit:cover crops line
+      // up so there's no jump on the first frame. Clamped so a portrait phone
+      // doesn't produce an absurdly tall preview card.
+      function syncThumbAspect() {
+        var ar = window.innerWidth / window.innerHeight;
+        thumbImg.style.aspectRatio = Math.max(1.2, Math.min(ar, 2.2));
+      }
+      syncThumbAspect();
+      window.addEventListener('resize', syncThumbAspect);
 
       // Start loading the app (on hover/focus, or at open) — full-size and
       // hidden behind the poster, so booting never touches the grow animation.
