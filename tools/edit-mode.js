@@ -34,6 +34,16 @@
     return false;
   }
 
+  // An empty <p> is a paragraph waiting to be written, and text is the one
+  // thing this tool has to be able to add. Without this an entry with nothing
+  // in it yet is the one place you cannot type — so empty text holders arm
+  // too, and CSS gives them a hint and enough height to aim at.
+  var EMPTY_OK = { P: 1, H1: 1, H2: 1, H3: 1, H4: 1, FIGCAPTION: 1, BLOCKQUOTE: 1 };
+
+  function isEmptyHolder(el) {
+    return EMPTY_OK[el.tagName] && !el.children.length && !el.textContent.trim();
+  }
+
   function insideEditable(el) {
     for (var p = el.parentElement; p; p = p.parentElement) {
       if (p.hasAttribute && p.hasAttribute('data-zs-edit')) return true;
@@ -108,7 +118,7 @@
       var el = all[i];
       if (SKIP_TAGS[el.tagName]) continue;
       if (el.closest('#' + PANEL_ID)) continue;
-      if (!hasOwnText(el)) continue;
+      if (!hasOwnText(el) && !isEmptyHolder(el)) continue;
       pending.push(el);
     }
     // Two passes: mark nothing until every candidate is known, so the
@@ -193,6 +203,11 @@
       '  background:rgba(90,140,255,.10)}',
       '[data-zs-edit].zs-dirty{outline-color:rgba(224,140,32,.85);',
       '  background:rgba(240,160,40,.10)}',
+      // An empty block collapses to nothing and cannot be clicked, so give it
+      // a line of height and say what it is. Both vanish on the first keystroke.
+      '[data-zs-edit]:empty{display:block;min-height:1.3em}',
+      '[data-zs-edit]:empty::before{content:"Write here…";opacity:.45;',
+      '  font-style:italic}',
       '#' + PANEL_ID + '{position:fixed;right:18px;bottom:18px;z-index:2147483647;',
       '  width:250px;background:#16171a;color:#e9e9ec;border-radius:11px;',
       '  box-shadow:0 8px 34px rgba(0,0,0,.36);overflow:hidden;',
