@@ -9,7 +9,7 @@
 # Wrangler's local dev cache
 .wrangler/
 
-# Python bytecode from builds/unpak-dashboard/make-data.py
+# Python bytecode from public/demos/unpak-dashboard/make-data.py
 __pycache__/
 *.pyc
 
