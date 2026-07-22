@@ -14,6 +14,22 @@ That serves `public/` and imitates the two Pages behaviours the site relies on:
 hard refresh, and clean URLs, so `/work/personal` resolves to
 `work/personal.html` locally exactly as it does in production.
 
+### Editing the words
+
+Add `?edit` to any page — `localhost:8712/work/personal?edit` — and every block
+of text on it becomes editable in place. Click a line, change it, and a panel in
+the corner tracks what you've touched. **Copy changes** puts a diff of just the
+edits on your clipboard; **Copy all text** takes the whole page.
+
+Nothing is written to disk and a reload discards the edits: copying is the way
+out, and the diff is meant to be pasted into a chat for someone to apply. The
+unit is the block, so a sentence wrapping a `<span class="stress">` is edited as
+one paragraph with the tag left visible, rather than split around it.
+
+This exists only in the dev server. `tools/edit-mode.js` sits outside `public/`
+and is injected on the way out, so there is nothing to strip before deploying
+and no way for it to reach production.
+
 Flat files only. The one server-side piece is `POST /api/detect` (the
 FloorSense demo's model call), which is a Cloudflare Pages Function — to
 exercise that path you need Wrangler and a Roboflow key:
@@ -59,6 +75,7 @@ public/                   the deployed site
 
 functions/api/            Cloudflare Pages Functions
 tools/serve.py            the local dev server
+tools/edit-mode.js        in-place text editing, injected by serve.py on ?edit
 tools/vendor-rebase.sh    see below
 ```
 
