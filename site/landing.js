@@ -1,183 +1,8 @@
-/* In-page window manager: links with data-window open inside a draggable,
-   resizable "browser" window instead of leaving the site. */
+/* Landing-page behaviour: the two hover preview cards, the live GitHub
+   contribution calendar, the drawn pill outlines, and the About link's
+   collapse-then-navigate. */
 (function () {
   "use strict";
-
-  var zTop = 100;
-  var openWindows = {};
-
-  function el(tag, className, text) {
-    var node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text) node.textContent = text;
-    return node;
-  }
-
-  function createWindow(opts) {
-    if (openWindows[opts.id]) {
-      focusWindow(openWindows[opts.id]);
-      return;
-    }
-
-    var win = el("section", "bwin");
-    win.setAttribute("role", "dialog");
-    win.setAttribute("aria-label", opts.title);
-
-    var bar = el("header", "bwin-bar");
-    var lights = el("div", "bwin-lights");
-    var btnClose = el("button", "bwin-light bwin-close");
-    var btnMin = el("button", "bwin-light bwin-min");
-    var btnMax = el("button", "bwin-light bwin-max");
-    btnClose.setAttribute("aria-label", "Close");
-    btnMin.setAttribute("aria-label", "Minimize");
-    btnMax.setAttribute("aria-label", "Maximize");
-    lights.appendChild(btnClose);
-    lights.appendChild(btnMin);
-    lights.appendChild(btnMax);
-    bar.appendChild(lights);
-    bar.appendChild(el("span", "bwin-title", opts.title));
-
-    var urlbar = el("div", "bwin-urlbar");
-    var lock = el("span", "bwin-lock", "◆");
-    var url = el("a", "bwin-url", opts.url.replace(/^https?:\/\//, ""));
-    url.href = opts.url;
-    url.target = "_blank";
-    url.rel = "noopener";
-    url.title = "Open in a real tab";
-    urlbar.appendChild(lock);
-    urlbar.appendChild(url);
-
-    var body = el("div", "bwin-body");
-    body.appendChild(opts.content);
-
-    var grip = el("div", "bwin-grip");
-    grip.setAttribute("aria-hidden", "true");
-
-    win.appendChild(bar);
-    win.appendChild(urlbar);
-    win.appendChild(body);
-    win.appendChild(grip);
-    document.body.appendChild(win);
-
-    // Center-ish spawn, cascaded per open window
-    var count = Object.keys(openWindows).length;
-    var w = Math.min(420, window.innerWidth - 24);
-    win.style.width = w + "px";
-    win.style.left = Math.max(12, (window.innerWidth - w) / 2 + count * 24) + "px";
-    win.style.top = Math.max(12, window.innerHeight * 0.18 + count * 24) + "px";
-
-    openWindows[opts.id] = win;
-    win.dataset.winId = opts.id;
-    focusWindow(win);
-    requestAnimationFrame(function () { win.classList.add("bwin-open"); });
-
-    btnClose.addEventListener("click", function () { closeWindow(win); });
-    btnMin.addEventListener("click", function () {
-      win.classList.remove("bwin-maxed");
-      win.classList.toggle("bwin-mined");
-    });
-    btnMax.addEventListener("click", function () {
-      win.classList.remove("bwin-mined");
-      win.classList.toggle("bwin-maxed");
-    });
-    win.addEventListener("pointerdown", function () { focusWindow(win); });
-
-    makeDraggable(win, bar);
-    makeResizable(win, grip);
-  }
-
-  function focusWindow(win) {
-    win.style.zIndex = ++zTop;
-    var all = document.querySelectorAll(".bwin");
-    for (var i = 0; i < all.length; i++) all[i].classList.remove("bwin-focus");
-    win.classList.add("bwin-focus");
-  }
-
-  function closeWindow(win) {
-    delete openWindows[win.dataset.winId];
-    win.classList.remove("bwin-open");
-    win.addEventListener("transitionend", function () { win.remove(); }, { once: true });
-    setTimeout(function () { win.remove(); }, 300);
-  }
-
-  function makeDraggable(win, handle) {
-    handle.addEventListener("pointerdown", function (e) {
-      if (e.target.closest("button") || win.classList.contains("bwin-maxed")) return;
-      e.preventDefault();
-      var startX = e.clientX, startY = e.clientY;
-      var rect = win.getBoundingClientRect();
-      handle.setPointerCapture(e.pointerId);
-      function move(ev) {
-        win.style.left = Math.max(-rect.width + 60, rect.left + ev.clientX - startX) + "px";
-        win.style.top = Math.max(0, rect.top + ev.clientY - startY) + "px";
-      }
-      function up() {
-        handle.removeEventListener("pointermove", move);
-        handle.removeEventListener("pointerup", up);
-      }
-      handle.addEventListener("pointermove", move);
-      handle.addEventListener("pointerup", up);
-    });
-  }
-
-  function makeResizable(win, grip) {
-    grip.addEventListener("pointerdown", function (e) {
-      e.preventDefault();
-      var startX = e.clientX, startY = e.clientY;
-      var rect = win.getBoundingClientRect();
-      grip.setPointerCapture(e.pointerId);
-      function move(ev) {
-        win.style.width = Math.max(260, rect.width + ev.clientX - startX) + "px";
-        win.style.height = Math.max(160, rect.height + ev.clientY - startY) + "px";
-      }
-      function up() {
-        grip.removeEventListener("pointermove", move);
-        grip.removeEventListener("pointerup", up);
-      }
-      grip.addEventListener("pointermove", move);
-      grip.addEventListener("pointerup", up);
-    });
-  }
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape") return;
-    var focused = document.querySelector(".bwin-focus");
-    if (focused) closeWindow(focused);
-  });
-
-  /* --- Window content --- */
-
-  function linkedinContent(profileUrl) {
-    var card = el("div", "li-card");
-
-    var banner = el("img", "li-banner");
-    banner.src = "assets/li-banner.jpeg";
-    banner.alt = "";
-    var avatar = el("img", "li-avatar");
-    avatar.src = "assets/li-avatar.jpeg";
-    avatar.alt = "Zain Saeed";
-    card.appendChild(banner);
-    card.appendChild(avatar);
-
-    var info = el("div", "li-info");
-    info.appendChild(el("p", "li-name", "Zain Saeed"));
-    info.appendChild(el("p", "li-headline", "CS & Data Science | Prev @Trimble"));
-    info.appendChild(el("p", "li-meta", "San Francisco Bay Area"));
-    info.appendChild(el("p", "li-connections", "500+ connections"));
-
-    var cta = el("a", "li-cta", "View full profile on LinkedIn →");
-    cta.href = profileUrl;
-    cta.target = "_blank";
-    cta.rel = "noopener";
-    info.appendChild(cta);
-
-    var note = el("p", "li-note",
-      "LinkedIn doesn’t allow itself to be embedded in other sites, so this window is a preview rendered by this site.");
-    info.appendChild(note);
-
-    card.appendChild(info);
-    return card;
-  }
 
   /* --- Hover card: lay out the inner content at the card's final width,
          so the box uncovers it as it grows instead of squishing it --- */
@@ -378,8 +203,6 @@
     window.addEventListener("resize", sizeAllPills);
   }
 
-  /* --- Wire up links --- */
-
   /* About me: the pill collapses in on itself, then the page opens. The
      modifier keys are left alone so cmd-click still opens a new tab, and
      reduced-motion users just follow the link. */
@@ -402,17 +225,5 @@
     setTimeout(function () {
       window.location.href = link.href;
     }, 340);
-  });
-
-  document.addEventListener("click", function (e) {
-    var link = e.target.closest("a[data-window]");
-    if (!link) return;
-    e.preventDefault();
-    createWindow({
-      id: link.dataset.window,
-      title: link.textContent + " — " + document.title,
-      url: link.href,
-      content: linkedinContent(link.href)
-    });
   });
 })();

@@ -1,12 +1,15 @@
 /* Live-demo component. Drop-in usage:
  *
  *   <link rel="stylesheet" href="live-demo.css">
- *   <figure class="ld-thumb" data-live-demo="path/to/app.html"
+ *   <figure class="ld-thumb" data-live-demo="demos/notch/"
  *           tabindex="0" role="button" aria-label="Expand the live demo">
- *     <img src="path/to/preview.png" alt="...">
- *     <span class="ld-expand" aria-hidden="true"><svg ...>...</svg></span>
+ *     <img src="assets/notch/preview.png" alt="...">
  *   </figure>
  *   <script src="live-demo.js"></script>
+ *
+ * data-live-demo is anything an iframe can load: a file, or a directory whose
+ * index the server resolves — which is what the demos here pass, so the app's
+ * own relative paths keep working.
  *
  * Optional data attributes on the figure:
  *   data-ready="canvas"  — wait until the app's <canvas> has pixels before
@@ -16,8 +19,8 @@
  *                          (default #0d0d0d).
  *   data-title="Foo"     — accessible title for the iframe.
  *
- * The overlay DOM is built by this script; nothing else to add to the page.
- * Multiple demos per page are supported.
+ * The overlay and the expand mark are built by this script; nothing else to
+ * add to the page. Multiple demos per page are supported.
  */
 (function () {
   'use strict';
@@ -37,6 +40,25 @@
     var app      = thumb.getAttribute('data-live-demo');
     var thumbImg = thumb.querySelector('img');
     var bg       = thumb.getAttribute('data-bg') || '#0d0d0d';
+
+    // The expand mark. Built here rather than written into every figure: it
+    // advertises an interaction only this script can perform, so a page
+    // without it shouldn't show one — and six hand-copied SVGs are six
+    // chances to drift. It sits at rest as opacity:0, so it costs nothing
+    // to arrive a frame after the page's own first paint.
+    var expand = document.createElement('span');
+    expand.className = 'ld-expand';
+    expand.setAttribute('aria-hidden', 'true');
+    expand.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      + 'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+      + '<g class="ld-arrow ld-arrow-tr">'
+      + '<line pathLength="1" x1="14" y1="10" x2="21" y2="3"/>'
+      + '<polyline pathLength="1" points="15 3 21 3 21 9"/></g>'
+      + '<g class="ld-arrow ld-arrow-bl">'
+      + '<line pathLength="1" x1="10" y1="14" x2="3" y2="21"/>'
+      + '<polyline pathLength="1" points="9 21 3 21 3 15"/></g></svg>';
+    thumb.appendChild(expand);
 
     // Build the overlay: live frame + fallback poster + the way out.
     var overlay = document.createElement('div');

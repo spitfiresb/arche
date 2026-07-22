@@ -1,4 +1,20 @@
 <!DOCTYPE html>
+<!--
+  Olander Agents — a self-contained replica of the shipped chat product, not
+  the product itself. The real app is a Next.js front end over a streaming
+  model route and the customer's ERP; neither is reachable from a portfolio
+  page, so olander.js replays recorded turns against canned data instead.
+
+  This page is the whole demo. It runs standalone, and it is what loads in the
+  iframe behind the live-demo tile on work-contract.html.
+
+  Everything below is static chrome — sidebar, top strip, empty state,
+  composer. The conversation itself is built by olander.js, which reaches in
+  through the data-* hooks (stream, scroll, empty, suggestions, history,
+  composer, input, title, new-chat). Nothing else here is wired up: the
+  attach, account and history controls are replica furniture, deliberately
+  inert.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -48,7 +64,7 @@
               <circle cx="7" cy="7" r="4.25"/><path d="M10.2 10.2 13.5 13.5"/>
             </svg>
           </span>
-          <input type="search" placeholder="Search chats" data-search>
+          <input type="search" placeholder="Search chats">
         </label>
       </div>
 

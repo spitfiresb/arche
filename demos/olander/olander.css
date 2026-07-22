@@ -1,13 +1,19 @@
-/* Olander Agents — static replica of the shipped chat UI.
-   Tokens, geometry and component treatments follow the product's DESIGN.md:
-   two warm accents on neutral chrome, one typeface, red reserved for primary
-   action affordances and the brand mark itself. */
+/* Olander Agents — static replica of the shipped chat UI, not the product
+   itself. Loaded only by demos/olander/index.html, which runs standalone and
+   as the iframe behind the live-demo tile on work-contract.html.
+
+   Tokens, geometry and component treatments follow the design doc the real
+   Next.js app is built from: two warm accents on neutral chrome, one typeface,
+   red reserved for primary action affordances and the brand mark itself.
+
+   Everything under "message list" is built by olander.js at runtime — nothing
+   in index.html carries those classes. */
 
 :root {
   --oa-red: #eb402e;
   --oa-sand: #e4d9c5;
   --oa-charcoal: #2d2e29;
-  --oa-surface: #ffffff;
+  --oa-surface: #fff;
   --oa-canvas: #faf7f1;
   --oa-ink-soft: #4a4b46;
 
@@ -44,8 +50,10 @@ button:disabled { cursor: not-allowed; }
 
 .oa-sr {
   position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  padding: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
@@ -124,7 +132,8 @@ button:disabled { cursor: not-allowed; }
 
 .oa-search-icon {
   position: absolute;
-  top: 0; bottom: 0;
+  top: 0;
+  bottom: 0;
   left: 10px;
   display: flex;
   align-items: center;
@@ -756,10 +765,10 @@ button:disabled { cursor: not-allowed; }
 
 @media (prefers-reduced-motion: no-preference) {
   .oa-in { animation: oa-fade-up 200ms cubic-bezier(0.4, 0, 0.2, 1) both; }
-  .oa-typing span { animation: oa-typing-dot 1.2s ease-in-out infinite; }
+  .oa-typing span { animation: oa-typing-dot 1200ms ease-in-out infinite; }
   .oa-typing span:nth-child(2) { animation-delay: 200ms; }
   .oa-typing span:nth-child(3) { animation-delay: 400ms; }
-  .oa-cursor { animation: oa-blink 1s steps(1) infinite; }
+  .oa-cursor { animation: oa-blink 1000ms steps(1) infinite; }
 }
 
 @keyframes oa-fade-up {

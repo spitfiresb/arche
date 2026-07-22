@@ -22,7 +22,11 @@
  * The one thing here that the app has no equivalent for is the tour: a ghost
  * cursor that drives the whole loop unattended, because a visitor to a web
  * page has no reason to guess that a black shape wants hovering. Any real
- * input kills it for good. */
+ * input kills it for good.
+ *
+ * Loaded by index.html in this folder, which is both a standalone page and
+ * the src of the live-demo iframe on work-personal.html. Every asset path
+ * below is relative to that folder, so both framings resolve alike. */
 
 (function () {
   "use strict";
@@ -60,7 +64,7 @@
   //
   // art is the fallback behind artFile, shown for the moment before the JPEG
   // decodes and left in place if the file is ever missing.
-  var ABBEY_ROAD = "assets/notch/art-abbey-road.jpg";
+  var ABBEY_ROAD = "art-abbey-road.jpg";
   var ABBEY_ACCENT = "#a4d8f2";
   var ABBEY_FALLBACK = "linear-gradient(160deg, #6f9fc4 0%, #b9d7e8 42%, #5b6570 100%)";
 
@@ -438,7 +442,6 @@
       '</div>';
 
     el.notch = root.querySelector(".nt-notch");
-    el.body = root.querySelector(".nt-body");
     el.panePeek = root.querySelector(".nt-pane-peek");
     el.paneMusic = root.querySelector(".nt-pane-music");
     el.paneShots = root.querySelector(".nt-pane-shots");
@@ -504,8 +507,8 @@
      the routing toggle, so it is recorded per shot at the moment of capture
      rather than read live: flipping the setting changes where the NEXT one
      goes, exactly as it does on a real machine. */
-  function shotName(offsetMinutes) {
-    var d = new Date(Date.now() - (offsetMinutes || 0) * 60000);
+  function shotName() {
+    var d = new Date();
     var day = d.getFullYear() + "-" +
       String(d.getMonth() + 1).padStart(2, "0") + "-" +
       String(d.getDate()).padStart(2, "0");
@@ -515,13 +518,9 @@
     return "Screenshot " + day + " at " + time + ".png";
   }
 
-  function shotDir() {
-    return st.settings.route ? "~/Desktop/Screenshots" : "~/Desktop";
-  }
-
   function makeShot(shot) {
-    if (!shot.file) shot.file = shotName(shot.mins || 0);
-    if (!shot.dir) shot.dir = shotDir();
+    if (!shot.file) shot.file = shotName();
+    if (!shot.dir) shot.dir = st.settings.route ? "~/Desktop/Screenshots" : "~/Desktop";
     var card = document.createElement("div");
     card.className = "nt-shot";
     card.tabIndex = 0;
@@ -850,7 +849,10 @@
       renderPlayState();
     });
 
-    press(root.querySelector(".nt-gear"), openSettings);
+    // SettingsWindowController presents a single window and brings the
+    // existing one forward on repeat clicks rather than stacking copies — so
+    // a second gear press here is a no-op, not a second window.
+    press(root.querySelector(".nt-gear"), function () { showOverlay(el.settings); });
 
     el.settings.querySelectorAll(".nt-switch").forEach(function (sw) {
       sw.addEventListener("click", function () {
@@ -860,7 +862,7 @@
       });
     });
     el.settings.querySelector(".nt-light-close")
-      .addEventListener("click", closeSettings);
+      .addEventListener("click", function () { hideOverlay(el.settings); });
 
     // Scrubber: follow the pointer while down, seek on release.
     function seekFrom(e) {
@@ -907,7 +909,7 @@
 
     el.preview.addEventListener("click", function (e) {
       if (e.target.closest(".nt-preview-x") || !e.target.closest(".nt-preview-win")) {
-        closePreview();
+        hideOverlay(el.preview);
       }
     });
 
@@ -917,23 +919,26 @@
     });
   }
 
-  // ---- Settings --------------------------------------------------------
-  /* SettingsWindowController presents a single window and brings the existing
-     one forward on repeat clicks rather than stacking copies — so a second
-     gear press here is a no-op, not a second window. */
-  function openSettings() {
-    el.settings.hidden = false;
-    void el.settings.offsetWidth;
-    el.settings.classList.add("is-open");
+  // ---- Overlays --------------------------------------------------------
+  /* Settings and preview are both windows over the desktop, and both fade.
+     Unhiding has to land its own frame before the class goes on, or the
+     transition starts from the shown state and there is nothing to fade;
+     hiding has to wait the transition out, and re-check on the way in case
+     it was reopened inside those 200ms. */
+  function showOverlay(node) {
+    node.hidden = false;
+    void node.offsetWidth;
+    node.classList.add("is-open");
   }
 
-  function closeSettings() {
-    el.settings.classList.remove("is-open");
+  function hideOverlay(node) {
+    node.classList.remove("is-open");
     setTimeout(function () {
-      if (!el.settings.classList.contains("is-open")) el.settings.hidden = true;
+      if (!node.classList.contains("is-open")) node.hidden = true;
     }, 200);
   }
 
+  // ---- Settings --------------------------------------------------------
   function renderSettings() {
     el.settings.querySelectorAll(".nt-switch").forEach(function (sw) {
       var on = !!st.settings[sw.getAttribute("data-set")];
@@ -944,19 +949,11 @@
 
   // ---- Preview ---------------------------------------------------------
   function openPreview(card) {
-    var shot = card._shot || { kind: "document", age: "" };
+    // Every .nt-shot comes from makeShot, so the record is always there.
+    var shot = card._shot;
     el.previewBody.innerHTML = shotArt(shot.kind);
-    el.previewName.textContent = (shot.dir || "~/Desktop") + "/" + (shot.file || "");
-    el.preview.hidden = false;
-    void el.preview.offsetWidth;
-    el.preview.classList.add("is-open");
-  }
-
-  function closePreview() {
-    el.preview.classList.remove("is-open");
-    setTimeout(function () {
-      if (!el.preview.classList.contains("is-open")) el.preview.hidden = true;
-    }, 200);
+    el.previewName.textContent = shot.dir + "/" + shot.file;
+    showOverlay(el.preview);
   }
 
   // ---- Input -----------------------------------------------------------
@@ -999,7 +996,7 @@
         stopTour();
         fireScreenshot();
       }
-      else if (e.key === "Escape") { closePreview(); closeSettings(); }
+      else if (e.key === "Escape") { hideOverlay(el.preview); hideOverlay(el.settings); }
     });
 
     window.addEventListener("resize", rescale);

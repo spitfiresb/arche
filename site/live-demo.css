@@ -31,9 +31,10 @@
 }
 .ld-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
 
-/* Icon-only expand button, dead centre of the preview. Hidden until the
-   thumbnail is hovered: at rest the preview is just the running app, with
-   no chrome sitting on top of it. Hover works even though a live iframe
+/* Icon-only expand button, dead centre of the preview (built in
+   live-demo.js). Hidden until the thumbnail is hovered: at rest the preview
+   is just the running app, with no chrome sitting on top of it. Hover
+   works even though a live iframe
    covers the thumb because the parked overlay is pointer-events:none — the
    hover lands on the figure.
 

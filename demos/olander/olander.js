@@ -11,6 +11,9 @@
  * that don't match a recorded turn fall through to a catalog search on
  * whatever they typed, so the demo never dead-ends.
  *
+ * Loaded only by demos/olander/index.html, which runs standalone and as the
+ * iframe behind the live-demo tile on work-contract.html.
+ *
  * EVERY VALUE BELOW IS FABRICATED. This page is public, so no part number,
  * quantity, customer, order, or dollar figure may be copied from the client's
  * live ERP — invent them. The only things carried over from the real system
@@ -69,9 +72,12 @@
 
   /* ----------------------------------------------------------- scripts */
 
+  // One recorded turn. `keys` are the substrings pickTurn scores a typed
+  // question against; `steps` are the tool calls in order, where `wait` is how
+  // long that call spins before its `rows` land; `answer` is the reply as
+  // blocks — { p } and { ul } type word by word, { table } lands whole.
   var TURNS = [
     {
-      id: 'stock',
       title: '38C150SHCS on-hand',
       q: 'On-hand for 38C150SHCS across all warehouses',
       keys: ['38c150shcs', 'on-hand', 'on hand', 'stock', 'warehouse', 'inventory', 'shcs'],
@@ -127,7 +133,6 @@
     },
 
     {
-      id: 'orders',
       title: 'Open orders — this week',
       q: 'Open sales orders shipping this week',
       keys: ['open order', 'sales order', 'orders', 'shipping', 'ship', 'this week', 'promise'],
@@ -178,7 +183,6 @@
     },
 
     {
-      id: 'helicoil',
       title: 'Helicoil for 3/8-16',
       q: 'What size helicoil goes in a 3/8-16 hole?',
       keys: ['helicoil', 'heli-coil', 'insert', 'thread repair', '3/8-16'],
@@ -224,7 +228,6 @@
     },
 
     {
-      id: 'flangenut',
       title: '5/16-18 flange nut',
       q: 'Find a 5/16-18 stainless flange nut',
       keys: ['flange nut', 'flange', 'nut', '5/16-18 stainless'],
@@ -277,14 +280,12 @@
     { label: 'Last 7 days', rows: ['Open orders — Rainier Hydraulics', 'M10 1.25 SHCS stock check', 'Customers added this month'] }
   ];
 
-  var SUGGESTIONS = [
-    'On-hand for 38C150SHCS across all warehouses',
-    'Open sales orders shipping this week',
-    'What size helicoil goes in a 3/8-16 hole?',
-    'Find a 5/16-18 stainless flange nut'
+  // Chip label paired with the prompt it drops into the composer.
+  var FOLLOW_UPS = [
+    ['Shorter', 'Make that response shorter and more direct.'],
+    ['Email-ready', 'Reformat that as a short email I can send to a customer.'],
+    ['Continue', 'Continue.']
   ];
-
-  var FOLLOW_UPS = ['Shorter', 'Email-ready', 'Continue'];
 
   /* --------------------------------------------------------- primitives */
 
@@ -298,7 +299,6 @@
   function svg(markup) {
     var wrap = document.createElement('span');
     wrap.innerHTML = markup;
-    wrap.setAttribute('aria-hidden', 'true');
     return wrap.firstElementChild;
   }
 
@@ -474,7 +474,7 @@
     pin();
   }
 
-  function assistantShell() {
+  function assistantColumn() {
     var row = node('div', 'oa-assistant oa-in');
     var avatar = node('div', 'oa-avatar', 'O');
     avatar.setAttribute('aria-hidden', 'true');
@@ -483,7 +483,7 @@
     row.appendChild(col);
     el.stream.appendChild(row);
     pin();
-    return { row: row, col: col };
+    return col;
   }
 
   function stepsContainer(col) {
@@ -570,7 +570,6 @@
       bubble.appendChild(p);
       await typeInto(p, block.p);
     }
-    return bubble;
   }
 
   async function typeInto(target, text) {
@@ -585,16 +584,24 @@
     target.innerHTML = inline(shown);
   }
 
-  function chips(col, onPick) {
+  function chips(col) {
     var row = node('div', 'oa-chips');
-    FOLLOW_UPS.forEach(function (label) {
-      var b = node('button', 'oa-chip', label);
+    FOLLOW_UPS.forEach(function (pair) {
+      var b = node('button', 'oa-chip', pair[0]);
       b.type = 'button';
-      b.addEventListener('click', function () { onPick(label); });
+      b.addEventListener('click', function () {
+        el.input.value = pair[1];
+        syncSend();
+        el.input.focus();
+      });
       row.appendChild(b);
     });
     col.appendChild(row);
   }
+
+  var CLIPBOARD = '<rect x="5" y="5" width="9" height="9" rx="1.5"/>'
+    + '<path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/>';
+  var TICK = '<path d="M3 8.5L6.5 12L13 4.5" stroke-width="2"/>';
 
   function actions(col) {
     var row = node('div', 'oa-actions');
@@ -602,18 +609,20 @@
     regen.type = 'button';
     regen.appendChild(icon('<path d="M14 8a6 6 0 0 1-10.5 4M2 8a6 6 0 0 1 10.5-4"/><path d="M14 3v3.5h-3.5"/><path d="M2 13v-3.5h3.5"/>', 13));
     regen.appendChild(node('span', '', 'Regenerate response'));
+
     var copy = node('button', 'oa-action-icon');
     copy.type = 'button';
     copy.setAttribute('aria-label', 'Copy message');
-    copy.appendChild(icon('<rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/>', 13));
-    copy.addEventListener('click', function () {
+    function paint(paths) {
       copy.innerHTML = '';
-      copy.appendChild(icon('<path d="M3 8.5L6.5 12L13 4.5" stroke-width="2"/>', 13));
-      setTimeout(function () {
-        copy.innerHTML = '';
-        copy.appendChild(icon('<rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/>', 13));
-      }, 1500);
+      copy.appendChild(icon(paths, 13));
+    }
+    paint(CLIPBOARD);
+    copy.addEventListener('click', function () {
+      paint(TICK);
+      setTimeout(function () { paint(CLIPBOARD); }, 1500);
     });
+
     row.appendChild(regen);
     row.appendChild(copy);
     col.appendChild(row);
@@ -639,12 +648,12 @@
     addUser(question);
     await sleep(320);
 
-    var shell = assistantShell();
-    var typing = typingBubble(shell.col);
+    var col = assistantColumn();
+    var typing = typingBubble(col);
     await sleep(520);
     typing.remove();
 
-    var steps = stepsContainer(shell.col);
+    var steps = stepsContainer(col);
     for (var i = 0; i < turn.steps.length; i++) {
       var card = toolCard(turn.steps[i]);
       steps.add(card.node);
@@ -654,22 +663,12 @@
       await sleep(240);
     }
 
-    await streamAnswer(shell.col, turn.answer);
+    await streamAnswer(col, turn.answer);
     steps.settle();
 
-    if (turn.citation) {
-      shell.col.appendChild(node('div', 'oa-citation', 'Data: ' + turn.citation));
-    }
-    chips(shell.col, function (label) {
-      el.input.value = label === 'Shorter'
-        ? 'Make that response shorter and more direct.'
-        : label === 'Email-ready'
-          ? 'Reformat that as a short email I can send to a customer.'
-          : 'Continue.';
-      syncSend();
-      el.input.focus();
-    });
-    actions(shell.col);
+    col.appendChild(node('div', 'oa-citation', 'Data: ' + turn.citation));
+    chips(col);
+    actions(col);
     pin();
 
     setInFlight(false);
@@ -755,13 +754,15 @@
     });
   }
 
+  // Every recorded turn gets a chip. Clicking one runs that turn directly —
+  // routing its own question back through pickTurn would only find it again.
   function paintSuggestions() {
-    SUGGESTIONS.forEach(function (text) {
-      var b = node('button', 'oa-suggestion', text);
+    TURNS.forEach(function (turn) {
+      var b = node('button', 'oa-suggestion', turn.q);
       b.type = 'button';
       b.addEventListener('click', function () {
         cancelAutoplay();
-        run(pickTurn(text), text);
+        run(turn, turn.q);
       });
       el.suggestions.appendChild(b);
     });
@@ -812,26 +813,20 @@
     }
   }
 
+  // Two turns, then it stops and leaves the composer to the visitor. The lead-in
+  // is longer before the first (the tile has to finish opening) than between.
   async function play() {
-    await sleep(900);
-    if (!autoplay) return;
-    await typeQuestion(TURNS[0].q);
-    if (!autoplay) return;
-    await sleep(420);
-    if (!autoplay) return;
-    el.input.value = '';
-    syncSend();
-    await run(TURNS[0], TURNS[0].q);
-
-    await sleep(3200);
-    if (!autoplay) return;
-    await typeQuestion(TURNS[1].q);
-    if (!autoplay) return;
-    await sleep(420);
-    if (!autoplay) return;
-    el.input.value = '';
-    syncSend();
-    await run(TURNS[1], TURNS[1].q);
+    for (var i = 0; i < 2; i++) {
+      await sleep(i === 0 ? 900 : 3200);
+      if (!autoplay) return;
+      await typeQuestion(TURNS[i].q);
+      if (!autoplay) return;
+      await sleep(420);
+      if (!autoplay) return;
+      el.input.value = '';
+      syncSend();
+      await run(TURNS[i], TURNS[i].q);
+    }
     autoplay = false;
   }
 

@@ -1,9 +1,10 @@
 /* FloorSense — vanilla-JS port of the original React app.
  *
  * Same behaviour as the Next.js version: landing → upload → analyze → interactive
- * viewer with an edit mode. The only server dependency is POST /api/detect
- * (functions/api/detect.js), which holds the Roboflow key and returns raw
- * predictions. Everything below runs entirely in the browser. */
+ * viewer with an edit mode. Builds the whole UI into #fs-app; runs standalone at
+ * demos/floorsense/ and framed as a live demo from work-personal.html. The only
+ * server dependency is POST /api/detect (functions/api/detect.js), which holds
+ * the Roboflow key and returns raw predictions. Everything else is in-browser. */
 
 (() => {
   "use strict";
@@ -22,8 +23,8 @@
   const EDIT_TYPES = STANDARD_KEYS.filter((t) => t !== "furniture");
 
   // ---- Minimal inline icons (lucide-style paths) ----------------------
-  const svg = (paths, extra = "") =>
-    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${paths}</svg>`;
+  const svg = (paths) =>
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
   const ICON = {
     home: svg('<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
     pencil: svg('<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>'),
@@ -32,7 +33,6 @@
     layers: svg('<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'),
     download: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'),
     upload: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>'),
-    edit: svg('<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>'),
     plus: svg('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
     minus: svg('<line x1="5" y1="12" x2="19" y2="12"/>'),
     save: svg('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>'),
@@ -48,9 +48,8 @@
   };
 
   const root = document.getElementById("fs-app");
-  const mainEl = () => root.querySelector(".fs-main");
 
-  // When embedded in the fullscreen overlay (floorsense.html?embed=1) the host
+  // When embedded in the fullscreen overlay (demos/floorsense/?embed=1) the host
   // page supplies its own close control, so hide the header's back link/tagline.
   const isEmbed = new URLSearchParams(location.search).get("embed") === "1";
 
@@ -69,7 +68,7 @@
       try {
         const d = await response.json();
         msg = d.error || d.details || msg;
-      } catch (_) {
+      } catch {
         msg = await response.text();
       }
       throw new Error(msg);
@@ -131,11 +130,13 @@
     app.error = null;
     setState("analyzing");
     try {
-      const result = await analyzeFloorPlan(base64);
-      result.elements = result.elements.map((el, i) => ({ ...el, id: el.id || `el-${i}` }));
-      app.analysisData = result;
+      app.analysisData = await analyzeFloorPlan(base64);
       setState("viewing");
     } catch (err) {
+      // the thrown message can carry server config detail (bad key, plan
+      // limits), so the visitor gets a generic line and the detail goes to
+      // the console.
+      console.error("FloorSense analysis failed:", err);
       app.error = "Failed to analyze floor plan. Please try again.";
       setState("uploading");
     }
@@ -153,7 +154,7 @@
     header.append(brand);
     if (!isEmbed) {
       const tag = el("div", "fs-tagline");
-      tag.innerHTML = `<a class="fs-back" href="work-personal.html">← Back to work</a><span>Intelligent Floorplan Analysis</span>`;
+      tag.innerHTML = `<a class="fs-back" href="/work-personal.html">← Back to work</a><span>Intelligent Floorplan Analysis</span>`;
       header.append(tag);
     }
 
@@ -247,13 +248,12 @@
     input.accept = "image/png, image/jpeg, image/jpg";
     input.style.display = "none";
 
-    const readFile = (file) => {
-      if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => { if (e.target?.result) handleImageSelected(e.target.result); };
-        reader.readAsDataURL(file);
-      }
+    const readBlob = (blob) => {
+      const reader = new FileReader();
+      reader.onload = (e) => { if (e.target?.result) handleImageSelected(e.target.result); };
+      reader.readAsDataURL(blob);
     };
+    const readFile = (file) => { if (file && file.type.startsWith("image/")) readBlob(file); };
 
     drop.onclick = () => input.click();
     input.onchange = (e) => { if (e.target.files?.[0]) readFile(e.target.files[0]); };
@@ -269,19 +269,23 @@
     hint.textContent = "Supported formats: PNG, JPG";
 
     const examples = el("div", "fs-examples");
-    const exHead = document.createElement("p");
-    exHead.className = "fs-hand";
+    const exHead = el("p", "fs-hand");
     exHead.textContent = "Or try one of these examples:";
     const grid = el("div", "fs-example-grid");
-    ["assets/floorsense/sample_1.png", "assets/floorsense/sample_2.png", "assets/floorsense/sample_3.png"].forEach((src) => {
+    ["samples/sample_1.png", "samples/sample_2.png", "samples/sample_3.png"].forEach((src) => {
       const cell = el("div", "fs-example");
       cell.innerHTML = `<img src="${src}" alt="Sample floor plan">`;
+      // a missing sample would otherwise make the click do nothing at all,
+      // with no banner and nothing in the console to explain it
       cell.onclick = () => {
-        fetch(src).then((r) => r.blob()).then((blob) => {
-          const reader = new FileReader();
-          reader.onload = (e) => { if (e.target?.result) handleImageSelected(e.target.result); };
-          reader.readAsDataURL(blob);
-        });
+        fetch(src)
+          .then((r) => { if (!r.ok) throw new Error(`${r.status} ${src}`); return r.blob(); })
+          .then(readBlob)
+          .catch((err) => {
+            console.error("FloorSense sample failed to load:", err);
+            app.error = "Could not load that example. Please try another.";
+            setState("uploading");
+          });
       };
       grid.append(cell);
     });
@@ -319,7 +323,6 @@
     const v = {
       elements: [],
       activeLayers: { perimeter: true, bathroom: true, window: true, door: true, stairs: true, furniture: true },
-      isEditing: false,
       editAction: "none", // none | add | remove
       selectedType: "window",
       dragStart: null,
@@ -360,7 +363,7 @@
 
     const stageControls = el("div", "fs-stage-controls");
     const editBtn = el("button", "fs-btn");
-    editBtn.innerHTML = `Edit ${ICON.edit}`;
+    editBtn.innerHTML = `Edit ${ICON.pencil}`;
     stageControls.append(editBtn);
     stage.append(stageControls);
 
@@ -501,8 +504,7 @@
       const panelWrap = el("div", "fs-edit");
       const inner = el("div", "fs-edit-inner");
 
-      const head = document.createElement("h3");
-      head.className = "fs-hand";
+      const head = el("h3", "fs-hand");
       head.textContent = "EDIT MODE";
 
       const actions = el("div", "fs-edit-actions");
@@ -532,7 +534,7 @@
       saveBtn.onclick = downloadImage;
       const doneBtn = el("button", "fs-btn small block");
       doneBtn.textContent = "DONE";
-      doneBtn.onclick = () => { v.isEditing = false; v.editAction = "none"; teardownEditPanel(); renderBoxes(); };
+      doneBtn.onclick = () => { v.editAction = "none"; teardownEditPanel(); renderBoxes(); };
       footer.append(saveBtn, doneBtn);
 
       inner.append(head, actions, contextSlot, visibility, footer);
@@ -555,8 +557,7 @@
       slot.innerHTML = "";
       if (v.editAction === "add") {
         const box = el("div", "fs-add-box");
-        const p = document.createElement("p");
-        p.className = "fs-small-label";
+        const p = el("p", "fs-small-label");
         p.textContent = "Item to Add:";
         const grid = el("div", "fs-type-grid");
         EDIT_TYPES.forEach((type) => {
@@ -591,7 +592,6 @@
     }
 
     editBtn.onclick = () => {
-      v.isEditing = true;
       stageControls.classList.add("fs-hidden");
       editPanel = buildEditPanel();
       container.append(editPanel);

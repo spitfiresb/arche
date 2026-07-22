@@ -1,4 +1,5 @@
-/* Notch — a browser recreation of the macOS app (see ~/Desktop/notch).
+/* Notch — a browser recreation of the macOS app. Loaded by index.html in
+ * this folder, alongside notch.js, which builds every element styled here.
  *
  * Every number below is the real app's number. The Swift source lays the panel
  * out in points: ScreenMetrics gives the sizes (220x32 collapsed, 300x108
@@ -291,13 +292,11 @@ body {
   border-radius: calc(6 * var(--u));
 }
 
-/* Album art. The real app shows the track's own artwork; here it's a
-   generated gradient per track, so nothing is misattributed to a real
-   release. */
+/* Album art. Both the sleeve and the gradient standing in for it are set as
+   an inline background shorthand by renderTrack() — see resolveArt(). */
 .nt-art {
   flex: none;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background-size: cover;
   transition: background 0.34s ease-in-out;
 }
 
@@ -482,6 +481,7 @@ body {
 }
 
 .nt-btn-play {
+  position: relative;   /* the two glyphs stack inside it */
   width: calc(30 * var(--u));
   height: calc(30 * var(--u));
 }
@@ -506,8 +506,6 @@ body {
   position: absolute;
   transition: opacity 0.32s ease-out;
 }
-
-.nt-btn-play { position: relative; }
 
 /* ── Screenshots tab ──────────────────────────────────────────────────*/
 
@@ -670,14 +668,11 @@ body {
     opacity 0.22s ease-out;
 }
 
+/* Only while open: renderPanes() never sets is-open and is-toast together,
+   so the banner state falls back to the hidden gear above. */
 .nt-notch.is-open .nt-gear {
   opacity: 1;
   pointer-events: auto;
-}
-
-.nt-notch.is-toast .nt-gear {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .nt-gear:hover,
