@@ -13,3 +13,6 @@
 # Python bytecode from the dashboard data scripts
 __pycache__/
 *.pyc
+
+# Local static server (no-store headers so edits show without a hard reload)
+.devserver.py

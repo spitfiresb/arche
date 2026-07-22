@@ -31,34 +31,85 @@
 }
 .ld-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
 
-/* Icon-only expand button, bottom-right; grows on hover. Sits ABOVE the
-   parked live miniature (z-index 30 > overlay's 20) so it never vanishes
-   when the app takes over the preview; it fades out only while the demo
-   is actually open fullscreen. */
+/* Icon-only expand button, dead centre of the preview. Hidden until the
+   thumbnail is hovered: at rest the preview is just the running app, with
+   no chrome sitting on top of it. Hover works even though a live iframe
+   covers the thumb because the parked overlay is pointer-events:none — the
+   hover lands on the figure.
+
+   font-size is pinned rather than inherited so the button is the same size
+   on every page whatever the surrounding type.
+
+   Sits ABOVE the parked live miniature (z-index 30 > overlay's 20) so it
+   never vanishes when the app takes over the preview; it fades out only
+   while the demo is actually open fullscreen, where .ld-back is the one
+   control on screen. */
 .ld-expand {
   position: absolute;
-  bottom: 0.5em;
-  right: 0.5em;
+  top: 50%;
+  left: 50%;
   z-index: 30;
-  width: 2em;
-  height: 2em;
+  font-size: 1rem;
+  width: 4em;
+  height: 4em;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   background: rgba(20, 20, 20, 0.5);
-  transform: scale(1);
-  transition: transform 0.25s ease, background 0.2s ease, opacity 0.3s ease;
+  opacity: 0;
+  /* the centring translate rides along with the reveal's scale */
+  transform: translate(-50%, -50%) scale(0.8);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
   pointer-events: none;
 }
 .ld-thumb:hover .ld-expand,
 .ld-thumb:focus-visible .ld-expand {
-  transform: scale(1.22);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
   background: rgba(20, 20, 20, 0.72);
 }
-.ld-expand svg { width: 0.95em; height: 0.95em; }
+.ld-expand svg { width: 1.9em; height: 1.9em; }
 body.ld-locked .ld-expand { opacity: 0; }
+
+/* The arrows draw themselves outward from the centre of the button on
+   reveal. Every stroke is authored so its START point is the one nearest
+   the middle, and pathLength="1" renormalises each one to a single unit —
+   so `stroke-dasharray: 1` is exactly one path long whatever the real
+   geometry, and dashoffset 1 -> 0 sweeps the ink from the centre out. */
+.ld-expand svg line,
+.ld-expand svg polyline {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.52s ease;
+}
+/* ...and the two arrows part from each other as they draw: each group
+   starts pulled in toward the middle and settles into its corner. */
+.ld-arrow { transition: transform 0.68s cubic-bezier(0.2, 0.8, 0.3, 1); }
+.ld-arrow-tr { transform: translate(-2.5px, 2.5px); }
+.ld-arrow-bl { transform: translate(2.5px, -2.5px); }
+
+.ld-thumb:hover .ld-arrow,
+.ld-thumb:focus-visible .ld-arrow { transform: none; }
+.ld-thumb:hover .ld-expand line,
+.ld-thumb:focus-visible .ld-expand line { stroke-dashoffset: 0; }
+/* the arrowhead lands a beat after its own shaft */
+.ld-thumb:hover .ld-expand polyline,
+.ld-thumb:focus-visible .ld-expand polyline {
+  stroke-dashoffset: 0;
+  transition-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-expand svg line,
+  .ld-expand svg polyline {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+  .ld-expand .ld-arrow-tr,
+  .ld-expand .ld-arrow-bl { transform: none; transition: none; }
+}
 
 /* The overlay is anchored in DOCUMENT coordinates (position:absolute at the
    top of the page), and the parked miniature is placed with a transform that
@@ -114,30 +165,74 @@ body.ld-locked .ld-expand { opacity: 0; }
    click — an opacity-0 element still hit-tests — so let events through */
 .ld-overlay.revealed .ld-overlay-poster { opacity: 0; pointer-events: none; }
 
-.ld-overlay-close {
+/* The site's back control, re-provided inside the overlay (built in
+   live-demo.js). It carries the .back class too, so the mark, the chevron
+   and the ring-drawing-itself-closed hover all come straight from
+   style.css and can't drift from the real one. What's different here:
+
+   - it has to clear the overlay, so z-index goes above 1000;
+   - it's bigger than the page's, because it's the one exit from a
+     fullscreen app and has to be an obvious target;
+   - it gets a scrim. The page's back link can rely on the site's own dark
+     background; this one sits over whatever the embedded app painted,
+     which is cream in FloorSense and near-black in PapeAgNet — so it
+     carries its own contrast rather than hoping for it.
+   - it does NOT auto-hide or wait on a hover. It is the only control on
+     screen once a demo is open, and once it has arrived it stays put — an
+     exit you have to go looking for isn't one. Its one piece of timing is
+     the entrance: it holds off until the grow has landed, then pops in. */
+.ld-back {
+  /* .back is deliberately position:absolute so the page's own mark scrolls
+     away with the top of the document. This one must NOT inherit that: the
+     overlay is anchored in document coordinates, so an absolute child sits
+     wherever the top of the page is — i.e. off-screen entirely for any
+     demo below the fold. Fixed is right here for the same reason absolute
+     is right there: while a demo is open the body is locked and nothing
+     scrolls, so viewport-pinned is the only thing that stays on screen. */
   position: fixed;
-  top: 0.6em;
-  right: 0.7em;
   z-index: 1001;
-  width: 1.9em;
-  height: 1.9em;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.3rem;
-  line-height: 1;
-  color: #fff;
-  background: rgba(20, 20, 20, 0.8);
+  top: 1.25rem;
+  left: 1.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #fff;
+  background: rgba(20, 20, 20, 0.8);
+  /* A dark disc alone is only guaranteed to read on a light app — over
+     PapeAgNet's near-black header it vanishes into the chrome. The hairline
+     and the shadow are what make it legible in BOTH directions: the light
+     ring separates it from a dark app, the shadow from a light one. */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25),
+              0 0.35rem 1.25rem rgba(0, 0, 0, 0.45);
+  /* Hidden and intangible until .ld-ready, which live-demo.js sets when the
+     grow lands — then it pops into existence. The overshoot curve is the
+     one .back already uses for its own hover swell in style.css, so the
+     control arrives the way the rest of the site moves. */
   opacity: 0;
+  transform: scale(0.4);
   pointer-events: none;
-  transition: opacity 0.3s ease 0.15s;
+  transition: opacity 0.16s ease,
+              transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease;
 }
-.ld-overlay.open .ld-overlay-close { opacity: 1; pointer-events: auto; }
-.ld-overlay-close:hover { background: rgba(20, 20, 20, 1); }
+.ld-overlay.open.ld-ready .ld-back {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.ld-back .back-mark { width: 1.875rem; height: 1.875rem; }
+/* .back's own hover recolours toward --fg, which is a page colour; on the
+   scrim the mark is already white, so darken the disc instead. */
+.ld-back:hover,
+.ld-back:focus-visible {
+  color: #fff;
+  background: rgba(20, 20, 20, 1);
+}
 
 /* Scroll lock while the demo is open. Pinning the body (with its top set
    to -scrollY in JS) rather than just hiding overflow: on a full-height

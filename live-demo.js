@@ -38,7 +38,7 @@
     var thumbImg = thumb.querySelector('img');
     var bg       = thumb.getAttribute('data-bg') || '#0d0d0d';
 
-    // Build the overlay: live frame + fallback poster + close button.
+    // Build the overlay: live frame + fallback poster + the way out.
     var overlay = document.createElement('div');
     overlay.className = 'ld-overlay';
     overlay.hidden = true;
@@ -54,17 +54,33 @@
     poster.src = thumbImg.currentSrc || thumbImg.src;
     poster.alt = '';
     poster.style.background = bg;
-    var closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'ld-overlay-close';
-    closeBtn.setAttribute('aria-label', 'Close the live demo');
-    closeBtn.innerHTML = '&times;';
+    // At fullscreen the demo covers the whole page, header and all — and the
+    // embedded apps hide their own navigation when they're framed. So the
+    // way out has to be re-provided here, in the site's own visual language:
+    // this is the same mark and the same hover as the .back link in
+    // style.css, reusing its classes outright so the two can't drift.
+    // A <button> rather than an <a>, since it closes rather than navigates.
+    var back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'back ld-back';
+    back.setAttribute('aria-label', 'Back');
+    back.innerHTML =
+      '<svg class="back-mark" viewBox="0 0 40 40" fill="none" '
+      + 'stroke="currentColor" aria-hidden="true">'
+      + '<circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" '
+      + 'stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" '
+      + 'transform="rotate(-90 20 20)"/>'
+      + '<path class="back-chevron" d="M24 14 L16 20 L24 26" fill="none" '
+      + 'stroke-width="1.75" stroke-linecap="round" '
+      + 'stroke-linejoin="round"/></svg>';
+
     overlay.appendChild(fw);
     overlay.appendChild(poster);
-    overlay.appendChild(closeBtn);
+    overlay.appendChild(back);
     document.body.appendChild(overlay);
 
     var srcSet = false, ready = false, grown = false, revealT = null;
+    var readyT = null;     // backstop for the back control's entrance
     var shown = false;     // has the live miniature been revealed at least once
     var rescueT = null;
     var mode = 'poster';   // which element performed the grow this open
@@ -238,10 +254,25 @@
       }, 300);
     }
 
+    // The back control waits for the grow to land rather than appearing with
+    // the click, so it reads as arriving WITH the app at fullscreen instead
+    // of hovering over a rectangle that's still moving. transitionend is the
+    // real signal; the timer is only a backstop, because a transition that
+    // gets dropped or interrupted must never leave a demo with no way out.
+    function armBack() {
+      clearTimeout(readyT);
+      readyT = setTimeout(showBack, 1400);           // a little over GROW
+    }
+    function showBack() {
+      clearTimeout(readyT);
+      if (overlay.classList.contains('open')) overlay.classList.add('ld-ready');
+    }
+
     function open() {
       preload();
       grown = false;
       overlay.hidden = false;
+      armBack();
       // Lock BEFORE measuring: the lock freezes the coordinate origin that
       // collapsed()/expanded() are both computed against.
       lockScroll();
@@ -255,6 +286,12 @@
         overlay.classList.add('open');
         fw.style.transition = GROW;
         fw.style.transform = expanded();
+        var doneG = function (e) {
+          if (e.propertyName !== 'transform') return;
+          fw.removeEventListener('transitionend', doneG);
+          showBack();
+        };
+        fw.addEventListener('transitionend', doneG);
         return;
       }
 
@@ -276,11 +313,14 @@
       if (e.propertyName !== 'transform' || !overlay.classList.contains('open')) return;
       poster.removeEventListener('transitionend', onGrown);
       grown = true;
+      showBack();          // the poster path's "we're at fullscreen now"
       maybeReveal();
     }
 
     function close() {
       clearTimeout(revealT);
+      clearTimeout(readyT);
+      overlay.classList.remove('ld-ready');
       poster.removeEventListener('transitionend', onGrown);
       // Unlock BEFORE measuring: this restores the exact scroll position the
       // lock froze, so the thumbnail is back where collapsed() expects it.
@@ -332,7 +372,7 @@
     thumb.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
     });
-    closeBtn.addEventListener('click', close);
+    back.addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('open')) close();
     });

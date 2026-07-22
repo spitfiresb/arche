@@ -351,7 +351,10 @@ body.page main {
   position: relative;
   max-width: 30em;
   margin: 0 auto;
-  padding-top: 6em;
+  /* the back mark used to sit in the flow here and push the first line
+     down; it's fixed to the viewport now, so the column carries that
+     space itself and the page opens where it always did */
+  padding-top: 11.25rem;
   padding-bottom: 4em;
 }
 
@@ -520,9 +523,94 @@ li.li-hover:focus-within .li-hover-card {
   border-radius: 0.55em 0.55em 0 0;
 }
 
+/* Back: a bare chevron, no label and no underline, pinned to the top-left
+   of the viewport rather than to the content column. The columns differ
+   page to page — 30em on About, 78rem on the work pages, a centered block
+   on the Work index — so a mark sitting in the flow lands somewhere
+   different on each one; fixed to the viewport it's in the same place
+   everywhere. On About that also puts it clear of the cliff face, which
+   is drawn down the left edge of the text column.
+
+   It's a direct child of <body>, not of <main>, so it positions against
+   the page rather than the column — main is position:relative and would
+   otherwise be its containing block, putting it back on a different x per
+   page. Absolute rather than fixed so it scrolls away with the top of the
+   page: pinned to the viewport it ends up sitting over the bands on a
+   window narrow enough that the column reaches the left edge.
+
+   z-index stays well below the live-demo overlay (1000) so a fullscreen
+   demo still covers it. */
 .back {
-  display: block;
-  margin-bottom: 3em;
+  position: absolute;
+  top: 2.5rem;
+  left: 2.5rem;
+  z-index: 5;
+  display: flex;
+  width: max-content;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--fg);
+}
+
+/* The mark swells on hover. The scale lives on the <svg> rather than the
+   anchor so nothing around it reflows mid-gesture. Going in it overshoots
+   a touch and settles back; coming out it just eases. */
+.back-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  transform-origin: 50% 50%;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back:hover .back-mark,
+.back:focus-visible .back-mark {
+  transform: scale(1.14);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Shallower than a 45° chevron — 8 across to 6 down each way, so it reads
+   as a soft arrow rather than a bracket */
+.back-chevron {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The ring is drawn on, not switched on: one dash the length of the
+   circle, parked out of sight at rest and closed on hover. The gap is
+   longer than the circumference on purpose — same reason as .pill-border,
+   an equal pattern would repeat a second dash onto the far end. The
+   rotate(-90) attribute in the markup starts the draw at the top.
+
+   The dash values are duplicated as attributes in the markup so the ring
+   is hidden at rest even on a stale stylesheet — the CSS here only has to
+   win the transition, which it does, presentation attributes being the
+   weakest thing in the cascade.
+
+   Leaving is the fast half: the stroke lets go quickly on an accelerating
+   curve, while arriving is a decelerating one that covers most of the
+   circle early and closes the last arc slowly. */
+.back-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-dasharray: 98 200;   /* 2πr, r = 15.5 ≈ 97.4 */
+  stroke-dashoffset: 98;
+  transition: stroke-dashoffset 0.32s cubic-bezier(0.55, 0, 0.85, 0.2);
+}
+
+.back:hover .back-ring,
+.back:focus-visible .back-ring {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.62s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Small lead-in text at the top of a page */
@@ -653,7 +741,6 @@ html.man ul.timeline li::after {
 
 /* The rope hangs from the ceiling through the header area,
    so keep the intro text clear of it */
-html.man .back,
 html.man .kicker {
   margin-left: 1.75em;
 }
@@ -762,15 +849,11 @@ ul.timeline p {
 
 body.page.work main {
   max-width: var(--work-width);
-  padding-top: 5em;
+  padding-top: 9.5rem;   /* as above: absorbs the space the back mark held */
 }
 
 .page-head {
   margin-bottom: 5rem;
-}
-
-.page-head .back {
-  margin-bottom: 2.25rem;
 }
 
 /* The page label repeats the landing page's column heading verbatim —
