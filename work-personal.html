@@ -15,7 +15,7 @@
     </header>
 
     <ul class="bands">
-      <li>
+      <li id="floorsense">
         <div class="band-artifact">
           <figure class="ld-thumb" data-live-demo="floorsense.html?embed=1"
           data-bg="#fdfbf7" data-title="FloorSense — live demo"
@@ -31,30 +31,45 @@
               y2="14"/></svg>
             </span>
           </figure>
-          <p class="stack-caption">Next.js &middot; React &middot; YOLO &middot; Roboflow</p>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">ML Floorplan Analysis</h2>
+          <h2 class="band-title">FloorSense</h2>
           <p>A computer vision web app that identifies architectural elements in
           floorplan images using YOLO-based object detection, with real-time
           detection visualization and correction tools.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>Drop in a floor plan and the model marks what it finds. The
+                overlay stays editable &mdash; add a box, click one to remove
+                it, export the corrected plan as a PNG.</dd>
+              </div>
+              <div>
+                <dt>Model</dt>
+                <dd>A YOLO detector trained on Roboflow. Six classes &mdash;
+                perimeter, bathroom, door, window, stairs, furniture &mdash;
+                kept above a 0.40 confidence floor.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Vanilla JavaScript, no framework &mdash; a port of the
+                original Next.js and React build. A single Cloudflare Pages
+                Function holds the Roboflow key so it never reaches the
+                browser.</dd>
+              </div>
+              <div>
+                <dt>Hosting</dt>
+                <dd>Cloudflare Pages.</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </li>
 
-      <li id="unpak-system">
-        <div class="band-artifact">
-          <div class="plate">
-            <h3>Built with</h3>
-            <ul>
-              <li>Rust</li>
-              <li>Swift</li>
-              <li>Python</li>
-              <li>SQLite</li>
-              <li>Neon Postgres</li>
-              <li>Modal &middot; Cloudflare R2</li>
-            </ul>
-          </div>
-        </div>
+      <li class="solo" id="unpak-system">
         <div class="band-prose">
           <h2 class="band-title">Unpak <span class="band-part">System</span></h2>
           <p>A workforce intelligence platform that surfaces how work actually
@@ -76,6 +91,34 @@
           recurring procedures across the workforce into families with a
           canonical path, so a workflow can be counted even when six people run
           it six slightly different ways.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>The capture agent and the pipeline behind it &mdash; what
+                runs on the machine, and what turns raw activity into a readable
+                account of the work.</dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd>The focused window, the accessibility tree and on-screen
+                text. Text is kept and the image discarded, and a scrubbing pass
+                runs over a throwaway copy of the local database before anything
+                leaves the machine.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Rust for the agent, Swift for the macOS client, Python for
+                the pipeline. SQLite on the device, Neon Postgres upstream.</dd>
+              </div>
+              <div>
+                <dt>Hosting</dt>
+                <dd>Modal for the pipeline, Cloudflare R2 for storage.</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </li>
 
@@ -95,7 +138,6 @@
               y2="14"/></svg>
             </span>
           </figure>
-          <p class="stack-caption">Astro &middot; hand-written SVG &middot; Cloudflare Pages</p>
         </div>
         <div class="band-prose">
           <h2 class="band-title">Unpak <span class="band-part">Dashboard</span></h2>
@@ -114,6 +156,33 @@
           <p class="band-note">The demo runs on fabricated data for a fictional
           freight brokerage. It is the shipped build, served from a static
           file instead of the live database.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>Three views over one engagement: an overview, the procedures
+                a workforce repeats, and where AI has turned up in the work.</dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd>One JSON document per engagement. In production a Pages
+                Function serves it from Postgres; the demo bakes it into a flat
+                file. The fictional tenant covers 29 people, 32 procedures and
+                2,779 runs over a 42-day window.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Astro, with no charting library &mdash; every ring, dial,
+                sparkline and box plot is hand-written SVG. Fonts self-hosted.</dd>
+              </div>
+              <div>
+                <dt>Hosting</dt>
+                <dd>Cloudflare Pages.</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </li>
 
@@ -134,7 +203,6 @@
               y2="14"/></svg>
             </span>
           </figure>
-          <p class="stack-caption">Astro &middot; WebGL &middot; Cloudflare Pages</p>
         </div>
         <div class="band-prose">
           <h2 class="band-title">Unpak <span class="band-part">Website</span></h2>
@@ -147,19 +215,52 @@
           of layers that writes its own labels a character at a time as it
           scrolls into view. Fonts are self-hosted and nothing is fetched from
           a CDN, so the whole site is a directory of flat files.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>The marketing site: three product lines, pricing, a thesis
+                essay, a help centre, careers, and a two-step intake form.</dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd>None at runtime. Content compiles into the build and the
+                fonts are self-hosted, so the site ships as a directory of flat
+                files with nothing fetched from a CDN.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Astro. A WebGL ripple shader behind the hero, and a
+                hand-written canvas or SVG diagram for each section below
+                it.</dd>
+              </div>
+              <div>
+                <dt>Hosting</dt>
+                <dd>Cloudflare Pages.</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </li>
 
-      <li>
+      <li id="notch">
         <div class="band-artifact">
-          <div class="plate">
-            <h3>Built with</h3>
-            <ul>
-              <li>Swift</li>
-              <li>SwiftUI</li>
-              <li>AppKit</li>
-            </ul>
-          </div>
+          <figure class="ld-thumb" data-live-demo="notch.html"
+          data-bg="#1b1c2b" data-title="Notch &mdash; live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Notch live demo to fullscreen">
+            <img src="assets/notch/preview.png"
+            alt="A macOS desktop with the notch expanded into a music panel: album art, track title, a progress scrubber and transport controls">
+            <span class="ld-expand" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline
+              points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line
+              x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10"
+              y2="14"/></svg>
+            </span>
+          </figure>
         </div>
         <div class="band-prose">
           <h2 class="band-title">Notch</h2>
@@ -167,25 +268,39 @@
           hub. Hover it and the black blob expands into Now Playing controls, a
           screenshot shelf, and clipboard history. A menu-bar-less SwiftUI/AppKit
           app that lives entirely in the notch.</p>
-        </div>
-      </li>
+          <p class="band-note">A Swift package cannot run on a web page, so the
+          demo is a recreation rather than the app: the silhouette, the panel
+          sizes, the state machine and every animation timing are carried over
+          from the source, while the music and the screenshot shelf are
+          stand-ins for what the real thing reads off your own machine. It
+          plays itself until you take hold of it.</p>
 
-      <li>
-        <div class="band-artifact">
-          <div class="plate">
-            <h3>Built with</h3>
-            <ul>
-              <li>HTML</li>
-              <li>CSS</li>
-              <li>Vanilla JavaScript</li>
-            </ul>
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>Hover the notch and it expands into Now Playing controls, a
+                shelf of recent screenshots, and clipboard history. Move away
+                and it closes back into the hardware.</dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd>All local. Now Playing state, recent screenshots and
+                clipboard entries stay on the machine &mdash; no account, no
+                sync.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Swift, SwiftUI and AppKit.</dd>
+              </div>
+              <div>
+                <dt>Hosting</dt>
+                <dd>None. It ships as a macOS app with no backend, and no menu
+                bar item.</dd>
+              </div>
+            </dl>
           </div>
-        </div>
-        <div class="band-prose">
-          <h2 class="band-title">This website</h2>
-          <p>The site you're reading now &mdash; hand-built with no framework,
-          down to the interactive hover cards and small easter eggs scattered
-          through the pages.</p>
         </div>
       </li>
 

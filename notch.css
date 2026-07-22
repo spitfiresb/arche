@@ -1,0 +1,1160 @@
+/* Notch — a browser recreation of the macOS app (see ~/Desktop/notch).
+ *
+ * Every number below is the real app's number. The Swift source lays the panel
+ * out in points: ScreenMetrics gives the sizes (220x32 collapsed, 300x108
+ * expanded, 252x46 for the toast), NotchShape gives the silhouette, and the
+ * views give the type scale and the animation curves. Rather than eyeball a
+ * lookalike, this stylesheet carries those points through unchanged and scales
+ * them once, at the root, with --u.
+ *
+ * --u is "one point, in CSS pixels", so sizes are written calc(N * var(--u))
+ * with N lifted straight from the Swift. JS sets the --s behind it by framing
+ * rather than by reproducing a real screen's proportions — see the note over
+ * rescale() in notch.js for why the view is pushed in on the notch instead of
+ * showing it life-size. */
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #101014;
+  /* A two-finger horizontal swipe over a web page is a back-navigation
+     gesture. Inside a demo that uses the same swipe to change tabs, that
+     meant flicking sideways walked you off the site. */
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.nt-screen {
+  --s: 1;
+  --u: calc(1px * var(--s));
+  /* The settings window's unit — a separate, un-zoomed scale; see rescale() */
+  --ws: 1;
+  --wu: calc(1px * var(--ws));
+
+  /* ScreenMetrics, verbatim */
+  --notch-w: calc(220 * var(--u));
+  --notch-h: calc(32 * var(--u));
+  --open-w: calc(300 * var(--u));
+  --open-h: calc(108 * var(--u));
+  --toast-w: calc(252 * var(--u));
+  --toast-h: calc(46 * var(--u));
+  /* NotchShape(cornerInset: 8, bottomRadius: 20 open / 10 closed) */
+  --inset: calc(8 * var(--u));
+
+  /* NotchRootView: open is slower than close so the content has time to
+     register on the eye. */
+  --open-anim: 0.32s;
+  --close-anim: 0.22s;
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Desktop ──────────────────────────────────────────────────────────
+   A calm gradient rather than a photograph: the notch is the subject, and
+   a busy wallpaper behind a small black shape is just noise. */
+
+.nt-wall {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 78% 8%, rgba(120, 96, 190, 0.55) 0%, rgba(120, 96, 190, 0) 55%),
+    radial-gradient(100% 80% at 12% 92%, rgba(48, 126, 150, 0.5) 0%, rgba(48, 126, 150, 0) 60%),
+    radial-gradient(90% 70% at 50% 110%, rgba(196, 128, 92, 0.35) 0%, rgba(196, 128, 92, 0) 60%),
+    linear-gradient(168deg, #1b1c2b 0%, #232338 42%, #1a2430 100%);
+}
+
+/* A faint vignette keeps the corners from reading as flat colour */
+.nt-wall::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 120% at 50% 45%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+/* ── Menu bar ─────────────────────────────────────────────────────────
+   Split left and right of the notch, the way it is on a notched Mac. The
+   bar is exactly the collapsed notch's height, so the pill sits flush in
+   it and reads as hardware rather than as a floating widget. */
+
+.nt-menubar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--notch-h);
+  display: flex;
+  align-items: center;
+  padding: 0 calc(14 * var(--u));
+  font-size: calc(13 * var(--u));
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(calc(18 * var(--u)));
+  -webkit-backdrop-filter: blur(calc(18 * var(--u)));
+}
+
+.nt-menu-left,
+.nt-menu-right {
+  display: flex;
+  align-items: center;
+  gap: calc(15 * var(--u));
+  white-space: nowrap;
+}
+
+/* The gap the notch occupies. Reserved as a flex spacer so the menu items
+   are pushed clear of the pill instead of sliding under it. */
+.nt-menu-gap {
+  flex: 1 0 var(--notch-w);
+}
+
+.nt-menu-left .nt-app {
+  font-weight: 600;
+}
+
+.nt-menubar svg {
+  display: block;
+  height: calc(14 * var(--u));
+  width: auto;
+  fill: currentColor;
+}
+
+.nt-clock {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The blob ─────────────────────────────────────────────────────────
+   NotchShape in three pieces: a body inset by cornerInset on each side,
+   plus a reverse fillet at each top corner. The Swift path starts at the
+   very top edge and quad-curves inward and down, so the silhouette is
+   fractionally WIDER where it meets the screen than it is below — that
+   flare is the whole reason a notch reads as cut out of the display
+   rather than stuck onto it, and it's what the fillets reproduce. */
+
+.nt-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--notch-w);
+  height: var(--notch-h);
+  transform: translateX(-50%);
+  z-index: 5;
+  transition:
+    width var(--close-anim) ease-out,
+    height var(--close-anim) ease-out;
+}
+
+.nt-notch.is-open {
+  width: var(--open-w);
+  height: var(--open-h);
+  transition:
+    width var(--open-anim) ease-out,
+    height var(--open-anim) ease-out;
+}
+
+.nt-notch.is-toast {
+  width: var(--toast-w);
+  height: var(--toast-h);
+}
+
+.nt-body {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--inset);
+  right: var(--inset);
+  background: #000;
+  border-radius: 0 0 calc(10 * var(--u)) calc(10 * var(--u));
+  /* stroke(Color.white.opacity(0.06), lineWidth: 1), clipped to the shape */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: border-radius var(--close-anim) ease-out;
+}
+
+.nt-notch.is-open .nt-body {
+  border-radius: 0 0 calc(20 * var(--u)) calc(20 * var(--u));
+  transition: border-radius var(--open-anim) ease-out;
+}
+
+.nt-notch.is-toast .nt-body {
+  border-radius: 0 0 calc(16 * var(--u)) calc(16 * var(--u));
+}
+
+/* A quarter-disc carved out of the bottom-inner corner leaves exactly the
+   concave flare the Swift quad-curve draws. */
+.nt-fillet {
+  position: absolute;
+  top: 0;
+  width: var(--inset);
+  height: var(--inset);
+  pointer-events: none;
+}
+
+.nt-fillet-l {
+  left: 0;
+  background: radial-gradient(circle at 0 100%,
+    rgba(0, 0, 0, 0) 0 var(--inset), #000 var(--inset));
+}
+
+.nt-fillet-r {
+  right: 0;
+  background: radial-gradient(circle at 100% 100%,
+    rgba(0, 0, 0, 0) 0 var(--inset), #000 var(--inset));
+}
+
+/* Directional drop shadow: a blurred capsule sitting just under the bottom
+   edge. The app does this instead of an all-round .shadow() because that
+   bled into the cornerInset strips and painted them grey. */
+.nt-shadow {
+  position: absolute;
+  left: calc(20 * var(--u));
+  right: calc(20 * var(--u));
+  top: 100%;
+  height: calc(10 * var(--u));
+  margin-top: calc(-4 * var(--u));
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.36);
+  filter: blur(calc(10 * var(--u)));
+  pointer-events: none;
+}
+
+/* ── Blob contents ────────────────────────────────────────────────────
+   The body is already inset by 8pt, so a 14pt pad here is the app's
+   .padding(.horizontal, 22) measured from the full blob width. */
+
+/* Each pane is laid out at the size its state ENDS at, rather than at
+   whatever the body measures mid-animation.
+
+   With inset:0 the pane tracked the body as it grew 32pt -> 108pt, so the
+   contents reflowed on every frame of the open. Pinning the height means the
+   layout is settled before the animation starts and the body's overflow just
+   wipes it into view — which is also what the app does, laying out at the
+   frame and clipping with clipShape. */
+.nt-pane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--open-h);
+  padding: calc(10 * var(--u)) calc(14 * var(--u));
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--close-anim) ease-out;
+}
+
+.nt-pane.is-shown {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity var(--open-anim) ease-out;
+}
+
+.nt-pane-peek {
+  height: var(--notch-h);
+  padding: 0 calc(14 * var(--u));
+}
+
+.nt-pane-toast {
+  height: var(--toast-h);
+  padding: 0 calc(6 * var(--u));
+}
+
+/* Collapsed peek: artwork left, dancing bars right, nothing else. */
+.nt-peek {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.nt-peek .nt-art {
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  border-radius: calc(6 * var(--u));
+}
+
+/* Album art. The real app shows the track's own artwork; here it's a
+   generated gradient per track, so nothing is misattributed to a real
+   release. */
+.nt-art {
+  flex: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-size: cover;
+  transition: background 0.34s ease-in-out;
+}
+
+/* ── Dancing bars ─────────────────────────────────────────────────────
+   Six bars (AudioMeter.bandCount). Without a tap on the audio the app
+   falls back to two summed sines at different frequencies, which is what
+   runs here — the demo is silent, so the fallback IS the behaviour. */
+
+.nt-bars {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(20 * var(--u));
+  height: calc(14 * var(--u));
+}
+
+.nt-bar {
+  width: calc(1.8 * var(--u));
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent, #fff);
+  transform: scaleY(0.14);
+  transition: background-color 0.34s ease-in-out;
+}
+
+/* ── Music tab ────────────────────────────────────────────────────────*/
+
+.nt-music {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Fixed row: the art sets its height, and it should never be the item that
+   absorbs a shortfall. */
+.nt-track {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: calc(9 * var(--u));
+}
+
+.nt-track .nt-art {
+  width: calc(36 * var(--u));
+  height: calc(36 * var(--u));
+  border-radius: calc(6 * var(--u));
+}
+
+.nt-meta {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.nt-title {
+  display: block;
+  font-size: calc(13.5 * var(--u));
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.34s ease-in-out;
+}
+
+.nt-artist {
+  display: block;
+  margin-top: calc(2 * var(--u));
+  font-size: calc(11.5 * var(--u));
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.34s ease-in-out;
+}
+
+/* Scrubber row: elapsed · bar · remaining */
+.nt-scrub {
+  display: flex;
+  align-items: center;
+  gap: calc(7 * var(--u));
+  height: calc(14 * var(--u));
+}
+
+.nt-time {
+  flex: none;
+  font-size: calc(9 * var(--u));
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.nt-time-l { width: calc(26 * var(--u)); }
+.nt-time-r { width: calc(30 * var(--u)); text-align: right; }
+
+/* The visible bar is thin but the hit area is the full row height — the
+   app puts a tall transparent layer behind a 2.5pt capsule for exactly
+   this reason. Hovering or dragging fattens it to 5pt. */
+.nt-track-line {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.nt-rail {
+  position: relative;
+  width: 100%;
+  height: calc(2.5 * var(--u));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  transition: height 0.14s ease-out;
+}
+
+.nt-track-line:hover .nt-rail,
+.nt-track-line.is-ghost-hover .nt-rail,
+.nt-track-line.is-dragging .nt-rail {
+  height: calc(5 * var(--u));
+}
+
+.nt-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--accent, #fff);
+  transition: background-color 0.34s ease-in-out;
+}
+
+/* Transport: ⏮ ⏯ ⏭, centred, 26pt apart */
+.nt-transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(26 * var(--u));
+}
+
+.nt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  /* Press down is a snappy ease, release is a spring with overshoot — the
+     iOS-style pop the app builds by hand because a plain Button brought
+     macOS's own grey pressed tint with it. */
+  transition:
+    transform 0.5s cubic-bezier(0.2, 1.5, 0.4, 1),
+    color 0.2s ease-out;
+}
+
+/* The tour drives a drawn cursor, which the browser will never treat as a
+   pointer — so every hover affordance needs a class the script can set by
+   hand, or the unattended run silently skips the half of the design that
+   only exists on hover. */
+.nt-btn:hover,
+.nt-btn.is-ghost-hover {
+  color: #fff;
+  transform: scale(1.2);
+}
+
+.nt-btn.is-pressed {
+  transform: scale(0.78);
+  transition: transform 0.12s ease-out;
+}
+
+.nt-btn svg {
+  display: block;
+  fill: currentColor;
+}
+
+.nt-btn-side svg {
+  width: calc(13 * var(--u));
+  height: calc(13 * var(--u));
+}
+
+.nt-btn-play {
+  width: calc(30 * var(--u));
+  height: calc(30 * var(--u));
+}
+
+.nt-btn-play:hover,
+.nt-btn-play.is-ghost-hover {
+  transform: scale(1.15);
+}
+
+.nt-btn-play.is-pressed {
+  transform: scale(0.82);
+}
+
+.nt-btn-play svg {
+  width: calc(17 * var(--u));
+  height: calc(17 * var(--u));
+}
+
+/* Play and pause cross-fade in place rather than each scaling on its own —
+   two motions on one button read as a stutter. */
+.nt-btn-play .nt-glyph {
+  position: absolute;
+  transition: opacity 0.32s ease-out;
+}
+
+.nt-btn-play { position: relative; }
+
+/* ── Screenshots tab ──────────────────────────────────────────────────*/
+
+.nt-shots {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.nt-shots::-webkit-scrollbar {
+  display: none;
+}
+
+.nt-shot {
+  position: relative;
+  flex: none;
+  width: calc(104 * var(--u));
+  height: calc(64 * var(--u));
+  border-radius: calc(6 * var(--u));
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: transform 0.16s ease-out, box-shadow 0.16s ease-out;
+}
+
+.nt-shot-art {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Hover shrinks the thumb slightly — the app's press-in affordance — and
+   floats its age underneath. */
+.nt-shot:hover,
+.nt-shot.is-ghost-hover {
+  transform: scale(0.95);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26);
+}
+
+.nt-stamp {
+  position: absolute;
+  left: 50%;
+  bottom: calc(5 * var(--u));
+  transform: translateX(-50%);
+  padding: calc(2 * var(--u)) calc(6 * var(--u));
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: calc(9 * var(--u));
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease-out;
+}
+
+.nt-shot:hover .nt-stamp,
+.nt-shot.is-ghost-hover .nt-stamp {
+  opacity: 1;
+}
+
+/* ── Toast ────────────────────────────────────────────────────────────
+   "Screenshot copied to clipboard": the label wipes in a character at a
+   time, then a ring sweeps 360° and a checkmark strokes inside it. */
+
+/* Centred, where the app leaves it leading-aligned with a trailing Spacer.
+   In the app the banner is read on your own screen where you already know
+   what it says; here it is the thing being demonstrated, and sitting it
+   off to one side of a wide pill just looks like a layout bug. */
+.nt-toast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(9 * var(--u));
+  height: 100%;
+  font-size: calc(12 * var(--u));
+  font-weight: 600;
+  letter-spacing: calc(-0.1 * var(--u));
+}
+
+.nt-toast .nt-ch {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  transform: translateY(calc(5 * var(--u))) scale(0.5);
+  transform-origin: bottom;
+}
+
+.nt-toast.is-running .nt-ch {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.36s cubic-bezier(0.2, 1.4, 0.4, 1),
+    transform 0.36s cubic-bezier(0.2, 1.4, 0.4, 1);
+  transition-delay: var(--d);
+}
+
+.nt-check {
+  flex: none;
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+}
+
+.nt-check circle,
+.nt-check path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nt-check circle {
+  stroke-dasharray: 63;
+  stroke-dashoffset: 63;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.nt-check path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+}
+
+.nt-toast.is-running .nt-check circle {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.4s ease-in-out var(--ring-d);
+}
+
+.nt-toast.is-running .nt-check path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.22s ease-out var(--check-d);
+}
+
+/* ── Settings gear ────────────────────────────────────────────────────
+   Barely there at rest so it reads as a faint dot; hover brings it up to
+   full so you can confirm what you're aiming at. */
+
+.nt-gear {
+  position: absolute;
+  top: calc(4 * var(--u));
+  right: calc(12 * var(--u));
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transform: scale(0.62);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.32s cubic-bezier(0.2, 1.4, 0.4, 1),
+    color 0.2s ease-out,
+    opacity 0.22s ease-out;
+}
+
+.nt-notch.is-open .nt-gear {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nt-notch.is-toast .nt-gear {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nt-gear:hover,
+.nt-gear.is-ghost-hover {
+  color: rgba(255, 255, 255, 0.95);
+  transform: scale(1);
+}
+
+.nt-gear svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* ── Shutter flash ────────────────────────────────────────────────────*/
+
+.nt-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nt-flash.is-firing {
+  animation: nt-flash 0.42s ease-out;
+}
+
+@keyframes nt-flash {
+  0%   { opacity: 0; }
+  8%   { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* ── Control panel ────────────────────────────────────────────────────
+   Demo scaffolding, and deliberately outside the blob: everything inside
+   the black shape is the app, everything here exists because a visitor has
+   no trackpad gesture to swipe with, no ⇧⌘4 to press, and no reason to
+   guess that a second panel exists at all. The tab switch used to be a
+   two-finger swipe and a pair of 4px dots, which is not a control anyone
+   can find. */
+
+.nt-controls {
+  position: absolute;
+  left: 50%;
+  top: calc(150 * var(--u));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  padding: calc(5 * var(--u));
+  border-radius: 999px;
+  background: rgba(12, 14, 20, 0.5);
+  backdrop-filter: blur(calc(16 * var(--u)));
+  -webkit-backdrop-filter: blur(calc(16 * var(--u)));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.11);
+  font-size: calc(11 * var(--u));
+  white-space: nowrap;
+}
+
+/* Segmented control. The sliding highlight travels rather than jumping, so
+   which panel you are on stays legible while it changes. */
+.nt-seg {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.nt-seg-glide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.17);
+  transition: transform 0.26s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+
+.nt-seg-btn {
+  position: relative;
+  z-index: 1;
+  font: inherit;
+  padding: calc(5 * var(--u)) calc(13 * var(--u));
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: color 0.2s ease-out;
+}
+
+.nt-seg-btn:hover,
+.nt-seg-btn.is-ghost-hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.nt-seg-btn.is-on {
+  color: #fff;
+}
+
+.nt-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: calc(3 * var(--u)) 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.nt-shoot {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  font: inherit;
+  padding: calc(5 * var(--u)) calc(12 * var(--u)) calc(5 * var(--u)) calc(10 * var(--u));
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: rgba(255, 255, 255, 0.62);
+  cursor: pointer;
+  transition: background 0.2s ease-out, color 0.2s ease-out;
+}
+
+.nt-shoot svg {
+  display: block;
+  width: calc(15 * var(--u));
+  height: calc(12 * var(--u));
+}
+
+.nt-shoot:hover,
+.nt-shoot.is-ghost-hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.nt-shoot.is-pressed,
+.nt-seg-btn.is-pressed {
+  transform: scale(0.94);
+}
+
+.nt-controls button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.nt-tip {
+  position: absolute;
+  left: 50%;
+  top: calc(186 * var(--u));
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: calc(10 * var(--u));
+  color: rgba(255, 255, 255, 0.36);
+  white-space: nowrap;
+}
+
+/* ── Screenshot preview ───────────────────────────────────────────────
+   Clicking a thumbnail opens the file on a real Mac. There is no file
+   here, so it opens this. */
+
+/* A class setting display:flex out-specifies the UA's [hidden]{display:none},
+   so without this the overlay never actually goes away — it just sits there
+   at opacity 0 swallowing every click aimed at the controls underneath. */
+.nt-preview[hidden] {
+  display: none;
+}
+
+.nt-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 9, 12, 0.5);
+  backdrop-filter: blur(calc(3 * var(--u)));
+  -webkit-backdrop-filter: blur(calc(3 * var(--u)));
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.nt-preview.is-open {
+  opacity: 1;
+}
+
+.nt-preview-win {
+  width: calc(300 * var(--u));
+  border-radius: calc(9 * var(--u));
+  overflow: hidden;
+  background: #1b1e24;
+  box-shadow:
+    0 calc(20 * var(--u)) calc(48 * var(--u)) rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+  transform: scale(0.94);
+  transition: transform 0.24s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+
+.nt-preview.is-open .nt-preview-win {
+  transform: scale(1);
+}
+
+.nt-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8 * var(--u));
+  padding: calc(7 * var(--u)) calc(8 * var(--u)) calc(7 * var(--u)) calc(12 * var(--u));
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nt-preview-name {
+  font-size: calc(10.5 * var(--u));
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Esc and click-outside both close this, but neither announces itself. */
+.nt-preview-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: calc(13 * var(--u));
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease-out, color 0.18s ease-out;
+}
+
+.nt-preview-x:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.nt-preview-x:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.nt-preview-body {
+  line-height: 0;
+}
+
+.nt-preview-body svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Ghost cursor ─────────────────────────────────────────────────────
+   Drives the unattended tour. It is not a real pointer, so it fades out
+   the instant the visitor moves their own. */
+
+.nt-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 15;
+  width: calc(18 * var(--u));
+  height: calc(26 * var(--u));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: drop-shadow(0 calc(1 * var(--u)) calc(2 * var(--u)) rgba(0, 0, 0, 0.5));
+}
+
+.nt-ghost.is-on {
+  opacity: 1;
+}
+
+.nt-ghost.is-clicking {
+  transform: scale(0.86);
+}
+
+.nt-ghost svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Prefer no motion: the tour is the one thing here that moves without
+   being asked, so it's the one thing that goes. */
+@media (prefers-reduced-motion: reduce) {
+  .nt-ghost {
+    display: none;
+  }
+}
+
+/* ── Settings window ──────────────────────────────────────────────────
+   SettingsView.swift: a grouped Form, 480x260, hosted in an NSWindow titled
+   "Notch Settings" with styleMask [.titled, .closable, .miniaturizable].
+   No .resizable, so the zoom light is disabled — grey, not green.
+
+   Deliberately not modal and with no dimming backdrop, because the real one
+   is an ordinary window: the notch behind it stays live while it's open. */
+
+.nt-settings[hidden] {
+  display: none;
+}
+
+.nt-settings {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+}
+
+.nt-settings.is-open {
+  opacity: 1;
+}
+
+/* Hung off the notch's lower right rather than centred on the screen: it is
+   the gear's window, and a panel that lands in the middle of the desktop
+   reads as unrelated to the thing you just clicked. Position tracks the
+   notch (--u, so it stays glued as the panel scales); size does not (--wu). */
+.nt-win {
+  position: absolute;
+  top: calc(122 * var(--u));
+  left: calc(50% + 46 * var(--u));
+  width: calc(480 * var(--wu));
+  min-height: calc(260 * var(--wu));
+  display: flex;
+  flex-direction: column;
+  border-radius: calc(10 * var(--wu));
+  overflow: hidden;
+  pointer-events: auto;
+  background: #1e1e20;
+  box-shadow:
+    0 calc(24 * var(--wu)) calc(60 * var(--wu)) rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: scale(0.96) translateY(calc(6 * var(--wu)));
+  transition: transform 0.22s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+
+.nt-settings.is-open .nt-win {
+  transform: none;
+}
+
+.nt-win-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: calc(38 * var(--wu));
+  padding: 0 calc(12 * var(--wu));
+  background: #2c2c2e;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.nt-lights {
+  display: flex;
+  gap: calc(8 * var(--wu));
+}
+
+.nt-light {
+  width: calc(12 * var(--wu));
+  height: calc(12 * var(--wu));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #4b4b4f;
+}
+
+.nt-light-close {
+  background: #ff5f57;
+  cursor: pointer;
+}
+
+.nt-light-min { background: #febc2e; }
+
+/* Title is centred on the window, not on the space left of the lights */
+.nt-win-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: calc(13 * var(--wu));
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+.nt-form {
+  flex: 1;
+  padding: calc(18 * var(--wu)) calc(20 * var(--wu)) calc(20 * var(--wu));
+  background: #1e1e20;
+}
+
+/* Form section header: .formStyle(.grouped) sets these small and quiet */
+.nt-form-header {
+  margin: 0 0 calc(8 * var(--wu));
+  padding-left: calc(4 * var(--wu));
+  font-size: calc(11 * var(--wu));
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.nt-group {
+  border-radius: calc(8 * var(--wu));
+  background: #2c2c2e;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.nt-row {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(14 * var(--wu));
+  padding: calc(12 * var(--wu)) calc(14 * var(--wu));
+}
+
+.nt-row-div {
+  display: block;
+  height: 1px;
+  margin-left: calc(14 * var(--wu));
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nt-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.nt-row-title {
+  display: block;
+  font-size: calc(13 * var(--wu));
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* .font(.caption).foregroundStyle(.secondary) */
+.nt-row-cap {
+  display: block;
+  margin-top: calc(2 * var(--wu));
+  font-size: calc(11 * var(--wu));
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* macOS toggle: 38x22 track, 18 knob, system blue when on */
+.nt-switch {
+  position: relative;
+  flex: none;
+  width: calc(38 * var(--wu));
+  height: calc(22 * var(--wu));
+  margin-top: calc(1 * var(--wu));
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: background 0.2s ease-out;
+}
+
+.nt-switch.is-on {
+  background: #0a84ff;
+}
+
+.nt-knob {
+  position: absolute;
+  top: calc(2 * var(--wu));
+  left: calc(2 * var(--wu));
+  width: calc(18 * var(--wu));
+  height: calc(18 * var(--wu));
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 calc(1 * var(--wu)) calc(2 * var(--wu)) rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+
+.nt-switch.is-on .nt-knob {
+  transform: translateX(calc(16 * var(--wu)));
+}
+
+.nt-settings button:focus:not(:focus-visible) {
+  outline: none;
+}

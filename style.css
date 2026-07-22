@@ -13,8 +13,8 @@
   --fg: #f2f2f2;
   --muted: #a0a0a0;         /* gray11 — descriptions and intro body */
   --faint: #7e7e7e;         /* gray10 — section labels */
-  --line: rgba(242, 242, 242, 0.1);   /* hairline: artifact frames, plate rules */
-  --plate: #141414;         /* one step below the page — recessed panels */
+  --line: rgba(242, 242, 242, 0.1);   /* hairline: artifact frames, spec rules */
+  --head-size: 0.9375rem;   /* 15px — page title and its description, one size */
   --content-width: 48rem;   /* content column width (768px) */
   --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
   --font-sans: "Sohne", "Helvetica Neue", "Inter", -apple-system,
@@ -83,11 +83,33 @@ body.home.landing main {
 
 /* The page opens on the greeting and goes straight into the links */
 .greeting {
-  margin: 0;
+  margin: 0 auto;
   max-width: 42rem;
+  text-align: center;
   font-size: inherit;     /* sit at body size, like the old name line */
   font-weight: 400;
   line-height: 1.5;
+}
+
+/* The intro sits between the greeting and the links: body copy in the
+   muted grey so the greeting above it still reads as the first line */
+.intro {
+  max-width: 42rem;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--muted);
+}
+
+.intro p {
+  margin: 1.1rem 0 0;
+  line-height: 1.5;
+}
+
+/* The one emphasized phrase lifts to full white against the muted body
+   copy. A plain span, not <em> — the browser's default italic for <em>
+   would need overriding, and a stale stylesheet would show it italic */
+.intro .stress {
+  color: var(--fg);
 }
 
 /* Three work columns */
@@ -102,7 +124,11 @@ body.home.landing main {
   padding-top: 3rem;
 }
 
+/* Only the column label is centered — it is the one line that has to sit
+   on the same axis as the About link above it. Everything under it goes
+   back to a left edge, which is what the stacked items want. */
 .col > h2 {
+  text-align: center;
   margin: 0 0 1.25rem;
   font-size: 0.8125rem;   /* 13px — a step below the 17px item titles */
   font-weight: 400;
@@ -123,35 +149,24 @@ body.home.landing main {
   margin-bottom: 0;
 }
 
-/* Item: an underlined title with a muted description stacked beneath it */
+/* Item: a bare title with a muted description stacked beneath it. No
+   underline at rest — with nothing marking these as links, the hover
+   dims the whole item so pointing at one still registers as a target. */
 .col .item-title {
   display: inline-block;
   color: var(--fg);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-  text-decoration-color: rgba(242, 242, 242, 0.35);
+  text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-.col .item-title:hover {
-  text-decoration-color: var(--fg);
-}
-
-/* One project split across several entries: the shared name stays the link,
-   the part rides alongside it unlinked so the underline still reads as one
-   title rather than a title-plus-qualifier */
-.item-part {
-  color: var(--faint);
-}
-
-.item-part::before {
-  content: "\00b7";
-  margin: 0 0.4em;
+.col ul.stack li:hover .item-title {
+  color: var(--muted);
 }
 
 .item-desc {
   display: block;
   margin-top: 0.35rem;
+  font-size: 0.9375rem;   /* a step under the 17px title above it */
   color: var(--muted);
   line-height: 1.45;
 }
@@ -166,12 +181,38 @@ body.home.landing main {
 /* About / LinkedIn / GitHub sit between the intro and the work columns.
    Keep the list narrow so the hover preview cards stay a sensible size
    within the wide layout */
+/* Left-aligned, but floating in the gap: margin-top:auto takes an equal
+   share of the page's leftover height to the auto margins on the work
+   grid below, so the block settles midway between the intro and the
+   columns instead of hugging the paragraph. The padding is the floor —
+   on a short window there is no slack to share and this is all that
+   keeps it off the text above. */
 .elsewhere {
-  margin-top: 1.9rem;
+  margin-top: auto;
+  padding-top: 1.9rem;
 }
 
+/* The block is centered in the column: the About link centered over the
+   two marks, which center under it as a pair */
 .elsewhere ul.links {
   max-width: 22rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.elsewhere ul.links ul.social-row {
+  justify-content: center;
+}
+
+/* Body size and body grey — it sits in the page rather than above it, and
+   only comes up to full white when you point at it */
+.elsewhere .about a {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.elsewhere .about a:hover {
+  color: var(--fg);
 }
 
 /* Collapse the three columns to one on narrow screens */
@@ -348,6 +389,10 @@ li.li-hover:focus-within .li-hover-card {
 
 .li-hover-card {
   margin-top: 0;
+  /* the cards reproduce LinkedIn's and GitHub's own layouts, so they have
+     to opt out of whatever the surrounding list is doing — the centered
+     About block would otherwise centre the name, headline and location */
+  text-align: left;
   border-radius: 0.6em;
   /* flat card: a soft drop shadow and a hairline border, no 3d tilt.
      Both cards are dark like the page, so the shadow has to be deep
@@ -587,13 +632,16 @@ ul.timeline p {
    Each project is a two-column band, and the columns swap sides down the
    page: artifact left on odd bands, right on even ones.
 
-   The artifact column always carries the evidence. When a project has a
-   UI, that's a live preview (see live-demo.css) with its stack set as a
-   caption underneath. When it has no interface to show — a pipeline, an
-   agent, infrastructure — the stack itself fills the column as a
-   recessed plate, so the rhythm holds without falling back on an empty
-   placeholder frame. A project that's still a stub uses .solo and runs
-   as a single quiet column.
+   Every band reads the same way: a title, a short summary, then the
+   technical specifications under a rule. The summary is what a skimmer
+   takes; the spec sheet is the reference layer for anyone who wants the
+   build details.
+
+   The artifact column carries the evidence — a live preview of the thing
+   running (see live-demo.css). A project with no interface to show — a
+   pipeline, an agent, a stub — drops the column entirely and runs as a
+   .solo band, because the spec sheet already states the stack and a
+   plate repeating it was the same facts twice.
 
    Adding a project means copying an <li>; alternation is positional, so
    nothing downstream needs renumbering. */
@@ -615,8 +663,21 @@ body.page.work main {
    you clicked "Personal" over there, you're under "Personal" here. */
 .page-title {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--head-size);
   font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Title over description, centered on the page. Scoped to .page-line so
+   the pages that are still a bare left-aligned label are left alone. */
+.page-line {
+  text-align: center;
+}
+
+.page-sub {
+  margin: 0.45rem 0 0;
+  font-size: var(--head-size);
   line-height: 1.5;
   color: var(--faint);
 }
@@ -662,14 +723,20 @@ ul.bands > li:nth-child(even) {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
 }
 
-/* A project with nothing to show yet: one column, natural measure */
-ul.bands > li.solo {
+/* A project with no interface to show: one column at a reading measure, wide
+   enough that the spec sheet below the summary still gets a label column and a
+   value column. The :nth-child(even) duplicate isn't redundant — the even rule
+   above out-specifies a bare .solo, so a solo band sitting in an even slot
+   would otherwise get handed the two-column track. */
+ul.bands > li.solo,
+ul.bands > li.solo:nth-child(even) {
   grid-template-columns: 1fr;
 }
 
-ul.bands > li.solo .band-prose {
+ul.bands > li.solo .band-prose,
+ul.bands > li.solo:nth-child(even) .band-prose {
   grid-column: 1;
-  max-width: 34rem;
+  max-width: 42rem;
 }
 
 .band-title {
@@ -772,51 +839,6 @@ ul.bands > li.solo .band-prose {
 .band-spec dd {
   margin: 0;
   color: var(--muted);
-}
-
-/* Stack, set as a caption under a preview */
-.stack-caption {
-  margin: 0.85rem 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--faint);
-}
-
-/* Stack plate: the artifact for a project with no interface to screenshot */
-.plate {
-  padding: 1.75rem 1.9rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--plate);
-}
-
-.plate h3 {
-  margin: 0 0 1.1rem;
-  font-size: 0.8125rem;
-  font-weight: 400;
-  color: var(--faint);
-}
-
-.plate ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.plate li {
-  padding: 0.55rem 0;
-  border-top: 1px solid var(--line);
-  font-size: 0.9375rem;
-  color: var(--muted);
-}
-
-.plate li:first-child {
-  border-top: none;
-  padding-top: 0;
-}
-
-.plate li:last-child {
-  padding-bottom: 0;
 }
 
 /* Narrow screens: bands stack, artifact above prose every time. The

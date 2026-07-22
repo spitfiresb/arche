@@ -9,3 +9,7 @@
 .wrangler/
 
 .DS_Store
+
+# Python bytecode from the dashboard data scripts
+__pycache__/
+*.pyc
