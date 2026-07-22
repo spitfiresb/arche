@@ -332,7 +332,77 @@
 
   buildGhGraph();
 
+  /* --- The drawn pill outlines (About me, the column labels) --- */
+
+  /* The two halves are laid out here rather than in the markup because the
+     geometry follows the link's rendered box: the cap radius is half its
+     height, so the path can only be written once the text has its final
+     size. Each half starts at the bottom centre and runs up its own side
+     to the top centre, so the stroke opens symmetrically from the bottom.
+     The 1px overlap at the top keeps the two ends from leaving a gap. */
+  function sizePillBorder(svg) {
+    var left = svg.querySelector(".pb-l");
+    var right = svg.querySelector(".pb-r");
+    var box = svg.parentElement;
+    var w = box.offsetWidth;
+    var h = box.offsetHeight;
+    if (!w || !h) return;
+
+    var r = h / 2;      // cap radius
+    var mid = w / 2;    // bottom/top centre, where the halves meet
+
+    svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    right.setAttribute(
+      "d",
+      "M" + mid + " " + h + " L" + (w - r) + " " + h +
+      " A" + r + " " + r + " 0 0 0 " + (w - r) + " 0 L" + (mid - 1) + " 0"
+    );
+    left.setAttribute(
+      "d",
+      "M" + mid + " " + h + " L" + r + " " + h +
+      " A" + r + " " + r + " 0 0 1 " + r + " 0 L" + (mid + 1) + " 0"
+    );
+  }
+
+  var pillBorders = document.querySelectorAll(".pill-border");
+  if (pillBorders.length) {
+    var sizeAllPills = function () {
+      Array.prototype.forEach.call(pillBorders, sizePillBorder);
+    };
+    sizeAllPills();
+    // the fallback face is wider than Söhne, so the box moves once the
+    // real one lands — redraw rather than stroke a stale outline
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(sizeAllPills);
+    }
+    window.addEventListener("resize", sizeAllPills);
+  }
+
   /* --- Wire up links --- */
+
+  /* About me: the pill collapses in on itself, then the page opens. The
+     modifier keys are left alone so cmd-click still opens a new tab, and
+     reduced-motion users just follow the link. */
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest(".about a");
+    if (!link) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    e.preventDefault();
+
+    // pin the box open, flush that frame, then let it shut — so the
+    // collapse plays from full width whether or not the pointer hovered
+    link.classList.add("open");
+    void link.offsetWidth;
+    link.classList.add("collapsing");
+
+    // a fixed handoff rather than transitionend: the event never fires if
+    // the tab is backgrounded or transitions are off, and a link that
+    // sometimes doesn't navigate is worse than one that animates unseen
+    setTimeout(function () {
+      window.location.href = link.href;
+    }, 340);
+  });
 
   document.addEventListener("click", function (e) {
     var link = e.target.closest("a[data-window]");

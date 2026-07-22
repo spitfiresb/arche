@@ -129,10 +129,29 @@ body.home.landing main {
    back to a left edge, which is what the stacked items want. */
 .col > h2 {
   text-align: center;
-  margin: 0 0 1.25rem;
+  /* the link inside carries 0.45em of padding so the pill outline has
+     somewhere to sit; the negative top and the trimmed bottom give that
+     back, so the label and the items under it land where they did before
+     the padding existed */
+  margin: -0.45em 0 calc(1.25rem - 0.45em);
   font-size: 0.8125rem;   /* 13px — a step below the 17px item titles */
   font-weight: 400;
   color: var(--faint);
+}
+
+/* Each label links to the top of its own page and draws the same outline
+   as About me on hover, brightening as the pill closes */
+.col > h2 a {
+  position: relative;
+  display: inline-block;
+  padding: 0.45em 1.15em;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.col > h2 a:hover,
+.col > h2 a:focus-visible {
+  color: var(--fg);
 }
 
 .col ul.stack {
@@ -151,16 +170,36 @@ body.home.landing main {
 
 /* Item: a bare title with a muted description stacked beneath it. No
    underline at rest — with nothing marking these as links, the hover
-   dims the whole item so pointing at one still registers as a target. */
+   draws one under the title so pointing at one still registers as a
+   target. */
 .col .item-title {
+  position: relative;
   display: inline-block;
   color: var(--fg);
   text-decoration: none;
-  transition: color 0.15s ease;
 }
 
-.col ul.stack li:hover .item-title {
-  color: var(--muted);
+/* The rule is a pseudo-element rather than a text-decoration so it can be
+   driven by transform: it wipes out of the left edge on hover, and the
+   origin flip means it retracts to the right on the way out instead of
+   rewinding the same stroke backwards. */
+.col .item-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.18em;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.col .item-title:hover::after,
+.col .item-title:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .item-desc {
@@ -204,15 +243,90 @@ body.home.landing main {
   justify-content: center;
 }
 
-/* Body size and body grey — it sits in the page rather than above it, and
-   only comes up to full white when you point at it */
+/* Body size and body grey at rest. The padding is always there, so the
+   outline that arrives on hover doesn't resize the row and shove the marks
+   below it down a few pixels mid-gesture. */
 .elsewhere .about a {
+  position: relative;
+  display: inline-block;
+  padding: 0.5em 1.15em;
   color: var(--muted);
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
 }
 
-.elsewhere .about a:hover {
+/* The outline is two SVG halves rather than a border, so it can be drawn
+   instead of switched on: both start at the bottom centre and travel up
+   the opposite sides to meet at the top. browser.js sizes the paths to
+   their link, since the geometry depends on its rendered box. Shared by
+   About me and the three column labels — anything that wraps one of these
+   only has to be position:relative with the padding to hold the outline. */
+.pill-border {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pill-border path {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1;
+  /* dash 100, gap 200 — the gap is longer than the path on purpose. With
+     an equal 100/100 pattern the *next* dash begins exactly at the far end
+     of the path, and at rest it antialiases into a faint dot at the top
+     where the two halves meet. An oversized gap puts that repeat out past
+     the end of the path, so the stroke is the one dash and nothing else. */
+  stroke-dasharray: 100 200;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.45s ease;
+}
+
+a:hover > .pill-border path,
+a:focus-visible > .pill-border path {
+  stroke-dashoffset: 0;
+}
+
+/* the label rides above the outline and brightens as it closes */
+.elsewhere .about a .lbl {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  transition: opacity 0.14s ease;
+}
+
+.elsewhere .about a:hover,
+.elsewhere .about a:focus-visible {
   color: var(--fg);
+}
+
+/* Click: the outline unwinds back down both sides on an accelerating
+   curve — slow to let go, quick at the end — while the label drops out
+   ahead of it. Navigation waits for it to finish (browser.js).
+
+   .open is the starting frame, stamped on by browser.js and held for one
+   reflow before .collapsing lands. Without it the retraction has nothing
+   to travel from on any pointer that never hovers — a touch tap would set
+   the offset back to 100 on a stroke that was already at 100, animating
+   nothing. */
+.elsewhere .about a.open .pill-border path {
+  stroke-dashoffset: 0;
+  transition: none;
+}
+
+.elsewhere .about a.collapsing {
+  color: var(--fg);
+}
+
+.elsewhere .about a.collapsing .pill-border path {
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.3s cubic-bezier(0.55, 0, 0.85, 0.2);
+}
+
+.elsewhere .about a.collapsing .lbl {
+  opacity: 0;
+  transition: opacity 0.12s ease;
 }
 
 /* Collapse the three columns to one on narrow screens */
