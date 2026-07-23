@@ -241,58 +241,6 @@
         </div>
       </li>
 
-      <li id="notch">
-        <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/notch/"
-          data-bg="#1b1c2b" data-title="Notch — live demo"
-          tabindex="0" role="button"
-          aria-label="Expand the Notch live demo to fullscreen">
-            <img src="/assets/img/notch/preview.png"
-            alt="A macOS desktop with the notch expanded into a music panel: album art, track title, a progress scrubber and transport controls">
-          </figure>
-        </div>
-        <div class="band-prose">
-          <h2 class="band-title">Notch</h2>
-          <p>A macOS utility that turns the display notch into an interactive
-          hub. Hover it and the black blob expands into Now Playing controls, a
-          screenshot shelf, and clipboard history. A menu-bar-less SwiftUI/AppKit
-          app that lives entirely in the notch.</p>
-          <p class="band-note">A Swift package cannot run on a web page, so the
-          demo is a recreation rather than the app: the silhouette, the panel
-          sizes, the state machine and every animation timing are carried over
-          from the source, while the music and the screenshot shelf are
-          stand-ins for what the real thing reads off your own machine. It
-          plays itself until you take hold of it.</p>
-
-          <div class="band-spec">
-            <h3>Technical specifications</h3>
-            <dl>
-              <div>
-                <dt>What it is</dt>
-                <dd>Hover the notch and it expands into Now Playing controls, a
-                shelf of recent screenshots, and clipboard history. Move away
-                and it closes back into the hardware.</dd>
-              </div>
-              <div>
-                <dt>Data</dt>
-                <dd>All local. Now Playing state, recent screenshots and
-                clipboard entries stay on the machine &mdash; no account, no
-                sync.</dd>
-              </div>
-              <div>
-                <dt>Built on</dt>
-                <dd>Swift, SwiftUI and AppKit.</dd>
-              </div>
-              <div>
-                <dt>Hosting</dt>
-                <dd>None. It ships as a macOS app with no backend, and no menu
-                bar item.</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </li>
-
       <li id="steward-ai">
         <div class="band-artifact">
           <figure class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html"
@@ -355,5 +303,6 @@
   </main>
   <script src="/assets/js/live-demo.js"></script>
   <script src="/assets/js/diagram-expand.js"></script>
+  <script src="/assets/js/toc.js"></script>
 </body>
 </html>

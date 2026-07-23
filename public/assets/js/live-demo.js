@@ -30,11 +30,23 @@
   // `transition: none` override would never fire.
   var still = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // The expansion eases OUT — fast then slow — over 1.7s; the close eases
+  // IN — slow then fast — over 1.05s. The two curves are mirror images, so
+  // the open and close read as one motion run in reverse.
   var GROW   = still ? 'transform 0.01s linear'
-                     : 'transform 1.15s cubic-bezier(0.55, 0, 0.55, 0.55)';
+                     : 'transform 1.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
   var SHRINK = still ? 'transform 0.01s linear'
-                     : 'transform 0.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
+                     : 'transform 1.05s cubic-bezier(0.55, 0, 0.55, 0.55)';
   var FADE   = still ? 'opacity 0.01s linear' : 'opacity 0.45s ease';
+  // The rounded corner morphs to square as the frame grows, and back as it
+  // shrinks, on the SAME clock as the transform — so the corners are only
+  // fully sharp once the frame is fully expanded, and round again by the
+  // time it's back on the thumbnail. Same durations and easings as GROW /
+  // SHRINK, appended to their transition so both properties move together.
+  var GROW_R   = still ? 'border-radius 0.01s linear'
+                       : 'border-radius 1.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
+  var SHRINK_R = still ? 'border-radius 0.01s linear'
+                       : 'border-radius 1.05s cubic-bezier(0.55, 0, 0.55, 0.55)';
 
   function init(thumb) {
     var app      = thumb.getAttribute('data-live-demo');
@@ -64,6 +76,12 @@
     var overlay = document.createElement('div');
     overlay.className = 'ld-overlay';
     overlay.hidden = true;
+    // Tag the overlay with the demo it belongs to (the nearest id'd ancestor
+    // of the thumb, e.g. the band's <li id="floorsense">), since the overlay
+    // is appended to <body> and otherwise has no link back to its band — a
+    // handle for scoping or debugging a single demo.
+    var host = thumb.closest('[id]');
+    if (host) overlay.dataset.demo = host.id;
     var fw = document.createElement('div');
     fw.className = 'ld-overlay-frame';
     fw.style.background = bg;
@@ -178,6 +196,23 @@
       return 'translate(' + originX() + 'px, ' + originY() + 'px)';
     }
 
+    // Parked, the frame is transform-scaled down onto the thumbnail, so a
+    // raw border-radius on it would shrink by that same scale and read
+    // smaller than intended (and drift as the viewport changes the scale).
+    // Publish the scale-compensated radius as --ld-r so the corner lands at
+    // the same on-screen size as the thumb's (see live-demo.css). The target
+    // is the --ld-corner knob in style.css, so one value drives every demo.
+    // Dropped at fullscreen.
+    var LD_CORNER = parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue('--ld-corner')) || 40;
+    function setCorner() {
+      var r = thumb.getBoundingClientRect();
+      var sx = overlay.clientWidth ? r.width / overlay.clientWidth : 1;
+      // on the overlay, so the frame AND the fallback poster inherit it
+      overlay.style.setProperty('--ld-r',
+        sx ? (LD_CORNER / sx).toFixed(1) + 'px' : LD_CORNER + 'px');
+    }
+
     // Start loading the app — full-size and hidden behind the preview, so
     // booting never touches any animation.
     function preload() {
@@ -259,6 +294,7 @@
       poster.hidden = true;
       fw.style.transition = 'none';
       fw.style.transform = collapsed();
+      setCorner();
       // becomeReady() owns the very first reveal (it fades in); every later
       // park is a return to a state the visitor has already seen, so snap.
       if (shown) overlay.classList.add('revealed');
@@ -283,7 +319,7 @@
     // gets dropped or interrupted must never leave a demo with no way out.
     function armBack() {
       clearTimeout(readyT);
-      readyT = setTimeout(showBack, 1400);           // a little over GROW
+      readyT = setTimeout(showBack, 2000);           // a little over the 1.7s grow
     }
     function showBack() {
       clearTimeout(readyT);
@@ -298,6 +334,7 @@
       // Lock BEFORE measuring: the lock freezes the coordinate origin that
       // collapsed()/expanded() are both computed against.
       lockScroll();
+      setCorner();   // refresh the parked-scale corner the morph starts from
 
       if (ready) {
         // The app is already parked on the thumbnail: just grow it.
@@ -306,7 +343,7 @@
         void fw.offsetWidth;                         // commit it
         overlay.classList.remove('parked');
         overlay.classList.add('open');
-        fw.style.transition = GROW;
+        fw.style.transition = GROW + ', ' + GROW_R;  // round corner -> square
         fw.style.transform = expanded();
         var doneG = function (e) {
           if (e.propertyName !== 'transform') return;
@@ -325,7 +362,7 @@
       poster.style.transition = 'none';
       poster.style.transform = collapsed();
       void poster.offsetWidth;                       // commit the start state
-      poster.style.transition = GROW;
+      poster.style.transition = GROW + ', ' + GROW_R;
       poster.style.transform = expanded();
       overlay.classList.add('open');
       poster.addEventListener('transitionend', onGrown);
@@ -351,7 +388,7 @@
       if (mode === 'frame') {
         // Shrink the live iframe back onto the thumbnail and leave it
         // parked there — still running, no swap back to a screenshot.
-        fw.style.transition = SHRINK;
+        fw.style.transition = SHRINK + ', ' + SHRINK_R;  // square -> round again
         fw.style.transform = collapsed();
         overlay.classList.remove('open');
         var doneF = function (e) {
@@ -364,9 +401,10 @@
         return;
       }
 
-      // SHRINK is transform-only, so removing .revealed snaps the still
-      // poster back over the app instantly; then it shrinks to the thumb.
-      poster.style.transition = SHRINK;
+      // SHRINK is transform-only for the poster's opacity, so removing
+      // .revealed snaps the still poster back over the app instantly; then
+      // it shrinks to the thumb, its corner rounding back as it goes.
+      poster.style.transition = SHRINK + ', ' + SHRINK_R;
       overlay.classList.remove('revealed');
       poster.style.transform = collapsed();
       overlay.classList.remove('open');
@@ -385,6 +423,7 @@
       if (overlay.classList.contains('parked')) {
         fw.style.transition = 'none';
         fw.style.transform = collapsed();
+        setCorner();
       }
     });
 

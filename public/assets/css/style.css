@@ -17,6 +17,10 @@
   --head-size: 0.9375rem;   /* 15px — page title and its description, one size */
   --content-width: 48rem;   /* content column width (768px) */
   --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
+  --ld-corner: 40px;        /* rounded corner on the demo preview boxes — the
+                               single knob: the thumb and inline embed read it
+                               directly, and live-demo.js reads it to scale the
+                               parked live app's corner to match */
   --font-sans: "Sohne", "Helvetica Neue", "Inter", -apple-system,
     BlinkMacSystemFont, Helvetica, Arial, sans-serif;
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
@@ -513,14 +517,14 @@ li.li-hover:focus-within .li-hover-card {
    It's a direct child of <body>, not of <main>, so it positions against
    the page rather than the column — main is position:relative and would
    otherwise be its containing block, putting it back on a different x per
-   page. Absolute rather than fixed so it scrolls away with the top of the
-   page: pinned to the viewport it ends up sitting over the bands on a
-   window narrow enough that the column reaches the left edge.
+   page. Fixed rather than absolute so it stays pinned to the top-left of
+   the viewport as the page scrolls, keeping the exit in reach anywhere
+   down the page.
 
    z-index stays well below the live-demo overlay (1000) so a fullscreen
    demo still covers it. */
 .back {
-  position: absolute;
+  position: fixed;
   top: 2.5rem;
   left: 2.5rem;
   z-index: 5;
@@ -591,6 +595,59 @@ li.li-hover:focus-within .li-hover-card {
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 0.62s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ── On-page section rail ─────────────────────────────────────────────
+   A table of contents for the work pages, built by toc.js from the band
+   titles already in the markup. Like .back it's pinned to the viewport
+   (position:fixed) so it rides along as the page scrolls, the list running
+   down the left gutter.
+
+   Each section is a plain title in the faint grey; the one you're currently
+   reading lifts to full white (toc.js sets .active from scroll position),
+   as does whichever you point at. Click one to scroll to its band.
+
+   The two-up bands run in a wide 78rem column, so the titles only have
+   margin to sit in on a wide viewport; the rail is dropped below the width
+   where they'd start to reach the content (the query at the foot of the
+   block). z-index sits above the parked demo previews (20) as a safety, so
+   a title that reaches the column edge is never hidden behind one, but
+   under the open live-demo overlay (1000) so a fullscreen demo covers it. */
+.toc {
+  position: fixed;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+.toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc-link {
+  display: block;
+  max-width: 13rem;
+  padding: 0.55rem 0;   /* the air between entries */
+  overflow: hidden;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--faint);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.toc-item.active .toc-link,
+.toc-link:hover,
+.toc-link:focus-visible {
+  color: var(--fg);
+}
+
+/* Shown only where the margin can hold the titles clear of the 78rem
+   column; below that the rail is dropped. */
+@media (max-width: 94rem) { .toc { display: none; } }
 
 /* Small lead-in text at the top of a page */
 .kicker {
@@ -951,7 +1008,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 .band-artifact .ld-thumb {
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: var(--ld-corner);
 }
 
 /* An always-live embed: same hairline frame as a thumb, but the demo runs
@@ -961,12 +1018,13 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   width: 100%;
   aspect-ratio: 16 / 10;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: var(--ld-corner);
   background: #FCFCFB;
 }
 
 /* The system map's page shares the site background, so a frame would draw a
-   box around what should read as part of the page itself. */
+   box around what should read as part of the page itself — and for the same
+   reason it stays square while the other previews round off. */
 #unpak-system .ld-thumb {
   border: none;
   border-radius: 0;

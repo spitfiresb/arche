@@ -18,12 +18,52 @@
   <main>
     <header class="page-head">
       <div class="page-line">
-        <h1 class="page-title">Things I Found Interesting</h1>
-        <p class="page-sub">small pieces worth keeping, live and copyable</p>
+        <h1 class="page-title">Extra</h1>
+        <p class="page-sub">personal favorites</p>
       </div>
     </header>
 
     <ul class="bands">
+      <li id="notch">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/notch/"
+          data-bg="#1b1c2b" data-title="Notch — live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Notch live demo to fullscreen">
+            <img src="/assets/img/notch/preview.png"
+            alt="A macOS desktop with the notch expanded into a music panel: album art, track title, a progress scrubber and transport controls">
+          </figure>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Notch</h2>
+          <p>A macOS utility that creates its own notch at the top of the
+          display. Hover the black pill and it expands into Now Playing
+          controls, a screenshot shelf, and clipboard history.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>An NSPanel pinned to the top of every Space, a notch that
+                expands on hover. Now Playing over the private MediaRemote API,
+                screenshots via FSEvents, the level meter off an AVAudioEngine
+                tap.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Swift, SwiftUI and AppKit.</dd>
+              </div>
+              <div>
+                <dt>Why</dt>
+                <dd>I was unsatisfied with the open source alternatives, so I
+                decided to make my own.</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+
       <li id="liquid-glass">
         <div class="band-artifact">
           <iframe class="ld-inline" src="/demos/liquid-glass/"
@@ -31,20 +71,9 @@
         </div>
         <div class="band-prose">
           <h2 class="band-title">Liquid Glass</h2>
-          <p>The navigation lens from the Unpak website, pulled out on its own.
-          A WebGL pill of glass slides between the tabs &mdash; hover the row
-          and it tracks the cursor, shrinking as it runs out of tabs; click one
-          and it springs over and settles.</p>
-          <p>There is no blur filter or backdrop trick behind it. The tab row
-          is drawn once into a texture, and a fragment shader renders the pill
-          from a signed-distance field: the edge band bends the background by
-          Snell's law with a slightly different index per colour channel, which
-          is where the chromatic fringing comes from, and fresnel and glare
-          terms computed in LCH colour space put the light on the rim. Two
-          springs drive the centre and the width, so the glass stretches with
-          its own velocity instead of teleporting.</p>
-          <p class="band-note">Flip the toggle to slow motion to watch the
-          springs work.</p>
+          <p>My implementation of Apple's Liquid Glass. A pill of glass slides
+          between the tabs, bending the background as it goes and stretching
+          before it settles. One of my personal favorites.</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
@@ -57,13 +86,7 @@
               </div>
               <div>
                 <dt>Built on</dt>
-                <dd>WebGL 2 and vanilla JavaScript, no libraries. Falls back to
-                a plain CSS bubble where WebGL 2 isn't available.</dd>
-              </div>
-              <div>
-                <dt>Origin</dt>
-                <dd>Written for the Unpak website's navigation; this page runs
-                the same shader, unminified and annotated.</dd>
+                <dd>WebGL and vanilla JavaScript, no libraries.</dd>
               </div>
             </dl>
           </div>
@@ -72,5 +95,6 @@
     </ul>
   </main>
   <script src="/assets/js/live-demo.js"></script>
+  <script src="/assets/js/toc.js"></script>
 </body>
 </html>

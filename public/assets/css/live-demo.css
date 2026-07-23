@@ -31,6 +31,27 @@
 }
 .ld-thumb:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
 
+/* ── Rounded corners on the demo previews ─────────────────────────────
+   The thumb's own radius is set on .band-artifact .ld-thumb in style.css.
+   But at rest the visible box is the live app parked in .ld-overlay-frame,
+   transform-scaled down onto the thumb — so a raw radius here would shrink
+   with it. --ld-r, published on the overlay by live-demo.js, is that radius
+   pre-divided by the parked scale, so the corner lands at the same on-screen
+   size as the thumb's; the frame and the fallback poster both read it.
+   The unpak-system diagram never builds a frame here, so it stays sharp. */
+.ld-overlay .ld-overlay-frame,
+.ld-overlay .ld-overlay-poster {
+  border-radius: var(--ld-r, var(--ld-corner, 40px));
+}
+/* Fullscreen is square. This is the END state of the grow; live-demo.js
+   transitions the radius to it on the same clock as the transform, so the
+   corners round off gradually and are only fully sharp once fully expanded
+   (and round back on the way in). */
+.ld-overlay.open .ld-overlay-frame,
+.ld-overlay.open .ld-overlay-poster {
+  border-radius: 0;
+}
+
 /* Icon-only expand button, dead centre of the preview (built in
    live-demo.js). Hidden until the thumbnail is hovered: at rest the preview
    is just the running app, with no chrome sitting on top of it. Hover
@@ -183,13 +204,11 @@ body.ld-locked .ld-expand { opacity: 0; }
      exit you have to go looking for isn't one. Its one piece of timing is
      the entrance: it holds off until the grow has landed, then pops in. */
 .ld-back {
-  /* .back is deliberately position:absolute so the page's own mark scrolls
-     away with the top of the document. This one must NOT inherit that: the
-     overlay is anchored in document coordinates, so an absolute child sits
-     wherever the top of the page is — i.e. off-screen entirely for any
-     demo below the fold. Fixed is right here for the same reason absolute
-     is right there: while a demo is open the body is locked and nothing
-     scrolls, so viewport-pinned is the only thing that stays on screen. */
+  /* Fixed, matching the page's own .back: the overlay is anchored in
+     document coordinates, so an absolute child would sit wherever the top
+     of the page is — i.e. off-screen entirely for any demo opened below
+     the fold. While a demo is open the body is locked and nothing scrolls,
+     so viewport-pinned is the only thing that stays on screen. */
   position: fixed;
   z-index: 1001;
   top: 1.25rem;
