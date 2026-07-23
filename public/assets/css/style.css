@@ -636,13 +636,34 @@ li.li-hover:focus-within .li-hover-card {
   text-overflow: ellipsis;
   color: var(--faint);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease,
+              padding-left 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.toc-item.active .toc-link,
+/* Pointing at an entry lifts its title toward white and scoots it aside,
+   opening the space the dot will slide into if you click. The active entry
+   holds that same offset, since its dot is already parked there. */
 .toc-link:hover,
-.toc-link:focus-visible {
+.toc-link:focus-visible,
+.toc-item.active .toc-link {
   color: var(--fg);
+  padding-left: 0.9rem;
+}
+
+/* A single white dot marks the active section. It's the only one on the
+   rail, so when you jump to another entry it slides from the old section to
+   the new one rather than blinking across. toc.js sets its vertical offset;
+   this transform transition does the travelling. */
+.toc-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg);
+  pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Shown only where the margin can hold the titles clear of the 78rem

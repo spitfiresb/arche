@@ -24,53 +24,6 @@
     </header>
 
     <ul class="bands">
-      <li id="floorsense">
-        <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/floorsense/?embed=1"
-          data-bg="#fdfbf7" data-title="FloorSense — live demo"
-          tabindex="0" role="button"
-          aria-label="Expand the FloorSense live demo to fullscreen">
-            <img src="/assets/img/floorsense/preview.png"
-            alt="The FloorSense app landing page">
-          </figure>
-        </div>
-        <div class="band-prose">
-          <h2 class="band-title">FloorSense</h2>
-          <p>A computer vision web app that identifies architectural elements in
-          floorplan images using YOLO-based object detection, with real-time
-          detection visualization and correction tools.</p>
-
-          <div class="band-spec">
-            <h3>Technical specifications</h3>
-            <dl>
-              <div>
-                <dt>What it is</dt>
-                <dd>Drop in a floor plan and the model marks what it finds. The
-                overlay stays editable &mdash; add a box, click one to remove
-                it, export the corrected plan as a PNG.</dd>
-              </div>
-              <div>
-                <dt>Model</dt>
-                <dd>A YOLO detector trained on Roboflow. Six classes &mdash;
-                perimeter, bathroom, door, window, stairs, furniture &mdash;
-                kept above a 0.40 confidence floor.</dd>
-              </div>
-              <div>
-                <dt>Built on</dt>
-                <dd>Vanilla JavaScript, no framework &mdash; a port of the
-                original Next.js and React build. A single Cloudflare Pages
-                Function holds the Roboflow key so it never reaches the
-                browser.</dd>
-              </div>
-              <div>
-                <dt>Hosting</dt>
-                <dd>Cloudflare Pages.</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </li>
-
       <li id="unpak-system">
         <div class="band-artifact">
           <figure class="ld-thumb" data-diagram
@@ -132,53 +85,102 @@
         </div>
       </li>
 
-      <li id="unpak-dashboard">
+      <li id="steward-ai">
         <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/unpak-dashboard/"
-          data-bg="#FCFCFB" data-title="Unpak dashboard — live demo"
+          <figure class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html"
+          data-bg="#f7f5f0" data-title="Steward AI dashboard — live demo"
           tabindex="0" role="button"
-          aria-label="Expand the Unpak dashboard live demo to fullscreen">
-            <img src="/assets/img/unpak/dashboard-preview.png"
-            alt="The Unpak dashboard overview: a composition ring of work areas, AI adoption dials, and ranked bars of where the hours are going">
+          aria-label="Expand the Steward AI dashboard live demo to fullscreen">
+            <img src="/assets/img/steward/dashboard-preview.png"
+            alt="The Steward AI dashboard: a use-case donut chart with hoverable subcategories, top model rankings, a daily average bar chart and a security overview">
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">Dashboard</span></h2>
-          <p>The console a customer reads their own operating picture from:
-          which procedures their workforce actually repeats, where the hours
-          go, how much run times vary, and where AI has already turned up in
-          the work without anyone deciding it should.</p>
-          <p>No framework and no charting library &mdash; every ring, dial,
-          sparkline, box plot and trunk-and-branch diagram is SVG written by
-          hand, which is what let the run-shape rows sit on the same station
-          grid as the procedure they describe and visibly add up to its run
-          count. The numbers hold themselves to the same standard: a comparison
-          that lacks the runs to support it says <em>measuring</em> and names
-          what it is waiting for, rather than printing a figure that reads as
-          settled.</p>
-          <p class="band-note">The demo runs on fabricated data for a fictional
-          freight brokerage. It is the shipped build, served from a static
-          file instead of the live database.</p>
+          <h2 class="band-title">Steward AI</h2>
+          <p>A desktop application that lets businesses understand their
+          employees' AI usage. An Electron app and a browser extension read the
+          accessibility-tree text of AI tools as people use them &mdash; the
+          words, never the pixels &mdash; and a Haiku 4.5 model categorizes
+          each conversation into use cases, models and risk events. The
+          dashboard rolls that up for a team lead: what the team uses AI for,
+          which models it reaches for, and which prompts carried something out
+          the door that shouldn't have.</p>
+          <p>It took 1st place in the AI-assisted development track at Carnegie
+          Mellon's NexHacks hackathon.</p>
+          <p class="band-note">The demo is the shipped dashboard UI running on
+          fabricated data &mdash; a mock backend stands in for the Electron
+          bridge, so every page, chart and file preview works without the
+          desktop app behind it.</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
                 <dt>What it is</dt>
-                <dd>Three views over one engagement: an overview, the procedures
-                a workforce repeats, and where AI has turned up in the work.</dd>
+                <dd>An admin console over live AI usage: use-case analytics,
+                per-employee drill-downs, a prompt-flow breakdown, and a
+                security log where flagged uploads open in a file viewer.</dd>
               </div>
               <div>
                 <dt>Data</dt>
-                <dd>One JSON document per engagement. In production a Pages
-                Function serves it from Postgres; the demo bakes it into a flat
-                file. The fictional tenant covers 29 people, 32 procedures and
-                2,779 runs over a 42-day window.</dd>
+                <dd>Accessibility-tree text captured by the Electron app and
+                browser extension, categorized by Claude Haiku 4.5 and stored
+                in Supabase. The demo bakes the same shapes into a mock
+                backend.</dd>
               </div>
               <div>
                 <dt>Built on</dt>
-                <dd>Astro, with no charting library &mdash; every ring, dial,
-                sparkline and box plot is hand-written SVG. Fonts self-hosted.</dd>
+                <dd>Electron and a browser extension for capture; the dashboard
+                is plain HTML and JavaScript with every donut, sankey and trend
+                chart hand-written SVG.</dd>
+              </div>
+              <div>
+                <dt>Recognition</dt>
+                <dd>1st place, AI-assisted development track &mdash; Carnegie
+                Mellon NexHacks.</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+
+      <li id="floorsense">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/floorsense/?embed=1"
+          data-bg="#fdfbf7" data-title="FloorSense — live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the FloorSense live demo to fullscreen">
+            <img src="/assets/img/floorsense/preview.png"
+            alt="The FloorSense app landing page">
+          </figure>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">FloorSense</h2>
+          <p>A computer vision web app that identifies architectural elements in
+          floorplan images using YOLO-based object detection, with real-time
+          detection visualization and correction tools.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>Drop in a floor plan and the model marks what it finds. The
+                overlay stays editable &mdash; add a box, click one to remove
+                it, export the corrected plan as a PNG.</dd>
+              </div>
+              <div>
+                <dt>Model</dt>
+                <dd>A YOLO detector trained on Roboflow. Six classes &mdash;
+                perimeter, bathroom, door, window, stairs, furniture &mdash;
+                kept above a 0.40 confidence floor.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Vanilla JavaScript, no framework &mdash; a port of the
+                original Next.js and React build. A single Cloudflare Pages
+                Function holds the Roboflow key so it never reaches the
+                browser.</dd>
               </div>
               <div>
                 <dt>Hosting</dt>
@@ -241,59 +243,57 @@
         </div>
       </li>
 
-      <li id="steward-ai">
+      <li id="unpak-dashboard">
         <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html"
-          data-bg="#f7f5f0" data-title="Steward AI dashboard — live demo"
+          <figure class="ld-thumb" data-live-demo="/demos/unpak-dashboard/"
+          data-bg="#FCFCFB" data-title="Unpak dashboard — live demo"
           tabindex="0" role="button"
-          aria-label="Expand the Steward AI dashboard live demo to fullscreen">
-            <img src="/assets/img/steward/dashboard-preview.png"
-            alt="The Steward AI dashboard: a use-case donut chart with hoverable subcategories, top model rankings, a daily average bar chart and a security overview">
+          aria-label="Expand the Unpak dashboard live demo to fullscreen">
+            <img src="/assets/img/unpak/dashboard-preview.png"
+            alt="The Unpak dashboard overview: a composition ring of work areas, AI adoption dials, and ranked bars of where the hours are going">
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Steward AI</h2>
-          <p>A desktop application that lets businesses understand their
-          employees' AI usage. An Electron app and a browser extension read the
-          accessibility-tree text of AI tools as people use them &mdash; the
-          words, never the pixels &mdash; and a Haiku 4.5 model categorizes
-          each conversation into use cases, models and risk events. The
-          dashboard rolls that up for a team lead: what the team uses AI for,
-          which models it reaches for, and which prompts carried something out
-          the door that shouldn't have.</p>
-          <p>It took 1st place in the AI-assisted development track at Carnegie
-          Mellon's NexHacks hackathon.</p>
-          <p class="band-note">The demo is the shipped dashboard UI running on
-          fabricated data &mdash; a mock backend stands in for the Electron
-          bridge, so every page, chart and file preview works without the
-          desktop app behind it.</p>
+          <h2 class="band-title">Unpak <span class="band-part">Dashboard</span></h2>
+          <p>The console a customer reads their own operating picture from:
+          which procedures their workforce actually repeats, where the hours
+          go, how much run times vary, and where AI has already turned up in
+          the work without anyone deciding it should.</p>
+          <p>No framework and no charting library &mdash; every ring, dial,
+          sparkline, box plot and trunk-and-branch diagram is SVG written by
+          hand, which is what let the run-shape rows sit on the same station
+          grid as the procedure they describe and visibly add up to its run
+          count. The numbers hold themselves to the same standard: a comparison
+          that lacks the runs to support it says <em>measuring</em> and names
+          what it is waiting for, rather than printing a figure that reads as
+          settled.</p>
+          <p class="band-note">The demo runs on fabricated data for a fictional
+          freight brokerage. It is the shipped build, served from a static
+          file instead of the live database.</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
                 <dt>What it is</dt>
-                <dd>An admin console over live AI usage: use-case analytics,
-                per-employee drill-downs, a prompt-flow breakdown, and a
-                security log where flagged uploads open in a file viewer.</dd>
+                <dd>Three views over one engagement: an overview, the procedures
+                a workforce repeats, and where AI has turned up in the work.</dd>
               </div>
               <div>
                 <dt>Data</dt>
-                <dd>Accessibility-tree text captured by the Electron app and
-                browser extension, categorized by Claude Haiku 4.5 and stored
-                in Supabase. The demo bakes the same shapes into a mock
-                backend.</dd>
+                <dd>One JSON document per engagement. In production a Pages
+                Function serves it from Postgres; the demo bakes it into a flat
+                file. The fictional tenant covers 29 people, 32 procedures and
+                2,779 runs over a 42-day window.</dd>
               </div>
               <div>
                 <dt>Built on</dt>
-                <dd>Electron and a browser extension for capture; the dashboard
-                is plain HTML and JavaScript with every donut, sankey and trend
-                chart hand-written SVG.</dd>
+                <dd>Astro, with no charting library &mdash; every ring, dial,
+                sparkline and box plot is hand-written SVG. Fonts self-hosted.</dd>
               </div>
               <div>
-                <dt>Recognition</dt>
-                <dd>1st place, AI-assisted development track &mdash; Carnegie
-                Mellon NexHacks.</dd>
+                <dt>Hosting</dt>
+                <dd>Cloudflare Pages.</dd>
               </div>
             </dl>
           </div>

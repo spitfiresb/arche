@@ -41,7 +41,6 @@
     a.className = 'toc-link';
     a.href = '#' + sec.id;
     a.textContent = label;
-    a.title = label;   // the full text, in case the rail clips a long one
 
     a.addEventListener('click', function (e) {
       e.preventDefault();
@@ -55,16 +54,31 @@
     return li;
   });
 
+  // The lone marker dot — a nav child, positioned relative to the rail, that
+  // slides down to sit beside whichever entry is active.
+  var dot = document.createElement('span');
+  dot.className = 'toc-dot';
+  nav.appendChild(dot);
   document.body.appendChild(nav);
 
   /* Scroll-spy: the active section is the last one whose top has crossed a
      line a third of the way down the viewport; at the very bottom the last
      section wins outright, so a short final section still lights up. */
   var active = -1;
+  // Park the dot beside a section's entry. `animate` is false for the first
+  // placement and after a resize, so the dot snaps into place; on a genuine
+  // change of section it's true, and the CSS transition slides it across.
+  function moveDot(li, animate) {
+    var y = li.offsetTop + li.offsetHeight / 2 - 2.5;   // 2.5 = half the dot
+    if (!animate) dot.style.transition = 'none';
+    dot.style.transform = 'translateY(' + y + 'px)';
+    if (!animate) { dot.offsetHeight; dot.style.transition = ''; }   // re-arm
+  }
   function setActive(i) {
     if (i === active) return;
     if (active > -1) items[active].classList.remove('active');
     items[i].classList.add('active');
+    moveDot(items[i], active > -1);   // slide only after the first placement
     active = i;
   }
   function spy() {
@@ -86,5 +100,8 @@
   }
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);
+  addEventListener('resize', function () {
+    if (active > -1) moveDot(items[active], false);   // re-seat, no slide
+  });
   spy();
 })();
