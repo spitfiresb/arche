@@ -390,10 +390,15 @@
         // parked there — still running, no swap back to a screenshot.
         fw.style.transition = SHRINK + ', ' + SHRINK_R;  // square -> round again
         fw.style.transform = collapsed();
+        // Drop .open (rounds the corners back) but hold the overlay on top
+        // via .closing until the shrink lands, so the frame reveals the page
+        // from under itself instead of the page popping up over it.
         overlay.classList.remove('open');
+        overlay.classList.add('closing');
         var doneF = function (e) {
           if (e.propertyName !== 'transform') return;
           fw.removeEventListener('transitionend', doneF);
+          overlay.classList.remove('closing');   // now settle below the page
           overlay.classList.add('parked');
           fw.style.transition = 'none';
         };
@@ -407,10 +412,14 @@
       poster.style.transition = SHRINK + ', ' + SHRINK_R;
       overlay.classList.remove('revealed');
       poster.style.transform = collapsed();
+      // Same as the frame path: keep the overlay on top through the shrink so
+      // it reveals the page from under itself rather than dropping behind it.
       overlay.classList.remove('open');
+      overlay.classList.add('closing');
       var done = function (e) {
         if (e.propertyName !== 'transform') return;
         poster.removeEventListener('transitionend', done);
+        overlay.classList.remove('closing');
         overlay.hidden = true;
         park();   // if the app finished booting meanwhile, park it live
       };

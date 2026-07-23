@@ -146,7 +146,15 @@ body.ld-locked .ld-expand { opacity: 0; }
   z-index: 20;
 }
 .ld-overlay[hidden] { display: none; }
-.ld-overlay.open { z-index: 1000; }
+/* Open OR closing both stay above the page. The grow rides up on top of
+   everything; the shrink has to ride back down the same way, revealing the
+   page from under the frame as it goes rather than dropping below it at the
+   first click — which would pop the TOC and the other demos up over a frame
+   that's still moving. .closing is cleared on transitionend (live-demo.js);
+   it deliberately does NOT force the corners square the way .open does, so
+   the radius rounds back off as the frame shrinks. */
+.ld-overlay.open,
+.ld-overlay.closing { z-index: 1000; }
 /* Parked: purely visual — clicks fall through to the thumbnail underneath. */
 .ld-overlay.parked { pointer-events: none; }
 
