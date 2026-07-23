@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid glass</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    --ink: #10131a;
+    --slate: #5b6472;
+    --ink-strong: #05070c;
+    --line: rgba(23, 56, 105, 0.16);
+    font-family: "Sohne", "Helvetica Neue", "Inter", -apple-system,
+      BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+    background: #FCFCFB;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  .stage {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* speed toggle, pinned to the corner: two states, always one active */
+  .speed {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    z-index: 20;
+    background: linear-gradient(#fff, #f6f7f6);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .speed button {
+    font: inherit;
+    font-size: 12.5px;
+    color: var(--slate);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: color .2s, background .2s, box-shadow .2s;
+  }
+  .speed button[aria-pressed="true"] {
+    color: var(--ink-strong);
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(23, 56, 105, 0.18), 0 1px 6px rgba(15, 42, 74, 0.10);
+  }
+
+  /* the nav the lens lives in — blown up ~2.5x from the original,
+     data-glass-scale keeps the lens geometry in step with the type */
+  nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+    padding: 0 40px;
+    width: 100%;
+  }
+  .tabs {
+    display: flex;
+    align-items: center;
+    gap: clamp(40px, 6vw, 96px);
+    position: relative;
+  }
+  .tabs a {
+    z-index: 1;
+    color: var(--slate);
+    padding: 16px 24px;
+    font-size: 34px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    transition: color .2s;
+    position: relative;
+    cursor: pointer;
+  }
+  .tabs a:hover, .tabs a.tab-active { color: var(--ink); }
+  .tab-lens { z-index: 2; pointer-events: none; position: absolute; }
+  .tab-bubble {
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(#fff, #f6f7f6);
+    border: 1px solid rgba(23, 56, 105, 0.16);
+    border-radius: 999px;
+    width: 0; height: 0;
+    position: absolute;
+    top: 0; left: 0;
+    box-shadow: 0 0 18px rgba(15, 42, 74, 0.16), 0 0 2px rgba(15, 42, 74, 0.10);
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="speed" role="group" aria-label="Animation speed">
+      <button id="speedNormal" aria-pressed="true">Normal</button>
+      <button id="speedSlow" aria-pressed="false">Slow motion</button>
+    </div>
+
+    <nav aria-label="Liquid glass demo" data-glass-scale="2.5">
+      <div class="tabs">
+        <span class="tab-bubble" aria-hidden="true"></span>
+        <a href="#" class="tab-active" aria-current="page">Overview</a>
+        <a href="#">Pricing</a>
+        <a href="#">Company</a>
+      </div>
+    </nav>
+  </div>
+
+  <script src="glass.js"></script>
+  <script>
+  (function () {
+    var normal = document.getElementById('speedNormal');
+    var slow = document.getElementById('speedSlow');
+    function set(mode) {
+      window.glassTimeScale = mode === 'slow' ? 0.12 : 1;
+      normal.setAttribute('aria-pressed', mode === 'slow' ? 'false' : 'true');
+      slow.setAttribute('aria-pressed', mode === 'slow' ? 'true' : 'false');
+    }
+    normal.addEventListener('click', function () { set('normal'); });
+    slow.addEventListener('click', function () { set('slow'); });
+  })();
+  </script>
+</body>
+</html>

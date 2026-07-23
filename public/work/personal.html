@@ -71,7 +71,15 @@
         </div>
       </li>
 
-      <li class="solo" id="unpak-system">
+      <li id="unpak-system">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-diagram
+          tabindex="0" role="button"
+          aria-label="Expand the Unpak system map to fullscreen">
+            <img src="/assets/img/unpak/system-preview.svg"
+            alt="A flow chart of the Unpak system: the capture agent on the employee machine uploading to Cloudflare R2, Modal running the processing and analysis pipelines, with the model each stage uses">
+          </figure>
+        </div>
         <div class="band-prose">
           <h2 class="band-title">Unpak <span class="band-part">System</span></h2>
           <p>A workforce intelligence platform that surfaces how work actually
@@ -285,14 +293,67 @@
         </div>
       </li>
 
-      <li class="solo">
+      <li id="steward-ai">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html"
+          data-bg="#f7f5f0" data-title="Steward AI dashboard — live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Steward AI dashboard live demo to fullscreen">
+            <img src="/assets/img/steward/dashboard-preview.png"
+            alt="The Steward AI dashboard: a use-case donut chart with hoverable subcategories, top model rankings, a daily average bar chart and a security overview">
+          </figure>
+        </div>
         <div class="band-prose">
           <h2 class="band-title">Steward AI</h2>
-          <p>[ description to come ]</p>
+          <p>A desktop application that lets businesses understand their
+          employees' AI usage. An Electron app and a browser extension read the
+          accessibility-tree text of AI tools as people use them &mdash; the
+          words, never the pixels &mdash; and a Haiku 4.5 model categorizes
+          each conversation into use cases, models and risk events. The
+          dashboard rolls that up for a team lead: what the team uses AI for,
+          which models it reaches for, and which prompts carried something out
+          the door that shouldn't have.</p>
+          <p>It took 1st place in the AI-assisted development track at Carnegie
+          Mellon's NexHacks hackathon.</p>
+          <p class="band-note">The demo is the shipped dashboard UI running on
+          fabricated data &mdash; a mock backend stands in for the Electron
+          bridge, so every page, chart and file preview works without the
+          desktop app behind it.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>An admin console over live AI usage: use-case analytics,
+                per-employee drill-downs, a prompt-flow breakdown, and a
+                security log where flagged uploads open in a file viewer.</dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd>Accessibility-tree text captured by the Electron app and
+                browser extension, categorized by Claude Haiku 4.5 and stored
+                in Supabase. The demo bakes the same shapes into a mock
+                backend.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>Electron and a browser extension for capture; the dashboard
+                is plain HTML and JavaScript with every donut, sankey and trend
+                chart hand-written SVG.</dd>
+              </div>
+              <div>
+                <dt>Recognition</dt>
+                <dd>1st place, AI-assisted development track &mdash; Carnegie
+                Mellon NexHacks.</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </li>
     </ul>
   </main>
   <script src="/assets/js/live-demo.js"></script>
+  <script src="/assets/js/diagram-expand.js"></script>
 </body>
 </html>

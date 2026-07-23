@@ -17,13 +17,56 @@
   </a>
   <main>
     <header class="page-head">
-      <h1 class="page-title">Things I Found Interesting</h1>
+      <div class="page-line">
+        <h1 class="page-title">Things I Found Interesting</h1>
+        <p class="page-sub">small pieces worth keeping, live and copyable</p>
+      </div>
     </header>
 
     <ul class="bands">
-      <li class="solo">
+      <li id="liquid-glass">
+        <div class="band-artifact">
+          <iframe class="ld-inline" src="/demos/liquid-glass/"
+          title="Liquid glass — interactive demo" loading="lazy"></iframe>
+        </div>
         <div class="band-prose">
-          <p>Nothing here yet.</p>
+          <h2 class="band-title">Liquid Glass</h2>
+          <p>The navigation lens from the Unpak website, pulled out on its own.
+          A WebGL pill of glass slides between the tabs &mdash; hover the row
+          and it tracks the cursor, shrinking as it runs out of tabs; click one
+          and it springs over and settles.</p>
+          <p>There is no blur filter or backdrop trick behind it. The tab row
+          is drawn once into a texture, and a fragment shader renders the pill
+          from a signed-distance field: the edge band bends the background by
+          Snell's law with a slightly different index per colour channel, which
+          is where the chromatic fringing comes from, and fresnel and glare
+          terms computed in LCH colour space put the light on the rim. Two
+          springs drive the centre and the width, so the glass stretches with
+          its own velocity instead of teleporting.</p>
+          <p class="band-note">Flip the toggle to slow motion to watch the
+          springs work.</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>What it is</dt>
+                <dd>A refractive lens over a tab row: SDF pill, Snell-law edge
+                refraction with per-channel dispersion, LCH fresnel and glare,
+                spring-driven motion.</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>WebGL 2 and vanilla JavaScript, no libraries. Falls back to
+                a plain CSS bubble where WebGL 2 isn't available.</dd>
+              </div>
+              <div>
+                <dt>Origin</dt>
+                <dd>Written for the Unpak website's navigation; this page runs
+                the same shader, unminified and annotated.</dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </li>
     </ul>

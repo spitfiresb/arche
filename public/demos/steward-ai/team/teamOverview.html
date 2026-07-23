@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Team Usage & Risk Overview</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            400: '#8fb3a6',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        clay: {
+                            100: '#f5f0eb',
+                            200: '#ebe0d6',
+                            500: '#bca692',
+                            600: '#a08774',
+                            700: '#8c7662',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        },
+                        "accent-tan": "#c2a894",
+                    },
+                    fontFamily: {
+                        "serif": ["Fraunces", "serif"],
+                        "sans": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                        "inner-light": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)"
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+    <style type="text/tailwindcss">
+        body {
+            @apply font-sans bg-parchment-100 text-ink antialiased selection:bg-sage-200 selection:text-sage-900;
+        }
+
+        .glass-card {
+            @apply bg-white rounded-clay shadow-clay-sm border border-white/50;
+        }
+
+        .trend-down {
+            @apply text-red-500;
+        }
+
+        .trend-up {
+            @apply text-sage-600;
+        }
+
+        .trend-flat {
+            @apply text-ink-light;
+        }
+
+        @keyframes revealRight {
+            0% {
+                clip-path: inset(0 100% 0 0);
+            }
+
+            100% {
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+        .animate-reveal-right {
+            animation: revealRight 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* Custom Calendar Styles */
+        .calendar-popup {
+            @apply absolute top-full right-0 mt-2 p-4 bg-white rounded-2xl shadow-clay border border-parchment-200 z-[100] w-64;
+            display: none;
+        }
+        .calendar-header {
+            @apply flex items-center justify-between mb-4 px-1;
+        }
+        .calendar-grid {
+            @apply grid grid-cols-7 gap-1 text-center;
+        }
+        .calendar-day-header {
+            @apply text-[10px] uppercase tracking-tighter text-gray-400 font-bold py-1;
+        }
+        .calendar-day {
+            @apply text-xs py-2 rounded-lg cursor-pointer transition-colors hover:bg-parchment-100 text-ink;
+        }
+        .calendar-day.other-month {
+            @apply text-gray-300;
+        }
+        .calendar-day.selected {
+            @apply bg-ink text-white font-medium;
+        }
+        .calendar-day.today {
+            @apply border border-ink/20;
+        }
+        .calendar-nav-btn {
+            @apply p-1 rounded-full hover:bg-parchment-100 transition-colors text-ink-light;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-8 lg:p-12">
+    <div class="w-full mx-auto flex flex-col min-h-[calc(100vh-6rem)]">
+        <header class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="navigateBack()"
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <h1 class="font-serif text-3xl font-medium text-ink">Team Overview</h1>
+                </div>
+                <div id="date-filter-mount" class="relative z-30"></div>
+            </div>
+
+
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+            <!-- Summary Cards -->
+            <div id="summaryCardsContainer" class="flex flex-col h-full gap-6">
+                <!-- Skeleton Loading -->
+                <div class="glass-card rounded-3xl p-6 shadow-sm animate-pulse h-48"></div>
+                <div class="glass-card rounded-3xl p-6 shadow-sm animate-pulse h-48"></div>
+            </div>
+
+            <!-- Table -->
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-clay p-8 shadow-clay-sm h-full min-h-[500px] flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
+                        <div id="loadingState" class="hidden text-sm text-gray-400">Updating...</div>
+                    </div>
+
+                    <!-- overflow-y-visible is crucial here for absolute positioned dropdowns in tables -->
+                    <div class="overflow-visible w-full">
+                        <table class="w-full text-left table-fixed">
+                            <thead>
+                                <tr
+                                    class="text-[10px] uppercase tracking-widest text-ink-light font-bold border-b border-parchment-200">
+                                    <th class="pb-4 font-medium pl-2 w-[4%]">Rank</th>
+                                    <th class="pb-4 font-medium pl-6 pr-4 w-[16%]">Member</th>
+                                    <th class="pb-4 font-medium w-[24%]">Department</th>
+                                    <th class="pb-4 font-medium w-[16%]">Top Model</th>
+                                    <th class="pb-4 font-medium cursor-pointer group w-[14%]"
+                                        onclick="toggleSort('prompts')">
+                                        <div class="flex items-center gap-1 hover:text-ink transition-colors">
+                                            Prompts
+                                            <span id="sortArrow-prompts"
+                                                class="text-[10px] text-ink-light transition-transform">▾</span>
+                                        </div>
+                                    </th>
+                                    <th class="pb-4 font-medium relative w-[20%]">
+                                        <div class="flex items-center gap-1">
+                                            Usage Trend
+                                            <div class="group flex items-center relative" tabindex="0">
+                                                <span
+                                                    class="material-symbols-outlined text-[15px] text-gray-400 cursor-pointer transition-colors group-focus:text-ink">info</span>
+                                                <!-- Tooltip -->
+                                                <div class="absolute bottom-full left-1/2 mb-2 ml-1 w-48 p-2 bg-parchment-50 border border-parchment-200 text-ink-light text-[8px] leading-tight rounded-md shadow-clay-sm opacity-0 invisible group-focus:opacity-100 group-focus:visible transition-all duration-300 origin-bottom-left scale-90 group-focus:scale-100 z-[9999] font-normal pointer-events-none text-left"
+                                                    style="transform-origin: bottom left;">
+                                                    Percentage represents day-day change.
+                                                    <!-- Arrow -->
+                                                    <div
+                                                        class="absolute -bottom-[5px] left-[5px] w-2.5 h-2.5 bg-parchment-50 border-b border-r border-parchment-200 rotate-[45deg]">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="text-sm">
+                                <!-- JS Injected Content -->
+                            </tbody>
+                        </table>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="hidden py-20 text-center text-gray-400">
+                            <span class="material-symbols-outlined text-4xl mb-2">person_off</span>
+                            <p>No team data available for this period.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div id="paginationContainer"
+                        class="hidden flex items-center justify-between mt-auto pt-6 border-t border-parchment-200">
+                        <div class="text-sm text-ink-light">
+                            Showing <span id="pageStart" class="font-medium text-ink">1</span> to <span id="pageEnd"
+                                class="font-medium text-ink">10</span> of <span id="pageTotal"
+                                class="font-medium text-ink">20</span> members
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="prevPageBtn" onclick="changePage(-1)"
+                                class="flex items-center justify-center w-8 h-8 rounded-full bg-parchment-50 border border-parchment-200 text-ink-light hover:bg-white hover:border-sage-300 hover:text-sage-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                            </button>
+                            <span id="pageIndicator" class="text-sm font-medium text-ink px-2">Page 1 of 2</span>
+                            <button id="nextPageBtn" onclick="changePage(1)"
+                                class="flex items-center justify-center w-8 h-8 rounded-full bg-parchment-50 border border-parchment-200 text-ink-light hover:bg-white hover:border-sage-300 hover:text-sage-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script src="../shared/components/dateFilter.js"></script>
+    <script src="teamOverview.js"></script>
+    <!-- Fallback for nav bar positioning logic if JS is simple -->
+    <!-- But update teamOverview.js handles classes, so removed inline style complexity in nav -->
+
+</body>
+
+</html>

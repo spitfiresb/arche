@@ -171,6 +171,12 @@ body.home main {
   bottom: -0.18em;
   height: 1px;
   background: currentColor;
+  /* keep the rule on its own compositing layer even at rest — without
+     this, the layer the transform animation creates is dropped when the
+     transition ends, and the re-rasterized 1px line can land on a
+     subpixel boundary and antialias to grey (visible in Safari on the
+     top row, whose baseline sits on a fraction) */
+  will-change: transform;
   transform: scaleX(0);
   transform-origin: right;
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -946,6 +952,24 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   margin: 0;
   border: 1px solid var(--line);
   border-radius: 4px;
+}
+
+/* An always-live embed: same hairline frame as a thumb, but the demo runs
+   in place — no expansion step, the iframe itself is the interface. */
+.band-artifact .ld-inline {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #FCFCFB;
+}
+
+/* The system map's page shares the site background, so a frame would draw a
+   box around what should read as part of the page itself. */
+#unpak-system .ld-thumb {
+  border: none;
+  border-radius: 0;
 }
 
 /* Technical specifications: the reference layer under a band's summary.

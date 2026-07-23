@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI - Manage Managers</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:italic&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4d6159",
+                        "background-light": "#f9f7f2",
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        }
+                    },
+                    fontFamily: {
+                        display: ["Instrument Serif", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+</head>
+
+<body
+    class="bg-parchment-100 text-ink font-sans overflow-hidden antialiased selection:bg-sage-200 selection:text-sage-900">
+    <div class="flex h-screen w-full relative z-10">
+        <!-- Main Content -->
+        <main class="flex-1 h-full overflow-y-auto relative flex flex-col bg-parchment-100" style="opacity: 0">
+            <div class="flex-1 p-8 md:p-12 max-w-[1200px] mx-auto w-full flex flex-col gap-10">
+                <!-- Header -->
+                <header class="flex items-center gap-4">
+                    <button onclick="navigateBack()"
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <div>
+                        <h1 class="text-3xl font-display italic text-ink">Manage Managers</h1>
+                    </div>
+                </header>
+
+                <!-- Managers List Section -->
+                <div class="flex flex-col gap-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-display italic text-ink">All Managers</h2>
+                        <span id="managerCount" class="text-sm text-ink-light font-sans">0 managers</span>
+                    </div>
+
+                    <div class="bg-white rounded-clay shadow-clay overflow-hidden border border-white/50">
+                        <div id="managersList" class="divide-y divide-parchment-100">
+                            <div class="text-center text-ink-light font-display italic py-12">
+                                Loading managers...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes modal-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animate-modal-in {
+            animation: modal-in 0.25s ease-out forwards;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script>
+        // State
+        const state = {
+            managers: [],
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.applyPageEnterAnimation) {
+                window.applyPageEnterAnimation('forward');
+            }
+            loadManagerData();
+        });
+
+        async function loadManagerData() {
+            if (!window.electronAPI) return;
+
+            try {
+                const departments = await window.electronAPI.getAdminTeams();
+                if (!departments || departments.length === 0) {
+                    renderEmptyState();
+                    return;
+                }
+
+                // Flatten managers across all departments, attaching department name
+                state.managers = [];
+                for (const dept of departments) {
+                    for (const manager of (dept.managers || [])) {
+                        state.managers.push({
+                            ...manager,
+                            departmentName: dept.name
+                        });
+                    }
+                }
+
+                if (state.managers.length > 0) {
+                    renderManagers();
+                } else {
+                    renderEmptyState();
+                }
+            } catch (error) {
+                console.error('Failed to load manager data:', error);
+                renderEmptyState();
+            }
+        }
+
+        function renderManagers() {
+            const container = document.getElementById('managersList');
+            const countEl = document.getElementById('managerCount');
+
+            if (!container) return;
+
+            if (countEl) {
+                countEl.textContent = `${state.managers.length} manager${state.managers.length !== 1 ? 's' : ''}`;
+            }
+
+            container.innerHTML = state.managers.map((manager, index) => {
+                const initials = getInitials(manager.full_name);
+                const isActive = manager.lastActive &&
+                    (Date.now() - new Date(manager.lastActive).getTime()) < 3 * 24 * 60 * 60 * 1000;
+                const statusText = isActive ? 'Active' : 'Inactive';
+                const statusColor = isActive ? 'text-emerald-500' : 'text-slate-400';
+                const dotColor = isActive ? 'bg-emerald-500' : 'bg-slate-300';
+
+                return `
+                    <div class="flex items-center justify-between px-6 py-5 hover:bg-parchment-50 transition-colors animate-fade-in" style="animation-delay: ${index * 30}ms">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-full bg-sage-100 text-sage-700 flex items-center justify-center text-sm font-semibold border border-sage-200">
+                                ${escapeHtml(initials)}
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-ink">${escapeHtml(manager.full_name || 'Unknown')}</p>
+                                <p class="text-xs text-ink-light">${escapeHtml(manager.email || '')}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider bg-parchment-200 text-ink-light border border-parchment-300">
+                                ${escapeHtml(manager.departmentName || '—')}
+                            </span>
+                            <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest ${statusColor}">
+                                <span class="w-2 h-2 rounded-full ${dotColor}"></span>
+                                ${statusText}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderEmptyState() {
+            const container = document.getElementById('managersList');
+            const countEl = document.getElementById('managerCount');
+
+            if (countEl) countEl.textContent = '0 managers';
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-16">
+                        <span class="material-symbols-outlined text-5xl text-parchment-300 mb-4 block">supervised_user_circle</span>
+                        <p class="text-ink-light font-display italic text-lg mb-2">No managers yet</p>
+                        <p class="text-sm text-parchment-400">Managers will appear here once they join</p>
+                    </div>
+                `;
+            }
+        }
+
+        function navigateBack() {
+            if (window.navigateWithTransition) {
+                window.navigateWithTransition('adminDashboard', 'admin.html', 'back');
+            } else if (window.electronAPI) {
+                window.electronAPI.navigateTo('adminDashboard');
+            } else {
+                window.location.href = 'admin.html';
+            }
+        }
+
+        // Utility functions
+        function getInitials(name) {
+            if (!name) return 'U';
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const typeStyles = {
+                error: 'bg-red-50 text-red-800 border border-red-200',
+                success: 'bg-sage-100 text-sage-800 border border-sage-200',
+                info: 'bg-white text-ink border border-parchment-200',
+            };
+            const typeIcons = { error: 'error', success: 'check_circle', info: 'info' };
+
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-clay shadow-clay z-50 ${typeStyles[type] || typeStyles.info}`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">${typeIcons[type] || typeIcons.info}</span>
+                    <span class="text-sm font-sans">${escapeHtml(message)}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Global exports
+        window.navigateBack = navigateBack;
+    </script>
+</body>
+
+</html>

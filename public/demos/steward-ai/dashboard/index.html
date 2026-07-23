@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:italic&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4d6159",
+                        "background-light": "#f9f7f2",
+                        "card-light": "#ffffff",
+                        "accent-tan": "#c2a894",
+                        "accent-green-light": "#7d8c82",
+                        "accent-brown": "#5e503f",
+                        "accent-sand": "#d9d2c5",
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        }
+                    },
+                    fontFamily: {
+                        display: ["Instrument Serif", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                        "serif": ["Fraunces", "serif"]
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css?v=2" rel="stylesheet" />
+</head>
+
+<body
+    class="bg-parchment-100 text-ink font-sans overflow-hidden antialiased selection:bg-sage-200 selection:text-sage-900">
+    <!-- Noise Overlay -->
+    <div class="flex h-screen w-full relative z-10">
+
+
+        <!-- Main Content -->
+        <main class="flex-1 h-full overflow-hidden relative flex flex-col bg-background-light" style="opacity: 0">
+            <!-- Header -->
+            <header
+                class="sticky top-0 z-20 bg-background-light px-8 py-2 border-b border-parchment-300/50 flex flex-col md:flex-row gap-6 justify-between md:items-center">
+
+                <div class="flex items-center gap-12">
+                    <h1 id="appLogo" class="text-2xl font-serif text-ink tracking-tight -mt-1">Steward AI</h1>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <button onclick="navigateToTeamOverview()" id="teamOverviewBtn"
+                        class="flex items-center gap-2 px-6 py-2 bg-white rounded-full shadow-sm text-sm font-medium border border-slate-100 hover:border-primary/20 transition-all">
+                        <span class="material-symbols-outlined text-primary text-xl">group</span>
+                        <span>Team Overview</span>
+                    </button>
+
+                    <button onclick="navigateToMyUsage()" id="myUsageBtn"
+                        class="flex items-center gap-2 px-6 py-2 bg-white rounded-full shadow-sm text-sm font-medium border border-slate-100 hover:border-primary/20 transition-all">
+                        <span class="material-symbols-outlined text-primary text-xl">analytics</span>
+                        <span>My Usage</span>
+                    </button>
+
+
+
+
+                    <!-- User Profile Badge -->
+                    <div class="relative pl-6 border-l border-parchment-200">
+                        <div id="userProfileBadge" class="flex items-center">
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-slate-900" id="userName">User</p>
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400" id="userRole">Admin</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Grid -->
+            <div class="flex-1 px-10 pb-10 flex flex-col justify-center">
+                <!-- Date filter bar -->
+                <div class="absolute top-0 right-10 mt-[75px] z-30 pointer-events-none flex justify-end">
+                    <div id="date-filter-mount" class="pointer-events-auto"></div>
+                </div>
+                <!-- Top Left Control Area -->
+                <div class="absolute top-0 left-12 mt-[75px] z-30 flex items-center gap-4">
+                    <!-- Admin back button (hidden for managers, toggle display via JS without hiding the whole row) -->
+                    <div id="backToAdminRow" class="hidden">
+                        <button onclick="navigateToParentPage()"
+                            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                    </div>
+                    <!-- Department Name (positioned top left next to back button) -->
+                    <p id="departmentName" class="text-slate-500 font-medium text-xl hidden">
+                    </p>
+                </div>
+                <div class="grid grid-cols-12 gap-8 items-stretch h-full max-h-[800px] mt-6">
+
+                    <!-- Left Column: Primary Stats -->
+                    <div class="col-span-3 flex flex-col gap-8 justify-center">
+                        <!-- Workflows (conversation count) — click to open workflows analytics -->
+                        <div onclick="navigateToWorkflows()"
+                            class="relative bg-white p-8 rounded-xl shadow-clay-sm border border-slate-100 flex flex-col justify-between h-[280px] cursor-pointer hover:border-primary/20 hover:shadow-clay transition-all group">
+                            <span class="absolute -top-2.5 -right-2.5 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded-full bg-sage-100 text-sage-600 border border-sage-200 shadow-sm z-20">Beta</span>
+                            <div>
+                                <h3 class="font-display italic text-2xl text-slate-500 mb-4 font-medium">Workflows</h3>
+                                <p id="workflowsCount" class="text-6xl font-light tracking-tight text-slate-900">0</p>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400 font-medium mt-3"
+                                style="font-size: 0.75rem;">
+                                <span>View engagement analytics</span>
+                                <span class="material-symbols-outlined text-sm opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200">arrow_forward</span>
+                            </div>
+                        </div>
+
+                        <!-- Daily Average -->
+                        <div
+                            class="bg-white p-8 rounded-xl shadow-clay-sm border border-slate-100 flex flex-col justify-between h-[280px]">
+                            <div>
+                                <h3 class="font-display italic text-2xl text-slate-500 mb-6">Daily Avg / Member</h3>
+                                <div class="flex items-baseline gap-2">
+                                    <p id="dailyAvgPrompts" class="text-6xl font-light tracking-tight text-slate-900">0
+                                    </p>
+                                    <span class="text-slate-400 text-lg italic">req/day</span>
+                                </div>
+                            </div>
+                            <!-- Small Bar Chart (Populated by app.js) -->
+                            <div id="dailyAvgLabelArea" class="relative w-full" style="height: 28px;"></div>
+                            <div id="dailyAvgChart" class="w-full flex gap-1.5 items-end h-12">
+                                <!-- Bars will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center Column: Donut Chart -->
+                    <div class="col-span-6 flex flex-col items-center justify-center">
+                        <div
+                            class="bg-white p-12 rounded-xl shadow-clay-sm border border-slate-100 w-full flex flex-col items-center justify-center relative h-[592px]">
+                            <!-- Department Name moved to top left -->
+                            <div class="absolute top-8 left-10">
+                                <h3 class="font-display italic text-2xl text-slate-800">Use Case Analytics</h3>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Based on team-wide
+                                    activity</p>
+                            </div>
+
+                            <div id="donutChart"
+                                class="relative h-[320px] w-[320px] flex items-center justify-center -mt-12">
+                                <!-- Donut SVG will be injected here by app.js -->
+                                <div id="donutCenter"
+                                    class="absolute inset-14 bg-white rounded-full flex flex-col items-center justify-center shadow-inner pointer-events-none z-10">
+                                    <span id="topCategoryPercent"
+                                        class="text-4xl font-light tracking-tighter text-slate-900">0%</span>
+                                    <span id="topCategoryName"
+                                        class="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mt-2 text-center px-4">PRIMARY
+                                        FOCUS</span>
+                                </div>
+                            </div>
+
+                            <div id="categoryGrid" class="absolute bottom-12 left-12 right-12 w-auto">
+                                <!-- Grid injected by app.js -->
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Model & Risk -->
+                    <div class="col-span-3 flex flex-col gap-8 justify-center">
+                        <!-- Top Models -->
+                        <div
+                            class="bg-white p-8 rounded-xl shadow-clay-sm border border-slate-100 flex flex-col justify-between h-[280px]">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="font-display italic text-2xl text-left text-ink">Top Models</h2>
+                                    <button onclick="navigateToModelBreakdown()" id="promptBreakdownBtn"
+                                        class="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full shadow-sm text-[11px] font-medium border border-slate-100 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5 hover:bg-parchment-50 active:translate-y-0 active:shadow-sm duration-200"
+                                        style="transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease; will-change: transform;">
+                                        <span class="material-symbols-outlined text-primary" style="font-size: 14px; transition: none !important; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;">account_tree</span>
+                                        <span>Breakdown</span>
+                                    </button>
+                                </div>
+                                <div id="topModelsList">
+                                    <!-- Ranked list injected by app.js -->
+                                </div>
+                            </div>
+                            <div class="mt-auto">
+                                <div id="modelBarWrapper" class="relative">
+                                    <div id="modelBarLabelArea" class="relative w-full" style="height: 24px;"></div>
+                                    <div id="modelUsageBarContainer"
+                                        class="w-full h-8 bg-slate-100 rounded-sm flex relative">
+                                        <!-- Segments will be injected by app.js -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Events -->
+                        <div
+                            class="bg-white p-8 rounded-xl shadow-clay-sm border border-slate-100 flex flex-col justify-between h-[280px]">
+                            <div>
+                                <h3 class="font-display italic text-2xl text-slate-500 mb-6">Security Overview</h3>
+                                <div class="flex flex-col">
+                                    <p id="riskEvents" class="text-5xl font-light tracking-tight text-slate-900">0
+                                        Events</p>
+                                    <span id="riskBadge"
+                                        class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 mt-4 flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        Safe Operation
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-6 border-t border-slate-50">
+                                <button onclick="navigateToSecurityCenter()"
+                                    class="text-xs font-bold uppercase tracking-widest text-primary hover:underline underline-offset-4">View
+                                    detailed logs</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Background Decorative Element -->
+            <div class="fixed top-0 right-0 -z-10 opacity-40 pointer-events-none">
+                <svg fill="none" height="800" viewBox="0 0 400 400" width="800">
+                    <circle cx="350" cy="50" fill="url(#paint0_radial)" r="330"></circle>
+                    <defs>
+                        <radialGradient cx="0" cy="0" gradientTransform="translate(350 50) rotate(90) scale(330)"
+                            gradientUnits="userSpaceOnUse" id="paint0_radial" r="1">
+                            <stop stop-color="#4d6159" stop-opacity="0.12"></stop>
+                            <stop offset="1" stop-color="#4d6159" stop-opacity="0"></stop>
+                        </radialGradient>
+                    </defs>
+                </svg>
+            </div>
+
+        </main>
+    </div>
+
+
+
+    <!-- Extension Warning Modal -->
+    <div id="extension-warning-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-ink/50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-clay shadow-clay max-w-md w-full mx-4 p-6 animate-modal-in">
+            <div class="flex justify-center mb-4">
+                <div class="p-3 bg-amber-100 rounded-full">
+                    <span class="material-symbols-outlined text-4xl text-amber-600">extension_off</span>
+                </div>
+            </div>
+            <h2 id="extension-warning-title" class="text-xl font-bold text-ink text-center mb-2">Browser Extension Not
+                Connected</h2>
+            <p id="extension-warning-browser" class="text-sm text-ink-light text-center mb-4"></p>
+            <p id="extension-warning-message" class="text-sm text-ink-light text-center mb-6">
+                Your prompts in this browser may not be captured. Please check that the Steward AI extension is installed and
+                enabled.
+            </p>
+            <a id="extension-warning-install-link" href="#"
+                class="w-full bg-ink hover:bg-ink/90 text-white h-14 rounded-2xl font-semibold text-base shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2.5 mb-4 no-underline">
+                <span class="material-symbols-outlined text-lg">extension</span>
+                <span>Install from Chrome Web Store</span>
+                <span class="material-symbols-outlined text-sm opacity-70">open_in_new</span>
+            </a>
+            <div class="bg-parchment-50 rounded-lg p-4">
+                <p id="extension-warning-steps-title" class="text-xs font-bold text-ink uppercase tracking-wide mb-2">
+                    Already installed? To fix this:</p>
+                <ol id="extension-warning-steps-list" class="text-sm text-ink-light space-y-1 list-decimal list-inside">
+                    <li>Open your browser's extension settings</li>
+                    <li>Find the Steward AI extension</li>
+                    <li>Make sure it's enabled</li>
+                </ol>
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-6 text-xs text-parchment-400">
+                <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="extension-warning-status">Waiting for extension to reconnect...</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modal-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-modal-in {
+            animation: modal-in 0.25s ease-out forwards;
+        }
+
+        /* Custom calendar picker indicator to match light aesthetic */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 0.7;
+        }
+    </style>
+
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script src="../shared/components/dateFilter.js"></script>
+    <script>
+        // On Windows there are no traffic-light buttons, so move the logo to the left
+        if (window.electronAPI && electronAPI.platform !== 'darwin') {
+            const logo = document.getElementById('appLogo');
+            if (logo) logo.style.marginLeft = '.9rem';
+        }
+    </script>
+    <script src="app.js?v=2"></script>
+</body>
+
+</html>

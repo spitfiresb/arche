@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI - Top Models</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        clay: {
+                            100: '#f5f0eb',
+                            200: '#ebe0d6',
+                            500: '#bca692',
+                            700: '#8c7662',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        }
+                    },
+                    fontFamily: {
+                        "serif": ["Fraunces", "serif"],
+                        "sans": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                        "inner-light": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)"
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+    <style>
+        .category-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            transition: background 0.15s;
+        }
+
+        .category-row:hover {
+            background: #fbfaf8;
+        }
+
+        .skeleton-coming-soon {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-coming-soon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(247, 245, 240, 0.3) 0%, rgba(239, 236, 228, 0.6) 100%);
+            backdrop-filter: blur(2px);
+            border-radius: inherit;
+            pointer-events: none;
+        }
+
+        /* Sankey */
+
+        .sankey-connector-line {
+            animation: modelLineFadeIn 0.15s ease-out both;
+        }
+
+        .sankey-connector-label {
+            font-family: 'Manrope', sans-serif;
+            text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
+            animation: modelLabelFadeIn 0.15s ease-out both;
+        }
+
+        /* Static connector animations now use shared subcategoryLineGrow / subcategoryLabelFadeIn from styles.css */
+
+        .sankey-link-wrap {
+            /* no transition — prevents flash on click-to-expand */
+        }
+
+        .sankey-node {
+            transition: filter 0.2s;
+        }
+
+        .sankey-tooltip {
+            position: fixed;
+            pointer-events: none;
+            background: #2c2b29;
+            color: #f7f5f0;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.15s;
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .sankey-tooltip.visible {
+            opacity: 1;
+        }
+
+        .sankey-expand-btn {
+            cursor: pointer;
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: transform 0.2s ease;
+        }
+
+        .sankey-expand-btn:hover {
+            transform: scale(1.4);
+        }
+
+        .sankey-link-clickable {
+            cursor: pointer;
+        }
+
+        .sankey-node-clickable {
+            cursor: pointer;
+        }
+
+        @keyframes sankeyFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes sankeySlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes drillNodeExit {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(10px) scale(0.95);
+            }
+        }
+
+        @keyframes drillEnterRoot {
+            from {
+                opacity: 0;
+                transform: translateX(-10px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes drillEnterNode {
+            from {
+                opacity: 0;
+                transform: translateX(-18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-parchment-100 text-ink font-sans overflow-hidden antialiased selection:bg-sage-200 selection:text-sage-900">
+    <div class="flex h-screen w-full relative z-10">
+        <main class="flex-1 h-full overflow-hidden relative flex flex-col bg-parchment-100">
+            <div class="flex-1 p-4 md:p-6 w-full flex flex-col gap-8">
+
+                <header class="flex items-center justify-between gap-4 flex-wrap mt-4">
+                    <div class="flex items-center gap-4">
+                        <button onclick="navigateBack()" id="backButton"
+                            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <div>
+                            <h1 class="text-3xl font-serif text-ink">Prompt Breakdown</h1>
+                        </div>
+                    </div>
+
+                    <div class="relative pointer-events-none flex justify-end">
+                        <div id="date-filter-mount" class="pointer-events-auto"></div>
+                    </div>
+                </header>
+
+                <section class="flex-1 flex flex-col min-h-0">
+
+                    <div
+                        class="bg-white border border-parchment-300 rounded-clay shadow-clay-sm overflow-hidden flex-1 flex flex-col min-h-0">
+                        <div id="sankeyContainer" class="w-full flex-1 min-h-0">
+                            <div id="sankeySkeleton" class="flex items-center justify-center py-16 animate-pulse">
+                                <div class="flex gap-12 items-center">
+                                    <div class="w-16 h-32 bg-parchment-200 rounded-lg"></div>
+                                    <div class="flex flex-col gap-3">
+                                        <div class="w-14 h-12 bg-parchment-200 rounded-lg"></div>
+                                        <div class="w-14 h-12 bg-parchment-100 rounded-lg"></div>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <div class="w-12 h-8 bg-parchment-200 rounded-lg"></div>
+                                        <div class="w-12 h-8 bg-parchment-100 rounded-lg"></div>
+                                        <div class="w-12 h-6 bg-parchment-200 rounded-lg"></div>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <div class="w-10 h-5 bg-parchment-100 rounded"></div>
+                                        <div class="w-10 h-5 bg-parchment-200 rounded"></div>
+                                        <div class="w-10 h-4 bg-parchment-100 rounded"></div>
+                                        <div class="w-10 h-4 bg-parchment-200 rounded"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sankeyEmpty" class="hidden px-6 py-12 text-center">
+                                <span
+                                    class="material-symbols-outlined text-4xl text-parchment-300 block mb-2">account_tree</span>
+                                <p class="text-sm text-ink-light">No prompt data yet. Send a prompt to see the flow.</p>
+                            </div>
+                            <svg id="sankeySvg" class="w-full h-full" style="display:none;"></svg>
+                        </div>
+                    </div>
+                    <div id="sankeyTooltip" class="sankey-tooltip"></div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../shared/utils/icons.js"></script>
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script src="../shared/components/dateFilter.js"></script>
+    <script>
+        // ============================================
+        // State
+        // ============================================
+        const state = {
+            dateFilter: { preset: 'all', startDate: null, endDate: null },
+            rows: [],
+            loading: false,
+            expandedNodeId: null,
+            expandedProviderLabel: '',
+            lastLayout: null,
+            transitionId: 0,
+            departmentId: null,
+        };
+
+        // ============================================
+        // Escape HTML helper
+        // ============================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        // ============================================
+        // Provider detection
+        // ============================================
+        const PROVIDER_PALETTE = {
+            anthropic: { key: 'anthropic', label: 'Claude', color: '#C15F3C' },
+            openai: { key: 'openai', label: 'ChatGPT', color: '#10A37F' },
+            google: { key: 'google', label: 'Gemini', color: '#4285F4' },
+            antigravity: { key: 'antigravity', label: 'Antigravity', color: '#8B5CF6' },
+            xai: { key: 'xai', label: 'Grok', color: '#1C1C2E' },
+            perplexity: { key: 'perplexity', label: 'Perplexity', color: '#20B2C8' },
+            microsoft: { key: 'microsoft', label: 'Copilot', color: '#E8544A' },
+            cursor: { key: 'cursor', label: 'Cursor', color: '#F59E0B' },
+            deepseek: { key: 'deepseek', label: 'DeepSeek', color: '#4A90D9' },
+            zai: { key: 'zai', label: 'Z.ai', color: '#8C7A6B' },
+            other: { key: 'other', label: 'Other', color: '#6B7280' },
+        };
+
+        const AGENT_PROVIDER_MAP = {
+            claude: 'anthropic',
+            'claude-code': 'anthropic',
+            chatgpt: 'openai',
+            gemini: 'google',
+            antigravity: 'antigravity',
+            grok: 'xai',
+            perplexity: 'perplexity',
+            copilot: 'microsoft',
+            'github-copilot': 'microsoft',
+            'copilot-studio': 'microsoft',
+            'security-copilot': 'microsoft',
+            'copilot-pages': 'microsoft',
+            'copilot-notebooks': 'microsoft',
+            'copilot-word': 'microsoft',
+            'copilot-excel': 'microsoft',
+            'copilot-powerpoint': 'microsoft',
+            'copilot-outlook': 'microsoft',
+            'copilot-onenote': 'microsoft',
+            'copilot-teams': 'microsoft',
+            cursor: 'cursor',
+            notebooklm: 'google',
+            deepseek: 'deepseek',
+            'z.ai': 'zai',
+        };
+
+        const COPILOT_SUB_LABELS = {
+            'copilot': 'Copilot Chat',
+            'copilot-word': 'Word',
+            'copilot-excel': 'Excel',
+            'copilot-powerpoint': 'PowerPoint',
+            'copilot-outlook': 'Outlook',
+            'copilot-onenote': 'OneNote',
+            'copilot-teams': 'Teams',
+            'copilot-pages': 'Pages',
+            'copilot-notebooks': 'Notebooks',
+            'copilot-studio': 'Copilot Studio',
+            'github-copilot': 'GitHub Copilot',
+            'security-copilot': 'Security Copilot',
+        };
+
+        function getProvider(agentProvider, model) {
+            const mapped = AGENT_PROVIDER_MAP[(agentProvider || '').toLowerCase()];
+            if (mapped) return PROVIDER_PALETTE[mapped];
+
+            if (model) {
+                const l = model.toLowerCase();
+                if (l.includes('claude') || l.includes('haiku') || l.includes('sonnet') || l.includes('opus'))
+                    return PROVIDER_PALETTE.anthropic;
+                if (l.includes('gpt') || l.includes('o1') || l.includes('o3') || l.includes('chatgpt'))
+                    return PROVIDER_PALETTE.openai;
+                if (l.includes('gemini'))
+                    return PROVIDER_PALETTE.google;
+                if (l.includes('antigravity'))
+                    return PROVIDER_PALETTE.antigravity;
+                if (l.includes('grok') || l === 'auto')
+                    return PROVIDER_PALETTE.xai;
+                if (l.includes('sonar') || l.includes('perplexity'))
+                    return PROVIDER_PALETTE.perplexity;
+                if (l.includes('copilot') || l === 'smart' || l === 'think deeper')
+                    return PROVIDER_PALETTE.microsoft;
+                if (l.includes('deepseek'))
+                    return PROVIDER_PALETTE.deepseek;
+            }
+            return PROVIDER_PALETTE.other;
+        }
+
+        function normalizeClaudeModel(model) {
+            const l = model.toLowerCase();
+            if (l.includes('opus')) return 'Opus';
+            if (l.includes('sonnet')) return 'Sonnet';
+            if (l.includes('haiku')) return 'Haiku';
+            return model;
+        }
+
+        function flattenRows(rows) {
+            return rows.filter(row => row.source).map(row => {
+                const prov = getProvider(row.agent_provider, row.model);
+                return {
+                    src: row.source,
+                    model: prov.key === 'anthropic'
+                        ? normalizeClaudeModel(row.model || '(unknown)')
+                        : (row.model || '(unknown)').replace(/([^\s])Extended\b/gi, '$1 Extended'),
+                    agent_provider: row.agent_provider || '',
+                    providerKey: prov.key,
+                    providerLabel: prov.label,
+                    providerColor: prov.color,
+                    count: row.count || 0,
+                };
+            });
+        }
+
+        // ============================================
+        // Animation utilities
+        // ============================================
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+        function interpolatePath(fromD, toD, t) {
+            if (!fromD || !toD) return toD || fromD || '';
+            const fromNums = fromD.match(/-?\d+\.?\d*/g)?.map(Number);
+            const toNums = toD.match(/-?\d+\.?\d*/g)?.map(Number);
+            if (!fromNums || !toNums || fromNums.length !== toNums.length) return t < 0.5 ? fromD : toD;
+            let i = 0;
+            return toD.replace(/-?\d+\.?\d*/g, () => lerp(fromNums[i], toNums[i++], t).toFixed(2));
+        }
+
+        function snapshotLayout(data) {
+            return {
+                nodes: data.nodes.map(n => ({
+                    id: n.id, x: n.x, y: n.y, w: n.w, height: n.height,
+                    layer: n.layer, color: n.color, label: n.label, value: n.value,
+                    providerKey: n.providerKey, expandable: n.expandable, isExpanded: n.isExpanded,
+                })),
+                links: data.links.map(l => ({
+                    source: l.source, target: l.target, path: l.path,
+                    color: l.color, value: l.value,
+                })),
+                layerCount: data.layerCount,
+            };
+        }
+
+        function buildOverviewData(rows, expandedNodeId) {
+            const flat = flattenRows(rows);
+            const totalPrompts = flat.reduce((s, r) => s + r.count, 0);
+            if (totalPrompts === 0) return null;
+
+            const nodes = [];
+            const links = [];
+
+            nodes.push({ id: 'total', label: 'Total Prompts', value: totalPrompts, layer: 0, color: '#2c2b29' });
+
+            // Layer 1: Sources
+            const srcMap = new Map();
+            for (const r of flat) srcMap.set(r.src, (srcMap.get(r.src) || 0) + r.count);
+            const sourceColors = { desktop: '#C4687A', extension: '#C4687A', cli: '#C4687A' };
+            const sourceLabels = { desktop: 'Desktop', extension: 'Web', cli: 'CLI Tools' };
+            for (const [src, count] of srcMap.entries()) {
+                const color = sourceColors[src] || '#666';
+                nodes.push({ id: `src_${src}`, label: sourceLabels[src] || src, value: count, layer: 1, color });
+                links.push({ source: 'total', target: `src_${src}`, value: count, color });
+            }
+
+            // Layer 2: Providers scoped per source — one node per (src, provider), no shared nodes
+            const srcProvMap = new Map();
+            for (const r of flat) {
+                const k = `${r.src}\x00${r.providerKey}`;
+                if (!srcProvMap.has(k)) {
+                    srcProvMap.set(k, { src: r.src, key: r.providerKey, label: r.providerLabel, color: r.providerColor, total: 0 });
+                }
+                srcProvMap.get(k).total += r.count;
+            }
+            for (const entry of srcProvMap.values()) {
+                const nodeId = `prov_${entry.src}_${entry.key}`;
+                nodes.push({
+                    id: nodeId,
+                    label: entry.label,
+                    value: entry.total,
+                    layer: 2,
+                    color: entry.color,
+                    providerKey: entry.key,
+                    expandable: true,
+                    isExpanded: nodeId === expandedNodeId,
+                });
+                links.push({ source: `src_${entry.src}`, target: nodeId, value: entry.total, color: entry.color });
+            }
+
+            let layerCount = 3;
+
+            // Layer 3: Sub-models for the expanded provider (inline extension)
+            if (expandedNodeId) {
+                let expandedSrc = null, expandedProvKey = null;
+                for (const entry of srcProvMap.values()) {
+                    if (`prov_${entry.src}_${entry.key}` === expandedNodeId) {
+                        expandedSrc = entry.src;
+                        expandedProvKey = entry.key;
+                        break;
+                    }
+                }
+                const expandedFlat = expandedSrc ? flat.filter(r => r.src === expandedSrc && r.providerKey === expandedProvKey) : [];
+                // Group by (src, agent_provider) for Microsoft, (src, model) otherwise
+                const useSub = expandedProvKey === 'microsoft';
+                const srcModelMap = new Map();
+                for (const r of expandedFlat) {
+                    const groupKey = useSub ? (r.agent_provider || r.model) : r.model;
+                    const k = `${r.src}\x00${groupKey}`;
+                    if (!srcModelMap.has(k)) {
+                        const label = useSub ? (COPILOT_SUB_LABELS[groupKey] || groupKey) : groupKey;
+                        srcModelMap.set(k, { src: r.src, groupKey, label, color: r.providerColor, total: 0 });
+                    }
+                    srcModelMap.get(k).total += r.count;
+                }
+
+                for (const entry of srcModelMap.values()) {
+                    const provNodeId = `prov_${entry.src}_${expandedProvKey}`;
+                    const mId = `model_${entry.src}_${entry.groupKey}`;
+                    nodes.push({ id: mId, label: entry.label, value: entry.total, layer: 3, color: entry.color });
+                    links.push({ source: provNodeId, target: mId, value: entry.total, color: entry.color });
+                }
+
+                layerCount = 4;
+            }
+
+            return { nodes, links, layerCount };
+        }
+
+        function buildDetailData(rows, providerKey) {
+            const flat = flattenRows(rows).filter(r => r.providerKey === providerKey);
+            if (flat.length === 0) return null;
+
+            const providerLabel = flat[0].providerLabel;
+            const providerColor = flat[0].providerColor;
+            const totalCount = flat.reduce((s, r) => s + r.count, 0);
+
+            const modelMap = new Map();
+            for (const r of flat) modelMap.set(r.model, (modelMap.get(r.model) || 0) + r.count);
+            const sortedModels = Array.from(modelMap.entries()).sort((a, b) => b[1] - a[1]);
+
+            const nodes = [];
+            const links = [];
+            nodes.push({ id: `prov_${providerKey}`, label: providerLabel, value: totalCount, layer: 0, color: providerColor });
+
+            for (const [model, count] of sortedModels) {
+                const mId = `model_${model}`;
+                nodes.push({ id: mId, label: model, value: count, layer: 1, color: providerColor });
+                links.push({ source: `prov_${providerKey}`, target: mId, value: count, color: providerColor });
+            }
+
+            return { nodes, links, layerCount: 2 };
+        }
+
+        function layoutSankey(data, width, height) {
+            const LAYER_COUNT = data.layerCount;
+            const PAD = { top: 40, bottom: 40, left: 80, right: 60 };
+            const NODE_GAP = 12;
+            const MIN_NODE_H = 2;
+            const MIN_LINK_H = 2;
+            const NODE_W = 6;
+
+            const innerW = width - PAD.left - PAD.right;
+            const innerH = height - PAD.top - PAD.bottom;
+
+            function getLayerX(layer, layerCount, padLeft, iW) {
+                if (layerCount === 3) {
+                    const pct = [0, 0.22, 1.0][layer];
+                    return padLeft + pct * iW;
+                }
+                if (layerCount === 4) {
+                    const pct = [0, 0.15, 0.55, 1.0][layer];
+                    return padLeft + pct * iW;
+                }
+                return padLeft + layer * (iW / (layerCount - 1));
+            }
+
+            const layers = Array.from({ length: LAYER_COUNT }, () => []);
+            for (const n of data.nodes) layers[n.layer].push(n);
+
+            const parentOf = new Map();
+            for (const link of data.links) {
+                parentOf.set(link.target, link.source);
+            }
+
+            layers[0].sort((a, b) => b.value - a.value);
+
+            for (let l = 1; l < LAYER_COUNT; l++) {
+                const parentOrder = new Map(layers[l - 1].map((n, i) => [n.id, i]));
+                layers[l].sort((a, b) => {
+                    const pa = parentOf.get(a.id);
+                    const pb = parentOf.get(b.id);
+                    const oa = parentOrder.get(pa) ?? 999;
+                    const ob = parentOrder.get(pb) ?? 999;
+                    if (oa !== ob) return oa - ob;
+                    return b.value - a.value;
+                });
+            }
+
+            // Find global ky (pixels per unit value) for uniform thickness
+            let minAvailH = innerH;
+            let maxTotalValue = 1;
+            for (let l = 0; l < LAYER_COUNT; l++) {
+                const layerNodes = layers[l];
+                const totalGap = NODE_GAP * Math.max(0, layerNodes.length - 1);
+                const availH = innerH - totalGap;
+                minAvailH = Math.min(minAvailH, availH);
+
+                const layerTotal = layerNodes.reduce((s, n) => s + n.value, 0);
+                maxTotalValue = Math.max(maxTotalValue, layerTotal);
+            }
+
+            // Global scale factor
+            const ky = Math.max(0.1, minAvailH / maxTotalValue);
+
+            for (let l = 0; l < LAYER_COUNT; l++) {
+                const layerNodes = layers[l];
+                const colX = getLayerX(l, LAYER_COUNT, PAD.left, innerW);
+
+                // Compute node heights first
+                for (const n of layerNodes) {
+                    n.height = Math.max(MIN_NODE_H, n.value * ky);
+                }
+
+                // Special handling: spread layer 3 model nodes by source
+                if (LAYER_COUNT === 4 && l === 3) {
+                    // Group nodes by source (desktop/extension) via parentOf chain
+                    const groups = new Map();
+                    for (const n of layerNodes) {
+                        const provId = parentOf.get(n.id) || '';
+                        // provId is like "prov_desktop_claude" — extract source segment
+                        const parts = provId.split('_');
+                        const src = parts.length >= 2 ? parts[1] : 'unknown';
+                        if (!groups.has(src)) groups.set(src, []);
+                        groups.get(src).push(n);
+                    }
+
+                    const groupKeys = [...groups.keys()];
+                    const groupCount = groupKeys.length;
+
+                    groupKeys.forEach((key, gi) => {
+                        const nodes = groups.get(key);
+                        const totalGap = NODE_GAP * Math.max(0, nodes.length - 1);
+                        let groupH = totalGap;
+                        for (const n of nodes) groupH += n.height;
+
+                        // Center each group at evenly spaced vertical positions
+                        const centerY = PAD.top + innerH * ((gi + 1) / (groupCount + 1));
+                        let yOffset = centerY - groupH / 2;
+                        if (yOffset < PAD.top) yOffset = PAD.top;
+
+                        for (const n of nodes) {
+                            n.w = NODE_W;
+                            n.x = colX - n.w / 2;
+                            n.y = yOffset;
+                            yOffset += n.height + NODE_GAP;
+                        }
+                    });
+                } else {
+                    // Default: center layer vertically
+                    const totalGap = NODE_GAP * Math.max(0, layerNodes.length - 1);
+                    let layerH = totalGap;
+                    for (const n of layerNodes) layerH += n.height;
+
+                    let yOffset = PAD.top + (innerH - layerH) / 2;
+                    if (yOffset < PAD.top) yOffset = PAD.top;
+
+                    for (const n of layerNodes) {
+                        n.w = NODE_W;
+                        n.x = colX - n.w / 2;
+                        n.y = yOffset;
+                        yOffset += n.height + NODE_GAP;
+                    }
+                }
+            }
+
+            // Prepare links adjacency list
+            for (const n of data.nodes) {
+                n.sourceLinks = [];
+                n.targetLinks = [];
+            }
+            const nodeById = new Map(data.nodes.map(n => [n.id, n]));
+            for (const link of data.links) {
+                const src = nodeById.get(link.source);
+                const tgt = nodeById.get(link.target);
+                if (src && tgt) {
+                    src.sourceLinks.push(link);
+                    tgt.targetLinks.push(link);
+                    link.srcNode = src;
+                    link.tgtNode = tgt;
+                }
+            }
+
+            // Sort links vertically by target/source y coordinate to prevent twisting
+            for (const n of data.nodes) {
+                n.sourceLinks.sort((a, b) => a.tgtNode.y - b.tgtNode.y);
+                n.targetLinks.sort((a, b) => a.srcNode.y - b.srcNode.y);
+            }
+
+            // Pass 1: set linkH and y0 from source side
+            for (const n of data.nodes) {
+                if (n.sourceLinks.length === 0) continue;
+
+                const nodeRawH = n.value * ky;
+                const startOffset = Math.max(0, (n.height - nodeRawH) / 2);
+                const inflated = n.sourceLinks.map(l => Math.max(MIN_LINK_H, l.value * ky));
+                const inflatedTotal = inflated.reduce((s, h) => s + h, 0);
+                const scale = inflatedTotal > nodeRawH ? nodeRawH / inflatedTotal : 1;
+                let sy = 0;
+                for (let i = 0; i < n.sourceLinks.length; i++) {
+                    n.sourceLinks[i].linkH = inflated[i] * scale;
+                    n.sourceLinks[i].y0 = n.y + startOffset + sy;
+                    sy += n.sourceLinks[i].linkH;
+                }
+            }
+
+            // Bar-ribbon alignment: set node height to match total ribbon height
+            for (const n of data.nodes) {
+                const srcTotal = n.sourceLinks.reduce((s, l) => s + (l.linkH || 0), 0);
+                const tgtTotal = n.targetLinks.reduce((s, l) => s + (l.linkH || 0), 0);
+                const ribbonH = Math.max(srcTotal, tgtTotal);
+                if (ribbonH > 0) n.height = Math.max(MIN_NODE_H, ribbonH);
+            }
+
+            // Pass 2: set y2 from target side using already-determined linkH
+            for (const n of data.nodes) {
+                if (n.targetLinks.length === 0) continue;
+                const nodeRawH = n.value * ky;
+                const startOffset = 0;
+                let ty = 0;
+                for (const link of n.targetLinks) {
+                    link.y2 = n.y + startOffset + ty;
+                    ty += link.linkH;
+                }
+            }
+
+            // Render exact paths
+            for (const link of data.links) {
+                if (!link.srcNode || !link.tgtNode) continue;
+                const y0 = link.y0;
+                const y1 = y0 + link.linkH;
+                const y2 = link.y2;
+                const y3 = y2 + link.linkH;
+
+                const x0 = link.srcNode.x + link.srcNode.w;
+                const x1 = link.tgtNode.x;
+                const mx = (x0 + x1) / 2;
+
+                link.path = `M${x0},${y0} C${mx},${y0} ${mx},${y2} ${x1},${y2} L${x1},${y3} C${mx},${y3} ${mx},${y1} ${x0},${y1} Z`;
+            }
+
+            return data;
+        }
+
+        function renderSankey(rows, animate = false) {
+            const skeleton = document.getElementById('sankeySkeleton');
+            const empty = document.getElementById('sankeyEmpty');
+            const svg = document.getElementById('sankeySvg');
+            const tooltip = document.getElementById('sankeyTooltip');
+
+            const data = buildOverviewData(rows, state.expandedNodeId);
+
+            if (!data) {
+                skeleton.classList.add('hidden');
+                empty.classList.remove('hidden');
+                svg.style.display = 'none';
+                state.lastLayout = null;
+                return;
+            }
+
+            skeleton.classList.add('hidden');
+            empty.classList.add('hidden');
+
+            const container = document.getElementById('sankeyContainer');
+            const W = container.clientWidth || 820;
+            const containerH = container.clientHeight;
+            const layerNodeCounts = new Array(data.layerCount).fill(0);
+            for (const n of data.nodes) layerNodeCounts[n.layer] = (layerNodeCounts[n.layer] || 0) + 1;
+            const maxLayerNodes = Math.max(...layerNodeCounts);
+            const minRequiredHeight = 80 + (maxLayerNodes * 10) + (Math.max(0, maxLayerNodes - 1) * 12);
+            const H = containerH > 100 ? containerH : Math.max(400, minRequiredHeight + 40);
+
+            layoutSankey(data, W, H);
+
+            const oldLayout = state.lastLayout;
+            state.lastLayout = snapshotLayout(data);
+            state.transitionId++;
+            const currentTransId = state.transitionId;
+
+            svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            svg.style.display = 'block';
+            svg.classList.remove('hidden');
+            svg.innerHTML = '';
+
+            const totalValue = data.nodes.find(n => n.layer === 0)?.value || 1;
+            const shouldAnimate = animate && oldLayout;
+
+            // Build lookup maps for animation
+            const oldNodeMap = shouldAnimate ? new Map(oldLayout.nodes.map(n => [n.id, n])) : new Map();
+            const oldLinkMap = shouldAnimate ? new Map(oldLayout.links.map(l => [`${l.source}→${l.target}`, l])) : new Map();
+            const newNodeIds = new Set(data.nodes.map(n => n.id));
+            const newLinkKeys = new Set(data.links.map(l => `${l.source}→${l.target}`));
+
+            // Find origin node for enter/exit animations (the expanded/collapsed provider)
+            let originNode = null;
+            if (shouldAnimate) {
+                for (const n of data.nodes) {
+                    if (n.expandable && n.isExpanded) { originNode = n; break; }
+                }
+                if (!originNode) {
+                    // Collapsing — find provider that was expanded in old layout
+                    for (const n of oldLayout.nodes) {
+                        if (n.isExpanded) {
+                            // Find same node in new layout
+                            const newN = data.nodes.find(nn => nn.id === n.id);
+                            if (newN) originNode = newN;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Collect exit elements (old items not in new)
+            const exitNodes = shouldAnimate ? oldLayout.nodes.filter(n => !newNodeIds.has(n.id)) : [];
+            const exitLinks = shouldAnimate ? oldLayout.links.filter(l => !newLinkKeys.has(`${l.source}→${l.target}`)) : [];
+
+            // ---- Element refs for animation ----
+            const nodeEls = []; // { node, rect, dot, nameEl, countEl, group, isEnter }
+            const linkEls = []; // { linkData, path, wrapG, isEnter }
+            const exitNodeEls = []; // { oldNode, group }
+            const exitLinkEls = []; // { linkData, path, wrapG }
+            const expandBtnEls = []; // { node, btnG }
+
+            // ---- Draw links ----
+            const linksG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            const staticConnectorLinks = [];
+
+            data.links.forEach((link, i) => {
+                const key = `${link.source}→${link.target}`;
+                const oldLink = oldLinkMap.get(key);
+                const isEnter = shouldAnimate && !oldLink;
+
+                const wrapG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                wrapG.classList.add('sankey-link-wrap');
+                wrapG.style.opacity = isEnter ? '0' : '0.32';
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', shouldAnimate && oldLink ? oldLink.path : link.path);
+                path.setAttribute('fill', link.color);
+                path.setAttribute('class', 'sankey-link');
+                const srcNode = data.nodes.find(n => n.id === link.source);
+                const tgtNode = data.nodes.find(n => n.id === link.target);
+
+                if (!shouldAnimate) {
+                    path.style.animation = `sankeyFadeIn 0.4s ${0.05 * Math.min(i, 15)}s both`;
+                }
+
+                const denominator = srcNode?.value || totalValue;
+                const pct = denominator > 0 ? ((link.value / denominator) * 100).toFixed(1) : 0;
+                const tipText = `${tgtNode?.label || ''} (${pct}%)`;
+
+                const LABEL_MIN_H_HOVER = 14;
+                const tgtTooSmall = tgtNode && tgtNode.height < LABEL_MIN_H_HOVER;
+                const srcTooSmall = srcNode && srcNode.height < LABEL_MIN_H_HOVER && srcNode.id !== 'total';
+                const showConnector = tgtTooSmall || srcTooSmall;
+                const isStaticConnector = !!state.expandedNodeId && tgtNode?.layer === 3 && showConnector;
+                if (isStaticConnector) staticConnectorLinks.push({ link, tipText });
+                wrapG.addEventListener('mouseenter', () => {
+                    wrapG.style.opacity = '0.65';
+                    if (showConnector && !isStaticConnector) showLinkConnector(svg, link, tipText, link.color);
+                });
+                wrapG.addEventListener('mouseleave', () => {
+                    wrapG.style.opacity = '0.32';
+                    if (!isStaticConnector) removeConnector(svg);
+                });
+
+                // Make ribbons targeting expandable provider nodes clickable
+                if (tgtNode && tgtNode.expandable) {
+                    wrapG.classList.add('sankey-link-clickable');
+                    wrapG.addEventListener('click', () => {
+                        enterDrillDown(tgtNode.id, tgtNode.label);
+                    });
+                }
+
+                wrapG.appendChild(path);
+                linksG.appendChild(wrapG);
+                linkEls.push({ linkData: link, path, wrapG, isEnter, key });
+            });
+
+            // Exit links (temporarily draw old links that are being removed)
+            exitLinks.forEach(link => {
+                const wrapG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                wrapG.setAttribute('opacity', '0.32');
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', link.path);
+                path.setAttribute('fill', link.color);
+                wrapG.appendChild(path);
+                linksG.appendChild(wrapG);
+                exitLinkEls.push({ linkData: link, path, wrapG });
+            });
+
+            svg.appendChild(linksG);
+            if (!shouldAnimate) drawStaticConnectors(svg, staticConnectorLinks);
+
+            // ---- Draw nodes ----
+            const nodesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+            // Right edge x of each layer's bar column (column x positions don't change during animation)
+            const layerRightEdgeX = new Map();
+            for (const n of data.nodes) {
+                if (!layerRightEdgeX.has(n.layer)) layerRightEdgeX.set(n.layer, n.x + n.w);
+            }
+
+            // Build old layer right edges for smooth label lerp during expand/collapse
+            const oldLayerRightEdgeX = new Map();
+            if (shouldAnimate && oldLayout) {
+                for (const n of oldLayout.nodes) {
+                    if (!oldLayerRightEdgeX.has(n.layer)) oldLayerRightEdgeX.set(n.layer, n.x + n.w);
+                }
+            }
+
+            // Compute old weighted label centroid for layer 2 nodes from saved link paths
+            const oldNodeLabelCy = new Map();
+            if (shouldAnimate && oldLayout) {
+                const oldTargetLinks = new Map();
+                for (const l of oldLayout.links) {
+                    if (!oldTargetLinks.has(l.target)) oldTargetLinks.set(l.target, []);
+                    oldTargetLinks.get(l.target).push(l);
+                }
+                for (const oldN of oldLayout.nodes) {
+                    if (oldN.layer !== 2) continue;
+                    const tLinks = oldTargetLinks.get(oldN.id) || [];
+                    let totalH = 0, weightedY = 0;
+                    for (const l of tLinks) {
+                        const nums = l.path?.match(/-?\d+\.?\d*/g)?.map(Number);
+                        if (!nums || nums.length < 2) continue;
+                        const y0 = nums[1];
+                        const y1 = nums[nums.length - 1];
+                        const lh = y1 - y0;
+                        if (lh <= 0) continue;
+                        weightedY += (y0 + lh / 2) * lh;
+                        totalH += lh;
+                    }
+                    if (totalH > 0) oldNodeLabelCy.set(oldN.id, weightedY / totalH);
+                }
+            }
+
+            data.nodes.forEach((node, i) => {
+                const oldNode = oldNodeMap.get(node.id);
+                const isEnter = shouldAnimate && !oldNode;
+                // Use old positions for morph start, new positions for enter
+                const drawNode = shouldAnimate && oldNode ? oldNode : node;
+                const drawCy = drawNode.y + drawNode.height / 2;
+
+                let labelCy = drawCy;
+                if (node.layer === 2 && node.targetLinks && node.targetLinks.length > 0) {
+                    if (!shouldAnimate || !oldNode) {
+                        let totalH = 0, weightedY = 0;
+                        for (const link of node.targetLinks) {
+                            weightedY += (link.y0 + link.linkH / 2) * link.linkH;
+                            totalH += link.linkH;
+                        }
+                        if (totalH > 0) labelCy = weightedY / totalH;
+                    }
+                }
+                // Compute finalLabelCy (new weighted position) for animation target
+                let finalLabelCyVal = node.y + node.height / 2;
+                if (node.layer === 2 && node.targetLinks && node.targetLinks.length > 0) {
+                    let totalH = 0, weightedY = 0;
+                    for (const link of node.targetLinks) {
+                        weightedY += (link.y0 + link.linkH / 2) * link.linkH;
+                        totalH += link.linkH;
+                    }
+                    if (totalH > 0) finalLabelCyVal = weightedY / totalH;
+                }
+
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'sankey-node');
+
+                if (!shouldAnimate) {
+                    g.style.animation = node.layer === 3
+                        ? `drillEnterNode 0.32s ${0.05 * i}s both`
+                        : `sankeySlideIn 0.35s ${0.03 * i}s both`;
+                }
+                if (isEnter) {
+                    g.style.opacity = '0';
+                }
+
+                // Make expandable provider nodes clickable
+                if (node.expandable) {
+                    g.classList.add('sankey-node-clickable');
+                    g.addEventListener('click', () => {
+                        enterDrillDown(node.id, node.label);
+                    });
+                }
+
+                const parentLink = data.links.find(l => l.target === node.id);
+                const parentNode = parentLink ? data.nodes.find(n => n.id === parentLink.source) : null;
+                const denominator = parentNode?.value || totalValue;
+                const pct = denominator > 0 ? ((node.value / denominator) * 100).toFixed(1) : 0;
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', drawNode.x);
+                rect.setAttribute('y', drawNode.y);
+                rect.setAttribute('width', drawNode.w);
+                rect.setAttribute('height', drawNode.height);
+                rect.setAttribute('fill', node.placeholder ? '#9ca3af' : node.color);
+                rect.setAttribute('opacity', '1');
+                rect.setAttribute('rx', '3');
+                g.appendChild(rect);
+
+                const labelRight = node.layer >= 1 && node.layer <= 2;
+                let dot, nameEl, iconFO = null, iconOffset = 0;
+
+                if (labelRight) {
+                    const lxBase = (shouldAnimate && oldNode && oldLayerRightEdgeX.has(node.layer - 1))
+                        ? oldLayerRightEdgeX.get(node.layer - 1)
+                        : (layerRightEdgeX.get(node.layer - 1) ?? drawNode.x);
+                    const lx = lxBase + 4;
+
+                    const initialLabelCy = (node.layer === 2 && shouldAnimate && oldNode && oldNodeLabelCy.has(node.id))
+                        ? oldNodeLabelCy.get(node.id)
+                        : labelCy;
+
+                    nameEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    nameEl.setAttribute('x', lx + iconOffset);
+                    nameEl.setAttribute('y', initialLabelCy);
+                    nameEl.setAttribute('text-anchor', 'start');
+                    nameEl.setAttribute('dominant-baseline', 'central');
+                    nameEl.setAttribute('fill', node.placeholder ? '#9ca3af' : '#2c2b29');
+                    nameEl.setAttribute('font-size', '10');
+                    nameEl.setAttribute('font-weight', '600');
+                    nameEl.setAttribute('font-family', 'Manrope, sans-serif');
+                    nameEl.textContent = `${node.label} (${pct}%)`;
+                    g.appendChild(nameEl);
+                } else {
+                    const lx = node.id === 'total' ? drawNode.x - 18 : drawNode.x - 8;
+
+
+                    if (node.id !== 'total') {
+                        nameEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        nameEl.setAttribute('x', lx - 8);
+                        nameEl.setAttribute('y', drawCy);
+                        nameEl.setAttribute('text-anchor', 'end');
+                        nameEl.setAttribute('dominant-baseline', 'central');
+                        nameEl.setAttribute('fill', node.placeholder ? '#9ca3af' : '#2c2b29');
+                        nameEl.setAttribute('font-size', '10');
+                        nameEl.setAttribute('font-weight', '600');
+                        nameEl.setAttribute('font-family', 'Manrope, sans-serif');
+                        nameEl.textContent = `${node.label} (${pct}%)`;
+                        g.appendChild(nameEl);
+                    }
+
+                }
+
+                // Hide labels on small nodes
+                const LABEL_MIN_H = 14;
+                if (drawNode.height < LABEL_MIN_H && node.id !== 'total') {
+                    if (nameEl) nameEl.style.display = 'none';
+                    if (iconFO) iconFO.style.display = 'none';
+                }
+
+                if (node.layer === 1) {
+                    const totalNode = oldNodeMap.get('total') || data.nodes.find(n => n.id === 'total');
+                    const w = 5;
+                    const bx = totalNode ? totalNode.x - 12 : drawNode.x - 60;
+                    const by1 = drawNode.y;
+                    const by2 = drawNode.y + drawNode.height;
+                    const bcy = (by1 + by2) / 2;
+                    const q = Math.min(w, (by2 - by1) / 4);
+                    const bEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    bEl.setAttribute('d', `M ${bx} ${by1} Q ${bx - w} ${by1} ${bx - w} ${by1 + q} L ${bx - w} ${bcy - q} Q ${bx - w} ${bcy} ${bx - 2 * w} ${bcy} Q ${bx - w} ${bcy} ${bx - w} ${bcy + q} L ${bx - w} ${by2 - q} Q ${bx - w} ${by2} ${bx} ${by2}`);
+                    bEl.setAttribute('fill', 'none');
+                    bEl.setAttribute('stroke', node.placeholder ? '#9ca3af' : '#5e5b56');
+                    bEl.setAttribute('stroke-width', '1.2');
+                    bEl.setAttribute('stroke-linecap', 'round');
+                    bEl.setAttribute('stroke-linejoin', 'round');
+                    g.appendChild(bEl);
+                    const braceLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    braceLabel.setAttribute('x', bx - 2 * w - 5);
+                    braceLabel.setAttribute('y', bcy);
+                    braceLabel.setAttribute('text-anchor', 'end');
+                    braceLabel.setAttribute('dominant-baseline', 'central');
+                    braceLabel.setAttribute('fill', '#5e5b56');
+                    braceLabel.setAttribute('font-size', '10');
+                    braceLabel.setAttribute('font-family', 'Manrope, sans-serif');
+                    braceLabel.textContent = node.value.toLocaleString();
+                    g.appendChild(braceLabel);
+                }
+
+                nodesG.appendChild(g);
+                nodeEls.push({ node, rect, dot: null, nameEl, iconFO, iconOffset, group: g, isEnter, labelRight, labelCy: finalLabelCyVal });
+
+                if (node.expandable) {
+                    const btnRef = _appendExpandIcon(svg, shouldAnimate && oldNode ? oldNode : node, node, tooltip, H);
+                    expandBtnEls.push({ node, oldNode, btnRef });
+                }
+            });
+
+            // Exit nodes (temporarily draw old nodes being removed)
+            exitNodes.forEach(oldNode => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'sankey-node');
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', oldNode.x); rect.setAttribute('y', oldNode.y);
+                rect.setAttribute('width', oldNode.w); rect.setAttribute('height', oldNode.height);
+                rect.setAttribute('fill', oldNode.color); rect.setAttribute('rx', '3');
+                rect.style.display = 'none';
+                g.appendChild(rect);
+
+                const cy = oldNode.y + oldNode.height / 2;
+                const labelRight = oldNode.layer >= 1 && oldNode.layer <= 2;
+                if (labelRight) {
+                    const lx = oldNode.x + oldNode.w + 12;
+                    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    t.setAttribute('x', lx + 2); t.setAttribute('y', cy);
+                    t.setAttribute('text-anchor', 'start'); t.setAttribute('dominant-baseline', 'central');
+                    t.setAttribute('fill', '#2c2b29'); t.setAttribute('font-size', '10');
+                    t.setAttribute('font-weight', '600'); t.setAttribute('font-family', 'Manrope, sans-serif');
+                    t.textContent = oldNode.label;
+                    g.appendChild(t);
+                } else {
+                    const lx = oldNode.x - 8;
+                    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    t.setAttribute('x', lx - 8); t.setAttribute('y', cy);
+                    t.setAttribute('text-anchor', 'end'); t.setAttribute('dominant-baseline', 'central');
+                    t.setAttribute('fill', '#2c2b29'); t.setAttribute('font-size', '10');
+                    t.setAttribute('font-weight', '600'); t.setAttribute('font-family', 'Manrope, sans-serif');
+                    t.textContent = oldNode.label;
+                    g.appendChild(t);
+                }
+                nodesG.appendChild(g);
+                g.querySelectorAll('text').forEach(el => el.style.display = 'none');
+                exitNodeEls.push({ oldNode, group: g });
+            });
+
+            svg.appendChild(nodesG);
+
+
+
+            // Ribbon column labels between bars
+            // Collect the center-x of each layer's bar column
+            const layerCenterX = new Map();
+            for (const n of data.nodes) {
+                if (!layerCenterX.has(n.layer)) layerCenterX.set(n.layer, n.x + n.w / 2);
+            }
+
+            // Compute old label positions for animation
+            const oldLayerCenterX = new Map();
+            if (shouldAnimate && oldLayout) {
+                for (const n of oldLayout.nodes) {
+                    if (!oldLayerCenterX.has(n.layer)) oldLayerCenterX.set(n.layer, n.x + n.w / 2);
+                }
+            }
+
+            const ribbonLabels = [
+                { between: [0, 1], text: 'Source' },
+                { between: [1, 2], text: 'Model Provider' },
+                { between: [2, 3], text: 'Model' },
+            ];
+
+            const ribbonLabelEls = [];
+
+            for (const rl of ribbonLabels) {
+                const [layerA, layerB] = rl.between;
+                const xA = layerCenterX.get(layerA);
+                const xB = layerCenterX.get(layerB);
+                const oldXA = oldLayerCenterX.get(layerA);
+                const oldXB = oldLayerCenterX.get(layerB);
+                const hasNew = xA != null && xB != null;
+                const hasOld = oldXA != null && oldXB != null;
+
+                if (!hasNew && !hasOld) continue;
+
+                const newMidX = hasNew ? (xA + xB) / 2 : null;
+                const oldMidX = hasOld ? (oldXA + oldXB) / 2 : null;
+
+                const isFadeIn = hasNew && !hasOld;   // label appears (e.g. "Model" on expand)
+                const isFadeOut = !hasNew && hasOld;   // label disappears (e.g. "Model" on collapse)
+
+                const ribbonLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                const startX = shouldAnimate ? (oldMidX ?? newMidX) : newMidX;
+                ribbonLabel.setAttribute('x', startX);
+                ribbonLabel.setAttribute('y', 16);
+                ribbonLabel.setAttribute('text-anchor', 'middle');
+                ribbonLabel.setAttribute('dominant-baseline', 'central');
+                ribbonLabel.setAttribute('fill', '#3d3b38');
+                ribbonLabel.setAttribute('font-size', '11');
+                ribbonLabel.setAttribute('font-weight', '600');
+                ribbonLabel.setAttribute('font-family', 'Manrope, sans-serif');
+                ribbonLabel.setAttribute('letter-spacing', '0.5');
+                if (shouldAnimate && isFadeIn) ribbonLabel.setAttribute('opacity', '0');
+                ribbonLabel.textContent = rl.text;
+                svg.appendChild(ribbonLabel);
+
+                if (shouldAnimate) {
+                    ribbonLabelEls.push({ el: ribbonLabel, oldX: oldMidX, newX: newMidX, isFadeIn, isFadeOut });
+                }
+            }
+
+            // ---- Animation loop ----
+            if (shouldAnimate) {
+                const DURATION = 1200;
+                const startTime = performance.now();
+
+                function tick(now) {
+                    if (state.transitionId !== currentTransId) return;
+                    const elapsed = now - startTime;
+                    const rawT = Math.min(1, elapsed / DURATION);
+                    const t = easeOutCubic(rawT);
+
+                    // Morph & enter nodes
+                    for (const entry of nodeEls) {
+                        const { node, rect, dot, nameEl, iconFO, iconOffset, group, isEnter, labelRight, labelCy: finalLabelCy } = entry;
+                        const oldN = oldNodeMap.get(node.id);
+
+                        if (isEnter) {
+                            // Fade in over full duration (parallel with exits)
+                            const enterT = easeOutCubic(rawT);
+                            group.style.opacity = enterT;
+                            if (originNode && enterT < 1) {
+                                // Emerge from the provider node's current interpolated position
+                                const provOld = oldNodeMap.get(originNode.id);
+                                const provCurX = provOld ? lerp(provOld.x, originNode.x, t) : originNode.x;
+                                const provCurY = provOld ? lerp(provOld.y, originNode.y, t) : originNode.y;
+                                const provCurH = provOld ? lerp(provOld.height, originNode.height, t) : originNode.height;
+                                const provCurW = provOld ? lerp(provOld.w, originNode.w, t) : originNode.w;
+                                const dx = (1 - enterT) * ((provCurX + provCurW) - node.x);
+                                const dy = (1 - enterT) * ((provCurY + provCurH / 2) - (node.y + node.height / 2));
+                                group.setAttribute('transform', `translate(${dx.toFixed(1)}, ${dy.toFixed(1)})`);
+                            } else {
+                                group.removeAttribute('transform');
+                            }
+                        } else if (oldN) {
+                            // Morph from old to new position
+                            const curX = lerp(oldN.x, node.x, t);
+                            const curY = lerp(oldN.y, node.y, t);
+                            const curH = lerp(oldN.height, node.height, t);
+                            const curCy = curY + curH / 2;
+                            rect.setAttribute('x', curX.toFixed(1));
+                            rect.setAttribute('y', curY.toFixed(1));
+                            rect.setAttribute('height', curH.toFixed(1));
+
+                            if (labelRight) {
+                                const oldLxBase = oldLayerRightEdgeX.has(node.layer - 1)
+                                    ? oldLayerRightEdgeX.get(node.layer - 1)
+                                    : (oldN.x + oldN.w);
+                                const newLxBase = layerRightEdgeX.has(node.layer - 1)
+                                    ? layerRightEdgeX.get(node.layer - 1)
+                                    : (node.x + node.w);
+                                const lx = lerp(oldLxBase, newLxBase, t) + 4;
+                                const effectiveCy = (node.layer === 2)
+                                    ? lerp(oldNodeLabelCy.has(node.id) ? oldNodeLabelCy.get(node.id) : (oldN ? oldN.y + oldN.height / 2 : finalLabelCy), finalLabelCy, t)
+                                    : curCy;
+                                if (nameEl) { nameEl.setAttribute('x', (lx + iconOffset).toFixed(1)); nameEl.setAttribute('y', effectiveCy.toFixed(1)); }
+                            } else {
+                                const lx = curX - 8;
+                                if (nameEl) { nameEl.setAttribute('x', (lx - 8).toFixed(1)); nameEl.setAttribute('y', curCy.toFixed(1)); }
+                                if (dot) { dot.setAttribute('cx', (lx - 2).toFixed(1)); dot.setAttribute('cy', curCy.toFixed(1)); }
+                            }
+
+                            // Update label visibility based on interpolated height
+                            const MORPH_LABEL_MIN_H = 14;
+                            if (nameEl) {
+                                const hidden = curH < MORPH_LABEL_MIN_H && node.id !== 'total';
+                                nameEl.style.display = hidden ? 'none' : '';
+                                if (iconFO) iconFO.style.display = hidden ? 'none' : '';
+                            }
+                        }
+                    }
+
+                    // Morph & enter links
+                    for (const entry of linkEls) {
+                        const { linkData, path, wrapG, isEnter, key } = entry;
+                        const oldLink = oldLinkMap.get(key);
+
+                        if (isEnter) {
+                            const enterT = easeOutCubic(rawT);
+                            wrapG.style.opacity = (enterT * 0.32).toFixed(3);
+
+                            if (enterT < 1 && linkData.path) {
+                                const nums = linkData.path.match(/-?\d+\.?\d*/g)?.map(Number);
+                                if (nums && nums.length >= 14) {
+                                    const [x0, y0, , , , y2, x1, , , y3, , , , y1] = nums;
+                                    // Track the source node's current right edge as it morphs
+                                    const srcOld = linkData.srcNode ? oldNodeMap.get(linkData.srcNode.id) : null;
+                                    const curX0 = srcOld ? lerp(srcOld.x + srcOld.w, x0, t) : x0;
+
+                                    const curX1 = lerp(curX0, x1, enterT);
+                                    const curY2 = lerp(y0, y2, enterT);
+                                    const curY3 = lerp(y1, y3, enterT);
+                                    const curMx = (curX0 + curX1) / 2;
+                                    path.setAttribute('d',
+                                        `M${curX0},${y0} C${curMx},${y0} ${curMx},${curY2} ${curX1},${curY2} ` +
+                                        `L${curX1},${curY3} C${curMx},${curY3} ${curMx},${y1} ${curX0},${y1} Z`);
+                                }
+                            } else {
+                                path.setAttribute('d', linkData.path);
+                            }
+                        } else if (oldLink) {
+                            path.setAttribute('d', interpolatePath(oldLink.path, linkData.path, t));
+                        }
+                    }
+
+                    // Exit nodes — fade out toward origin
+                    for (const { oldNode, group } of exitNodeEls) {
+                        const exitT = easeOutCubic(rawT);
+                        group.style.opacity = (1 - exitT);
+                        if (originNode) {
+                            const provOld = oldNodeMap.get(originNode.id);
+                            const provCurX = provOld ? lerp(provOld.x, originNode.x, t) : originNode.x;
+                            const provCurW = provOld ? lerp(provOld.w, originNode.w, t) : originNode.w;
+                            const provCurY = provOld ? lerp(provOld.y, originNode.y, t) : originNode.y;
+                            const provCurH = provOld ? lerp(provOld.height, originNode.height, t) : originNode.height;
+                            const dx = exitT * ((provCurX + provCurW) - oldNode.x);
+                            const dy = exitT * ((provCurY + provCurH / 2) - (oldNode.y + oldNode.height / 2));
+                            group.setAttribute('transform', `translate(${dx.toFixed(1)}, ${dy.toFixed(1)})`);
+                        }
+                    }
+
+                    // Exit links — shrink back toward source
+                    for (const { linkData, path, wrapG } of exitLinkEls) {
+                        const exitT = easeOutCubic(rawT);
+                        wrapG.style.opacity = ((1 - exitT) * 0.32).toFixed(3);
+
+                        if (linkData.path && exitT < 1) {
+                            const nums = linkData.path.match(/-?\d+\.?\d*/g)?.map(Number);
+                            if (nums && nums.length >= 14) {
+                                const [x0, y0, , , , y2, x1, , , y3, , , , y1] = nums;
+                                // Track the provider bar's animated right edge (x0 is old, originNode has new)
+                                const curX0 = originNode ? lerp(x0, originNode.x + originNode.w, t) : x0;
+                                // Collapse right-to-left: right edge retracts toward animated source
+                                const curX1 = lerp(x1, curX0, exitT);
+                                const curY2 = lerp(y2, y0, exitT);
+                                const curY3 = lerp(y3, y1, exitT);
+                                const curMx = (curX0 + curX1) / 2;
+                                path.setAttribute('d',
+                                    `M${curX0},${y0} C${curMx},${y0} ${curMx},${curY2} ${curX1},${curY2} ` +
+                                    `L${curX1},${curY3} C${curMx},${curY3} ${curMx},${y1} ${curX0},${y1} Z`);
+                            }
+                        }
+                    }
+
+                    // Expand buttons — morph position (anchored to ribbon edge)
+                    for (const { node, oldNode, btnRef } of expandBtnEls) {
+                        if (oldNode && btnRef) {
+                            // Compute final position
+                            let finalCx, finalCy;
+                            if (node.isExpanded && node.sourceLinks && node.sourceLinks.length > 0) {
+                                let maxRight = 0;
+                                for (const link of node.sourceLinks) {
+                                    if (link.tgtNode) maxRight = Math.max(maxRight, link.tgtNode.x + link.tgtNode.w);
+                                }
+                                finalCx = maxRight + 12;
+                                finalCy = H / 2;
+                            } else {
+                                finalCx = node.x + node.w + 12;
+                                finalCy = node.y + node.height / 2;
+                            }
+
+                            // Compute old position
+                            let oldCx = oldNode.x + oldNode.w + 12;
+                            let oldCy = oldNode.y + oldNode.height / 2;
+                            if (oldNode.isExpanded) {
+                                const oldModelNodes = oldLayout.nodes.filter(n => n.layer === 3);
+                                if (oldModelNodes.length > 0) {
+                                    let maxRight = 0;
+                                    for (const n of oldModelNodes) maxRight = Math.max(maxRight, n.x + n.w);
+                                    oldCx = maxRight + 12;
+                                    oldCy = H / 2;
+                                }
+                            }
+
+                            const cx = lerp(oldCx, finalCx, t);
+                            const cy = lerp(oldCy, finalCy, t);
+                            btnRef.circle.setAttribute('cx', cx.toFixed(1));
+                            btnRef.circle.setAttribute('cy', cy.toFixed(1));
+                            btnRef.chevron.setAttribute('x', cx.toFixed(1));
+                            btnRef.chevron.setAttribute('y', cy.toFixed(1));
+                            btnRef.hitArea.setAttribute('cx', cx.toFixed(1));
+                            btnRef.hitArea.setAttribute('cy', cy.toFixed(1));
+                        }
+                    }
+
+                    // Ribbon labels — slide and fade
+                    for (const { el, oldX, newX, isFadeIn, isFadeOut } of ribbonLabelEls) {
+                        if (isFadeIn) {
+                            el.setAttribute('x', newX);
+                            el.setAttribute('opacity', easeOutCubic(rawT).toFixed(3));
+                        } else if (isFadeOut) {
+                            el.setAttribute('x', oldX);
+                            el.setAttribute('opacity', (1 - easeOutCubic(rawT)).toFixed(3));
+                        } else if (oldX != null && newX != null) {
+                            el.setAttribute('x', lerp(oldX, newX, t).toFixed(1));
+                        }
+                    }
+
+                    if (rawT < 1) {
+                        requestAnimationFrame(tick);
+                    } else {
+                        // Clean up exit elements
+                        for (const { group } of exitNodeEls) group.remove();
+                        for (const { wrapG } of exitLinkEls) wrapG.remove();
+                        // Clean up faded-out ribbon labels
+                        for (const { el, isFadeOut } of ribbonLabelEls) {
+                            if (isFadeOut) el.remove();
+                        }
+                        // Ensure enter elements are fully visible & final label visibility
+                        const FINAL_LABEL_MIN_H = 14;
+                        for (const { node, group, nameEl, iconFO, isEnter } of nodeEls) {
+                            if (isEnter) { group.style.opacity = '1'; group.removeAttribute('transform'); }
+                            if (nameEl) {
+                                const hidden = node.height < FINAL_LABEL_MIN_H && node.id !== 'total';
+                                nameEl.style.display = hidden ? 'none' : '';
+                                if (iconFO) iconFO.style.display = hidden ? 'none' : '';
+                            }
+                        }
+                        drawStaticConnectors(svg, staticConnectorLinks);
+                    }
+                }
+
+                requestAnimationFrame(tick);
+            }
+        }
+
+        function removeConnector(svgEl) {
+            const old = svgEl.querySelector('.sankey-hover-connector');
+            if (old) old.remove();
+        }
+
+        function showNodeConnector(svgEl, node, tipText, color) {
+            removeConnector(svgEl);
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'sankey-hover-connector');
+
+            const cx = node.x + node.w / 2;
+            const nodeTop = node.y;
+            const lineEndY = Math.max(12, nodeTop - 30);
+            const lineTopX = cx - 6;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', cx);
+            line.setAttribute('y1', nodeTop - 2);
+            line.setAttribute('x2', lineTopX);
+            line.setAttribute('y2', lineEndY);
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', '1.5');
+            line.setAttribute('stroke-linecap', 'round');
+            line.setAttribute('class', 'sankey-connector-line');
+
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', lineTopX);
+            text.setAttribute('y', lineEndY - 4);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#2c2b29');
+            text.setAttribute('font-size', '10');
+            text.setAttribute('font-weight', '600');
+            text.setAttribute('class', 'sankey-connector-label');
+            text.textContent = tipText;
+
+            g.appendChild(line);
+            g.appendChild(text);
+            svgEl.appendChild(g);
+        }
+
+        function drawStaticConnectors(svgEl, links) {
+            svgEl.querySelectorAll('.sankey-static-connectors').forEach(el => el.remove());
+            if (!links.length) return;
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'sankey-static-connectors');
+            g.style.pointerEvents = 'none';
+
+            const vb = svgEl.viewBox?.baseVal;
+            const svgH = vb ? vb.height : 600;
+            const BOUND_TOP = 12, BOUND_BOTTOM = svgH - 12;
+            const minGap = 14;
+            const LABEL_OFFSET_X = 40; // how far left labels sit from bar edge
+
+            // Phase A — anchor on left edge of each bar, midpoint vertically
+            const positions = [];
+            for (const { link, tipText } of links) {
+                const tgtNode = link.tgtNode;
+                if (!tgtNode) continue;
+                const anchorX = tgtNode.x;
+                const anchorY = tgtNode.y + tgtNode.height / 2;
+                const labelX = anchorX - LABEL_OFFSET_X;
+                const source = link.source.split('_')[1] || 'unknown';
+                positions.push({
+                    anchorX, anchorY,
+                    labelX,
+                    labelY: anchorY, // initial; spreading adjusts
+                    tipText, color: link.color, source
+                });
+            }
+            if (!positions.length) return;
+
+            // Phase B — group by source, then stack each group independently
+            const groups = {};
+            for (const pos of positions) {
+                (groups[pos.source] || (groups[pos.source] = [])).push(pos);
+            }
+
+            for (const key of Object.keys(groups)) {
+                const grp = groups[key];
+                grp.sort((a, b) => a.anchorY - b.anchorY);
+
+                // Start the label stack from the group's first bar Y
+                const stackStart = grp[0].anchorY;
+                for (let i = 0; i < grp.length; i++) {
+                    grp[i].labelY = stackStart + i * minGap;
+                }
+
+                // Spreading — ensure minGap, clamp within SVG bounds
+                for (let pass = 0; pass < 15; pass++) {
+                    let changed = false;
+                    for (let i = 0; i < grp.length - 1; i++) {
+                        const cur = grp[i], next = grp[i + 1];
+                        const gap = next.labelY - cur.labelY;
+                        if (gap < minGap) {
+                            next.labelY = cur.labelY + minGap;
+                            changed = true;
+                        }
+                    }
+                    // Clamp bottom
+                    if (grp[grp.length - 1].labelY > BOUND_BOTTOM) {
+                        grp[grp.length - 1].labelY = BOUND_BOTTOM;
+                        for (let i = grp.length - 2; i >= 0; i--) {
+                            if (grp[i + 1].labelY - grp[i].labelY < minGap) {
+                                grp[i].labelY = grp[i + 1].labelY - minGap;
+                            }
+                        }
+                    }
+                    // Clamp top
+                    if (grp[0].labelY < BOUND_TOP) {
+                        grp[0].labelY = BOUND_TOP;
+                        for (let i = 1; i < grp.length; i++) {
+                            if (grp[i].labelY - grp[i - 1].labelY < minGap) {
+                                grp[i].labelY = grp[i - 1].labelY + minGap;
+                            }
+                        }
+                    }
+                    if (!changed) break;
+                }
+            }
+
+            // Phase C — draw connectors curving left-and-down to stacked labels
+            positions.forEach(({ anchorX, anchorY, labelX, labelY, tipText, color }, idx) => {
+                const lineDelay = idx * 0.03;
+                const labelDelay = idx * 0.03 + 0.05;
+                const dotRadius = 3;
+
+                // Bezier from bar left edge → curve left and down → label
+                const elbowX = anchorX - LABEL_OFFSET_X * 0.55;
+                const yDiff = labelY - anchorY;
+                const elbowY = Math.abs(yDiff) < 10 ? anchorY : anchorY + yDiff * 0.35;
+
+                const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pathEl.setAttribute('d',
+                    `M ${anchorX} ${anchorY} Q ${elbowX} ${elbowY}, ${labelX + 6} ${labelY}`);
+                pathEl.setAttribute('stroke', color);
+                pathEl.setAttribute('stroke-width', '1.5');
+                pathEl.setAttribute('fill', 'none');
+                pathEl.setAttribute('stroke-linecap', 'round');
+                pathEl.setAttribute('class', 'sankey-connector-line subcategory-line');
+                pathEl.style.animation = `subcategoryLineGrow 0.3s ease-out ${lineDelay}s both`;
+
+                // Small colored dot at label
+                const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                dot.setAttribute('cx', labelX + 3);
+                dot.setAttribute('cy', labelY);
+                dot.setAttribute('r', dotRadius);
+                dot.setAttribute('fill', color);
+                dot.setAttribute('class', 'sankey-connector-label');
+                dot.style.animation = `subcategoryLabelFadeIn 0.25s ease-out ${labelDelay}s both`;
+
+                // Label text, right-aligned to the dot
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', labelX);
+                text.setAttribute('y', labelY);
+                text.setAttribute('text-anchor', 'end');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#2c2b29');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '600');
+                text.setAttribute('class', 'sankey-connector-label');
+                text.style.animation = `subcategoryLabelFadeIn 0.25s ease-out ${labelDelay}s both`;
+                text.textContent = tipText;
+
+                g.appendChild(pathEl);
+                g.appendChild(dot);
+                g.appendChild(text);
+            });
+
+            svgEl.appendChild(g);
+        }
+
+        function showLinkConnector(svgEl, linkData, tipText, color) {
+            removeConnector(svgEl);
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'sankey-hover-connector');
+
+            const nums = linkData.path?.match(/-?\d+\.?\d*/g)?.map(Number);
+            if (!nums || nums.length < 14) return;
+            const [x0, y0, , , , y2, x1, , , y3, , , , y1] = nums;
+            const midX = (x0 + x1) / 2;
+            const midY = (y0 + y1 + y2 + y3) / 4;
+            const lineEndY = Math.max(12, midY - 30);
+            const lineTopX = midX - 6;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', midX);
+            line.setAttribute('y1', midY);
+            line.setAttribute('x2', lineTopX);
+            line.setAttribute('y2', lineEndY);
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', '1.5');
+            line.setAttribute('stroke-linecap', 'round');
+            line.setAttribute('class', 'sankey-connector-line');
+
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', lineTopX);
+            text.setAttribute('y', lineEndY - 4);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#2c2b29');
+            text.setAttribute('font-size', '10');
+            text.setAttribute('font-weight', '600');
+            text.setAttribute('class', 'sankey-connector-label');
+            text.textContent = tipText;
+
+            g.appendChild(line);
+            g.appendChild(text);
+            svgEl.appendChild(g);
+        }
+
+        function _appendExpandIcon(svg, drawNode, finalNode, tooltip, svgH) {
+            let cx, cy;
+            if (finalNode.isExpanded && finalNode.sourceLinks && finalNode.sourceLinks.length > 0) {
+                let maxRight = 0;
+                for (const link of finalNode.sourceLinks) {
+                    if (link.tgtNode) maxRight = Math.max(maxRight, link.tgtNode.x + link.tgtNode.w);
+                }
+                cx = maxRight + 12;
+                cy = svgH / 2;
+            } else {
+                cx = drawNode.x + drawNode.w + 12;
+                cy = drawNode.y + drawNode.height / 2;
+            }
+
+            const btnG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            btnG.setAttribute('class', 'sankey-expand-btn');
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', cx);
+            circle.setAttribute('cy', cy);
+            circle.setAttribute('r', '7');
+            circle.setAttribute('fill', finalNode.isExpanded ? '#2c2b29' : 'white');
+            circle.setAttribute('stroke', finalNode.isExpanded ? '#2c2b29' : '#bca692');
+            circle.setAttribute('stroke-width', '1');
+            btnG.appendChild(circle);
+
+            const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            chevron.setAttribute('x', cx);
+            chevron.setAttribute('y', cy);
+            chevron.setAttribute('text-anchor', 'middle');
+            chevron.setAttribute('dominant-baseline', 'central');
+            chevron.setAttribute('fill', finalNode.isExpanded ? 'white' : '#5e5b56');
+            chevron.setAttribute('font-size', '10');
+            chevron.setAttribute('font-family', 'Manrope, sans-serif');
+            chevron.setAttribute('font-weight', '700');
+            chevron.textContent = finalNode.isExpanded ? '‹' : '›';
+            btnG.appendChild(chevron);
+
+            const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            hitArea.setAttribute('cx', cx);
+            hitArea.setAttribute('cy', cy);
+            hitArea.setAttribute('r', '12');
+            hitArea.setAttribute('fill', 'transparent');
+            btnG.appendChild(hitArea);
+
+            btnG.addEventListener('click', (e) => {
+                e.stopPropagation();
+                enterDrillDown(finalNode.id, finalNode.label);
+            });
+            svg.appendChild(btnG);
+            return { circle, chevron, hitArea, btnG };
+        }
+
+        function enterDrillDown(nodeId, providerLabel) {
+            if (state.expandedNodeId === nodeId) {
+                exitDrillDown();
+                return;
+            }
+            state.expandedNodeId = nodeId;
+            state.expandedProviderLabel = providerLabel;
+            renderSankey(state.rows, true);
+        }
+
+        function exitDrillDown() {
+            state.expandedNodeId = null;
+            state.expandedProviderLabel = '';
+            renderSankey(state.rows, true);
+        }
+
+        async function loadData() {
+            if (state.loading) return;
+            state.loading = true;
+
+            const { startDate, endDate } = state.dateFilter;
+
+            try {
+                const rows = await window.electronAPI.getModelStats(state.departmentId, startDate, endDate);
+                state.rows = Array.isArray(rows) ? rows : [];
+            } catch (err) {
+                console.error('[TopModels] Failed to load model stats:', err);
+                state.rows = [];
+            } finally {
+                state.loading = false;
+            }
+
+            renderSankey(state.rows);
+        }
+
+        function navigateBack() {
+            sessionStorage.removeItem('navigationReferrer');
+            if (window.navigateWithTransition) {
+                window.navigateWithTransition('dashboard', '../dashboard/index.html', 'back');
+            } else if (window.electronAPI) {
+                window.electronAPI.navigateTo('dashboard');
+            } else {
+                window.location.href = '../dashboard/index.html';
+            }
+        }
+        window.navigateBack = navigateBack;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.applyPageEnterAnimation) {
+                window.applyPageEnterAnimation('forward');
+            }
+            const viewingCtxRaw = sessionStorage.getItem('viewingDepartmentContext');
+            if (viewingCtxRaw) {
+                try {
+                    const ctx = JSON.parse(viewingCtxRaw);
+                    state.departmentId = ctx.departmentId || null;
+                } catch (e) { /* ignore */ }
+            }
+            window.dateFilterInstance = DateFilter.init({
+                mountId: 'date-filter-mount',
+                storageKey: 'modelBreakdownDateFilter',
+                onFilterChange: (filterState) => {
+                    state.dateFilter = filterState;
+                    loadData();
+                },
+            });
+            if (window.dateFilterInstance) {
+                state.dateFilter = window.dateFilterInstance.getState();
+            }
+            loadData();
+        });
+    </script>
+</body>
+
+</html>

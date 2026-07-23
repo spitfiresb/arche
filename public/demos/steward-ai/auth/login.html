@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI - Login</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#6B7C75",
+                        "primary-hover": "#5a6862",
+                        background: "#F9F8F4",
+                        surface: "#FFFFFF",
+                        "text-primary": "#333333",
+                        "text-muted": "#666666",
+                    },
+                    fontFamily: {
+                        display: ['"DM Serif Display"', "serif"],
+                        sans: ['"Inter"', "sans-serif"],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 0 3px rgba(0,0,0,0.02)',
+                    }
+                },
+            },
+        };
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+    <link href="login.css" rel="stylesheet" />
+    <script src="../shared/mockBackend.js"></script>
+</head>
+
+<body
+    class="bg-background min-h-screen flex items-center justify-center font-sans antialiased selection:bg-primary selection:text-white">
+    <!-- Drag region for frameless window (Electron -webkit-app-region) -->
+    <!-- Noise Overlay -->
+    <div class="noise-bg"></div>
+
+    <main class="relative z-10 w-full max-w-md mx-auto p-6">
+        <!-- Card -->
+        <div class="bg-surface rounded-[2rem] shadow-soft border border-white/50 p-8 md:p-10 fade-in">
+
+            <!-- Primary Section: Invite Gate -->
+            <div class="text-center mb-8">
+                <h1 class="font-display text-3xl text-text-primary mb-3">Welcome to Steward AI</h1>
+                <p class="text-text-muted leading-relaxed">
+                    You need an invite link to get started. Ask your team administrator to send you one.
+                </p>
+            </div>
+
+            <!-- Divider -->
+            <div class="flex items-center gap-4 my-8">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-sm text-text-muted font-medium whitespace-nowrap">Already a member?</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+
+            <!-- Returning User Section: OAuth -->
+            <div class="space-y-3">
+                <button id="googleSignInBtn"
+                    class="w-full bg-white hover:bg-gray-50 text-text-primary border border-gray-200 h-14 rounded-2xl font-medium text-base transition-colors duration-200 flex items-center justify-center gap-3 shadow-sm">
+                    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.6 0 6.8 1.2 9.3 3.5l6.9-6.9C36.1 2.3 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.3l8 6.2C12.7 13.4 17.9 9.5 24 9.5z" />
+                        <path fill="#4285F4"
+                            d="M46.5 24.5c0-1.6-.1-2.7-.4-4H24v7.6h12.7c-.3 2-1.9 5-5.3 7l8.1 6.3c4.8-4.4 7-10.9 7-16.9z" />
+                        <path fill="#FBBC05"
+                            d="M10.6 28.2c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-8-6.2C.9 15.8 0 19.8 0 23.5s.9 7.7 2.6 10.9l8-6.2z" />
+                        <path fill="#34A853"
+                            d="M24 47c6.4 0 11.8-2.1 15.7-5.7l-8.1-6.3c-2.2 1.5-5 2.5-7.6 2.5-6.1 0-11.3-3.9-13.4-9.9l-8 6.2C6.5 41.6 14.6 47 24 47z" />
+                        <path fill="none" d="M0 0h48v48H0z" />
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+
+                <button id="microsoftSignInBtn"
+                    class="w-full bg-white hover:bg-gray-50 text-text-primary border border-gray-200 h-14 rounded-2xl font-medium text-base transition-colors duration-200 flex items-center justify-center gap-3 shadow-sm">
+                    <svg width="18" height="18" viewBox="0 0 23 23" aria-hidden="true">
+                        <rect x="1" y="1" width="9" height="9" fill="#F25022"></rect>
+                        <rect x="13" y="1" width="9" height="9" fill="#7FBA00"></rect>
+                        <rect x="1" y="13" width="9" height="9" fill="#00A4EF"></rect>
+                        <rect x="13" y="13" width="9" height="9" fill="#FFB900"></rect>
+                    </svg>
+                    <span>Sign in with Microsoft</span>
+                </button>
+            </div>
+
+            <p id="oauthRetryHint" class="hidden text-center text-sm text-text-muted mt-2">
+                Closed the sign-in window?
+                <button id="oauthCancelBtn" type="button" class="underline text-primary hover:text-primary-hover transition-colors">Try again</button>
+            </p>
+
+            <!-- Invite Link Paste Fallback -->
+            <div class="flex items-center gap-4 mt-8 mb-4">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="text-sm text-text-muted font-medium">or</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+
+            <div class="text-center">
+                <button id="toggleInviteInput" type="button"
+                    class="text-sm text-primary hover:text-primary-hover font-medium transition-colors duration-200">
+                    Enter Token
+                </button>
+            </div>
+
+            <div id="inviteInputContainer" class="invite-container space-y-3">
+                <input id="inviteLinkInput" type="text"
+                    placeholder="Paste your invite link here"
+                    class="w-full h-14 px-4 rounded-2xl border border-gray-200 bg-white text-text-primary text-sm placeholder:text-text-muted/60 focus:outline-none focus:ring-0 focus:border-primary transition-all duration-200 shadow-none appearance-none" />
+                <button id="inviteContinueBtn"
+                    class="w-full bg-primary hover:bg-primary-hover text-white h-14 rounded-2xl font-medium text-base transition-colors duration-200 shadow-sm">
+                    Continue
+                </button>
+                <div id="inviteError"
+                    class="hidden text-red-600 text-sm text-center">
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMsg"
+                class="hidden mt-6 p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm text-center">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 flex justify-center gap-6 text-sm text-text-muted/80">
+            <a class="hover:text-primary transition-colors" href="https://unpak.ai/privacy"
+                target="_blank">Privacy Policy</a>
+        </div>
+    </main>
+
+    <script src="login.js"></script>
+</body>
+
+</html>

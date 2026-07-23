@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI - Manage Team</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        clay: {
+                            100: '#f5f0eb',
+                            200: '#ebe0d6',
+                            500: '#bca692',
+                            700: '#8c7662',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        }
+                    },
+                    fontFamily: {
+                        "serif": ["Fraunces", "serif"],
+                        "sans": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                        "inner-light": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)"
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+</head>
+
+<body
+    class="bg-parchment-100 text-ink font-sans overflow-hidden antialiased selection:bg-sage-200 selection:text-sage-900">
+    <div class="flex h-screen w-full relative z-10">
+        <!-- Main Content -->
+        <main class="flex-1 h-full overflow-y-auto relative flex flex-col bg-parchment-100">
+            <div class="flex-1 p-8 md:p-12 max-w-[1200px] mx-auto w-full flex flex-col gap-10">
+                <!-- Header -->
+                <header class="flex items-center gap-4">
+                    <button onclick="navigateBack()" id="backButton"
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <div>
+                        <h1 class="text-3xl font-serif text-ink">Manage Team</h1>
+                    </div>
+                </header>
+
+                <!-- Invite Section - Get Link Button -->
+                <div class="w-full">
+                    <div class="bg-parchment-100 rounded-pill px-8 py-4 flex items-center justify-between"
+                        style="box-shadow: 0 20px 60px -10px rgba(44, 43, 41, 0.25), 0 10px 30px -5px rgba(44, 43, 41, 0.15), inset 0 -4px 8px -2px rgba(44, 43, 41, 0.08), inset 0 2px 4px 0 rgba(255, 255, 255, 0.8);">
+
+                        <!-- Invite Label & Description -->
+                        <div class="flex items-center gap-4">
+                            <h2 class="text-xl font-serif text-clay-700 italic whitespace-nowrap">Invite Manager</h2>
+                            <p class="text-sm text-ink-light font-sans">Generate a link to invite a new manager</p>
+                        </div>
+
+                        <!-- Get Manager Invite Link Button -->
+                        <button onclick="getManagerInviteLink()" id="getInviteLinkBtn"
+                            class="px-6 py-3 rounded-pill bg-sage-500 text-white text-sm font-semibold hover:bg-sage-600 transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span class="material-symbols-outlined text-base">link</span>
+                            Get Manager Invite Link
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Department Input Modal -->
+                <div id="deptModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-ink/40 backdrop-blur-sm" onclick="closeDeptModal()"></div>
+                    <div class="relative bg-white rounded-clay shadow-clay p-8 max-w-lg w-full mx-4 animate-modal-in">
+                        <button onclick="closeDeptModal()"
+                            class="absolute top-4 right-4 text-parchment-400 hover:text-ink transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                        <div class="text-center mb-6">
+                            <div
+                                class="w-16 h-16 rounded-full bg-sage-100 flex items-center justify-center mx-auto mb-4">
+                                <span class="material-symbols-outlined text-sage-600 text-3xl">badge</span>
+                            </div>
+                            <h3 class="text-2xl font-serif text-ink mb-2">Invite a Manager</h3>
+                            <p class="text-sm text-ink-light">Which department will this manager oversee?</p>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-ink mb-2">Invite to new department or choose
+                                from existing</label>
+
+                            <!-- Dropdown for existing -->
+                            <div class="mb-3 relative" id="customDropdownContainer">
+                                <input type="hidden" id="inviteDeptSelect" value="">
+                                <button type="button" id="customDropdownTrigger" onclick="toggleDropdown()"
+                                    class="w-full px-4 py-3 rounded-xl border border-parchment-300 bg-parchment-50 text-sm font-sans text-left flex items-center justify-between transition-all hover:border-sage-300 focus:outline-none focus:border-sage-500 focus:ring-1 focus:ring-sage-500">
+                                    <span id="customDropdownLabel" class="text-parchment-400">Select existing department</span>
+                                    <span class="material-symbols-outlined text-parchment-400 text-base" id="customDropdownChevron">expand_more</span>
+                                </button>
+                                <div id="customDropdownList"
+                                    class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-parchment-200 rounded-xl shadow-clay-sm z-50 overflow-hidden">
+                                    <!-- Populated by populateDepartmentSelect() -->
+                                </div>
+                            </div>
+
+                            <div class="relative flex py-2 items-center">
+                                <div class="flex-grow border-t border-parchment-300"></div>
+                                <span class="flex-shrink-0 mx-4 text-parchment-400 text-xs font-sans">OR</span>
+                                <div class="flex-grow border-t border-parchment-300"></div>
+                            </div>
+
+                            <!-- Input to create new -->
+                            <div class="mt-3">
+                                <input type="text" id="inviteDeptInput" oninput="handleDeptInputChange()"
+                                    placeholder="Type new department name..."
+                                    class="w-full px-4 py-3 rounded-xl border border-parchment-300 bg-parchment-50 text-sm font-sans text-ink placeholder-parchment-400 focus:outline-none focus:border-sage-500 focus:ring-1 focus:ring-sage-500 transition-all">
+                            </div>
+                        </div>
+                        <button onclick="generateInviteWithDept()" id="generateInviteBtn" disabled
+                            class="w-full px-6 py-3 rounded-pill bg-sage-500 text-white text-sm font-semibold transition-all flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+                            <span class="material-symbols-outlined text-base">link</span>
+                            Generate Invite Link
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Invite Link Modal -->
+                <div id="inviteLinkModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+                    <!-- Backdrop -->
+                    <div class="absolute inset-0 bg-ink/40 backdrop-blur-sm" onclick="closeInviteModal()"></div>
+
+                    <!-- Modal Content -->
+                    <div class="relative bg-white rounded-clay shadow-clay p-8 max-w-lg w-full mx-4 animate-modal-in">
+                        <button onclick="closeInviteModal()"
+                            class="absolute top-4 right-4 text-parchment-400 hover:text-ink transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+
+                        <div class="text-center mb-6">
+                            <div
+                                class="w-16 h-16 rounded-full bg-sage-100 flex items-center justify-center mx-auto mb-4">
+                                <span class="material-symbols-outlined text-sage-600 text-3xl">link</span>
+                            </div>
+                            <h3 class="text-2xl font-serif text-ink mb-2">Manager Invite Link Ready</h3>
+                            <p class="text-sm text-ink-light">Share this link with someone you want to invite as a
+                                manager. It expires in 48 hours.</p>
+                        </div>
+
+                        <!-- Link Display -->
+                        <div class="bg-parchment-50 rounded-xl p-4 mb-6 border border-parchment-200">
+                            <div class="flex items-center gap-3">
+                                <input type="text" id="inviteLinkInput" readonly
+                                    class="flex-1 bg-transparent text-sm font-mono text-ink truncate focus:outline-none"
+                                    value="">
+                                <button onclick="copyInviteLink()" id="copyLinkBtn"
+                                    class="px-4 py-2 rounded-pill bg-sage-500 text-white text-sm font-semibold hover:bg-sage-600 transition-all flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base" id="copyIcon">content_copy</span>
+                                    <span id="copyText">Copy</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-center text-parchment-400">
+                            The invitee will need to have Steward AI installed to join via this link.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Team Members Section -->
+                <div class="flex flex-col gap-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-serif text-ink">All Members</h2>
+                        <span id="teamCount" class="text-sm text-ink-light font-sans">0 members across all
+                            departments</span>
+                    </div>
+
+                    <!-- Team Members List -->
+                    <div class="bg-white rounded-clay shadow-clay overflow-hidden border border-white/50">
+                        <div id="teamMembersList" class="divide-y divide-parchment-100">
+                            <!-- Team members populated by JS -->
+                            <div class="text-center text-ink-light font-serif italic py-12">
+                                Loading members...
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script>
+        // State
+        const state = {
+            teamMembers: [],
+            departments: [],
+            currentInviteLink: null
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.applyPageEnterAnimation) {
+                window.applyPageEnterAnimation('forward');
+            }
+
+            loadTeamData();
+            loadDepartments();
+
+            document.addEventListener('click', (e) => {
+                const container = document.getElementById('customDropdownContainer');
+                if (container && !container.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+        });
+
+        function toggleDropdown() {
+            const list = document.getElementById('customDropdownList');
+            const chevron = document.getElementById('customDropdownChevron');
+            const isOpen = !list.classList.contains('hidden');
+            if (isOpen) {
+                list.classList.add('hidden');
+                chevron.style.transform = '';
+            } else {
+                list.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function closeDropdown() {
+            const list = document.getElementById('customDropdownList');
+            const chevron = document.getElementById('customDropdownChevron');
+            list.classList.add('hidden');
+            chevron.style.transform = '';
+        }
+
+        function selectDepartment(id, name) {
+            document.getElementById('inviteDeptSelect').value = id;
+            document.getElementById('customDropdownLabel').textContent = name;
+            document.getElementById('customDropdownLabel').classList.remove('text-parchment-400');
+            document.getElementById('customDropdownLabel').classList.add('text-ink');
+            document.getElementById('customDropdownTrigger').classList.add('border-sage-500');
+            document.getElementById('customDropdownTrigger').classList.remove('border-parchment-300');
+            closeDropdown();
+            handleDeptSelectChange();
+        }
+
+        function resetCustomDropdown() {
+            document.getElementById('inviteDeptSelect').value = '';
+            document.getElementById('customDropdownLabel').textContent = 'Select existing department';
+            document.getElementById('customDropdownLabel').classList.add('text-parchment-400');
+            document.getElementById('customDropdownLabel').classList.remove('text-ink');
+            document.getElementById('customDropdownTrigger').classList.remove('border-sage-500');
+            document.getElementById('customDropdownTrigger').classList.add('border-parchment-300');
+            closeDropdown();
+        }
+
+        function updateGenerateButton() {
+            const selectVal = document.getElementById('inviteDeptSelect')?.value || '';
+            const inputVal = (document.getElementById('inviteDeptInput')?.value || '').trim();
+            const btn = document.getElementById('generateInviteBtn');
+            const enabled = !!(selectVal || inputVal);
+            btn.disabled = !enabled;
+            btn.classList.toggle('opacity-50', !enabled);
+            btn.classList.toggle('cursor-not-allowed', !enabled);
+            btn.classList.toggle('hover:bg-sage-600', enabled);
+        }
+
+        // Open department input modal
+        function getManagerInviteLink() {
+            const input = document.getElementById('inviteDeptInput');
+            if (input) input.value = '';
+            resetCustomDropdown();
+            updateGenerateButton();
+
+            const modal = document.getElementById('deptModal');
+            if (modal) modal.classList.remove('hidden');
+            document.querySelector('main').style.overflow = 'hidden';
+        }
+
+        function handleDeptSelectChange() {
+            const input = document.getElementById('inviteDeptInput');
+            if (input) input.value = '';
+            updateGenerateButton();
+        }
+
+        function handleDeptInputChange() {
+            const input = document.getElementById('inviteDeptInput');
+            if (input && input.value) {
+                resetCustomDropdown();
+            }
+            updateGenerateButton();
+        }
+
+        function closeDeptModal() {
+            const modal = document.getElementById('deptModal');
+            if (modal) modal.classList.add('hidden');
+            document.querySelector('main').style.overflow = '';
+        }
+
+        // Generate and show manager invite link with department
+        async function generateInviteWithDept() {
+            const select = document.getElementById('inviteDeptSelect');
+            const input = document.getElementById('inviteDeptInput');
+
+            const selectedDeptId = select?.value || null;
+            const typedDeptName = (input?.value || '').trim();
+
+            let finalDeptName = typedDeptName;
+            let finalDeptId = selectedDeptId;
+
+            if (selectedDeptId) {
+                finalDeptName = null;
+            } else if (!typedDeptName) {
+                finalDeptName = null;
+                finalDeptId = null;
+            }
+
+            const btn = document.getElementById('generateInviteBtn');
+            if (!btn) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-base animate-spin">refresh</span>
+                Generating...
+            `;
+
+            try {
+                if (!window.electronAPI?.createManagerInvite) {
+                    // Fallback for browser testing
+                    state.currentInviteLink = 'https://unpak.ai/invite?token=demo1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd';
+                    closeDeptModal();
+                    showInviteModal(state.currentInviteLink);
+                    return;
+                }
+
+                const result = await window.electronAPI.createManagerInvite(finalDeptName || undefined, finalDeptId || undefined);
+
+                if (result.success) {
+                    state.currentInviteLink = result.link;
+                    closeDeptModal();
+                    showInviteModal(result.link);
+                } else {
+                    showNotification(result.error || 'Failed to create manager invite link', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating manager invite:', error);
+                showNotification('Failed to create manager invite link', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-base">link</span>
+                    Generate Invite Link
+                `;
+            }
+        }
+
+        // Show the invite link modal
+        function showInviteModal(link) {
+            const modal = document.getElementById('inviteLinkModal');
+            const input = document.getElementById('inviteLinkInput');
+
+            if (input) input.value = link;
+            if (modal) modal.classList.remove('hidden');
+            document.querySelector('main').style.overflow = 'hidden';
+
+            resetCopyButton();
+        }
+
+        // Close the invite link modal
+        function closeInviteModal() {
+            const modal = document.getElementById('inviteLinkModal');
+            if (modal) modal.classList.add('hidden');
+            document.querySelector('main').style.overflow = '';
+            state.currentInviteLink = null;
+        }
+
+        // Copy invite link to clipboard
+        async function copyInviteLink() {
+            const input = document.getElementById('inviteLinkInput');
+            const copyBtn = document.getElementById('copyLinkBtn');
+            const copyIcon = document.getElementById('copyIcon');
+            const copyText = document.getElementById('copyText');
+
+            if (!input || !input.value) return;
+
+            try {
+                await navigator.clipboard.writeText(input.value);
+
+                if (copyIcon) copyIcon.textContent = 'check';
+                if (copyText) copyText.textContent = 'Copied!';
+                if (copyBtn) copyBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                if (copyBtn) copyBtn.classList.remove('bg-sage-500', 'hover:bg-sage-600');
+
+                setTimeout(resetCopyButton, 2000);
+            } catch (error) {
+                console.error('Failed to copy:', error);
+                showNotification('Failed to copy link', 'error');
+            }
+        }
+
+        // Reset copy button to default state
+        function resetCopyButton() {
+            const copyBtn = document.getElementById('copyLinkBtn');
+            const copyIcon = document.getElementById('copyIcon');
+            const copyText = document.getElementById('copyText');
+
+            if (copyIcon) copyIcon.textContent = 'content_copy';
+            if (copyText) copyText.textContent = 'Copy';
+            if (copyBtn) {
+                copyBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                copyBtn.classList.add('bg-sage-500', 'hover:bg-sage-600');
+            }
+        }
+
+        async function loadTeamData() {
+            if (!window.electronAPI) {
+                // Fallback data for browser mode
+                state.teamMembers = [
+                    { id: 1, full_name: 'John Doe', email: 'john.doe@company.com', role: 'employee', department: 'Engineering' },
+                    { id: 2, full_name: 'Sarah Miller', email: 'sarah.m@company.com', role: 'employee', department: 'Marketing' },
+                    { id: 3, full_name: 'Michael Johnson', email: 'm.johnson@company.com', role: 'manager', department: 'Engineering' },
+                    { id: 4, full_name: 'Admin User', email: 'admin@company.com', role: 'admin', department: null },
+                ];
+                renderTeamMembers();
+                return;
+            }
+
+            try {
+                const employees = await window.electronAPI.getEmployees();
+                if (employees && employees.length > 0) {
+                    state.teamMembers = employees;
+                    renderTeamMembers();
+                } else {
+                    renderEmptyState();
+                }
+            } catch (error) {
+                console.error('Failed to load team data:', error);
+                renderEmptyState();
+            }
+        }
+
+        async function loadDepartments() {
+            if (!window.electronAPI?.getDepartments) return;
+
+            try {
+                const depts = await window.electronAPI.getDepartments();
+                if (depts && depts.length > 0) {
+                    state.departments = depts;
+                    populateDepartmentSelect();
+                }
+            } catch (error) {
+                console.error('Failed to load departments:', error);
+            }
+        }
+
+        function populateDepartmentSelect() {
+            const list = document.getElementById('customDropdownList');
+            if (!list) return;
+            list.innerHTML = state.departments.map(dept => `
+                <button type="button" onclick="selectDepartment('${escapeHtml(String(dept.id))}', '${escapeHtml(dept.name)}')"
+                    class="w-full px-4 py-3 text-sm font-sans text-left text-ink hover:bg-parchment-100 transition-colors">
+                    ${escapeHtml(dept.name)}
+                </button>
+            `).join('');
+        }
+
+        function renderTeamMembers() {
+            const container = document.getElementById('teamMembersList');
+            const countEl = document.getElementById('teamCount');
+
+            if (!container) return;
+
+            if (state.teamMembers.length === 0) {
+                renderEmptyState();
+                return;
+            }
+
+            const count = state.teamMembers.length;
+            if (countEl) {
+                countEl.textContent = `${count} member${count !== 1 ? 's' : ''} across all departments`;
+            }
+
+            container.innerHTML = state.teamMembers.map((member, index) => {
+                const name = member.full_name || member.name || member.email || 'Unknown';
+                const initials = getInitials(name);
+                const role = (member.role || 'employee').toLowerCase();
+                const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+                const roleBadgeClass = getRoleBadgeClass(role);
+                const deptBadgeClass = getDeptBadgeClass(member.department);
+                const deptLabel = member.department || (role === 'admin' ? null : '—');
+
+                return `
+                    <div class="flex items-center justify-between px-6 py-5 hover:bg-parchment-50 transition-colors animate-fade-in" style="animation-delay: ${index * 30}ms">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-full bg-parchment-200 text-ink flex items-center justify-center text-sm font-serif font-bold shadow-inner border border-parchment-300">
+                                ${escapeHtml(initials)}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-ink font-serif">${escapeHtml(name)}</p>
+                                <p class="text-xs text-ink-light font-sans">${escapeHtml(member.email || 'No email')}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            ${deptLabel ? `<span class="inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider ${deptBadgeClass}">${escapeHtml(deptLabel)}</span>` : ''}
+                            <span class="inline-flex items-center px-3 py-1 rounded-pill text-[10px] font-bold uppercase tracking-wider ${roleBadgeClass}">
+                                ${escapeHtml(roleLabel)}
+                            </span>
+                            <button onclick="openMemberMenu(${JSON.stringify(member.id)})" class="text-parchment-400 hover:text-ink transition-colors p-1">
+                                <span class="material-symbols-outlined text-lg">more_vert</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderEmptyState() {
+            const container = document.getElementById('teamMembersList');
+            const countEl = document.getElementById('teamCount');
+
+            if (countEl) {
+                countEl.textContent = '0 members across all departments';
+            }
+
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-16">
+                        <span class="material-symbols-outlined text-5xl text-parchment-300 mb-4 block">group_add</span>
+                        <p class="text-ink-light font-serif italic text-lg mb-2">No members yet</p>
+                        <p class="text-sm text-parchment-400">Use the invite bar above to add your first manager</p>
+                    </div>
+                `;
+            }
+        }
+
+        function navigateBack() {
+            if (window.navigateWithTransition) {
+                window.navigateWithTransition('adminDashboard', '../admin/admin.html', 'back');
+            } else if (window.electronAPI) {
+                window.electronAPI.navigateTo('adminDashboard');
+            } else {
+                window.location.href = '../admin/admin.html';
+            }
+        }
+
+        function openMemberMenu(memberId) {
+            console.log('Open menu for member:', memberId);
+        }
+
+        // Utility functions
+        function getInitials(name) {
+            if (!name) return 'U';
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function getDeptBadgeClass(dept) {
+            const deptLower = (dept || '').toLowerCase();
+
+            const deptStyles = {
+                engineering: 'bg-sage-100 text-sage-700 border border-sage-200',
+                eng: 'bg-sage-100 text-sage-700 border border-sage-200',
+                marketing: 'bg-clay-100 text-clay-700 border border-clay-200',
+                mkt: 'bg-clay-100 text-clay-700 border border-clay-200',
+                product: 'bg-blue-100 text-blue-700 border border-blue-200',
+                pm: 'bg-blue-100 text-blue-700 border border-blue-200',
+                design: 'bg-purple-100 text-purple-700 border border-purple-200',
+                sales: 'bg-green-100 text-green-700 border border-green-200',
+                hr: 'bg-pink-100 text-pink-700 border border-pink-200',
+                human: 'bg-pink-100 text-pink-700 border border-pink-200',
+            };
+
+            const matchedKey = Object.keys(deptStyles).find(key => deptLower.includes(key));
+            return matchedKey ? deptStyles[matchedKey] : 'bg-parchment-200 text-ink-light border border-parchment-300';
+        }
+
+        function getRoleBadgeClass(role) {
+            const roleStyles = {
+                admin: 'bg-amber-100 text-amber-700 border border-amber-200',
+                manager: 'bg-sage-100 text-sage-700 border border-sage-200',
+                employee: 'bg-parchment-200 text-ink-light border border-parchment-300',
+            };
+            return roleStyles[role] || roleStyles.employee;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const typeStyles = {
+                error: 'bg-red-50 text-red-800 border border-red-200',
+                success: 'bg-sage-100 text-sage-800 border border-sage-200',
+                info: 'bg-white text-ink border border-parchment-200',
+            };
+
+            const typeIcons = {
+                error: 'error',
+                success: 'check_circle',
+                info: 'info',
+            };
+
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-clay shadow-clay z-50 animate-slide-up ${typeStyles[type] || typeStyles.info}`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">${typeIcons[type] || typeIcons.info}</span>
+                    <span class="text-sm font-sans">${escapeHtml(message)}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fade-in {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes slide-up {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes modal-in {
+                from { opacity: 0; transform: scale(0.95) translateY(10px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            .animate-fade-in {
+                animation: fade-in 0.3s ease-out forwards;
+                opacity: 0;
+            }
+            .animate-slide-up {
+                animation: slide-up 0.3s ease-out forwards;
+            }
+            .animate-modal-in {
+                animation: modal-in 0.25s ease-out forwards;
+            }
+            .animate-spin {
+                animation: spin 1s linear infinite;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Make functions globally available
+        window.navigateBack = navigateBack;
+        window.getManagerInviteLink = getManagerInviteLink;
+        window.closeDeptModal = closeDeptModal;
+        window.generateInviteWithDept = generateInviteWithDept;
+        window.closeInviteModal = closeInviteModal;
+        window.copyInviteLink = copyInviteLink;
+        window.openMemberMenu = openMemberMenu;
+        window.toggleDropdown = toggleDropdown;
+        window.selectDepartment = selectDepartment;
+        window.resetCustomDropdown = resetCustomDropdown;
+        window.handleDeptInputChange = handleDeptInputChange;
+    </script>
+</body>
+
+</html>

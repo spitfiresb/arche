@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI - My Usage</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            400: '#8fb3a6',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        clay: {
+                            100: '#f5f0eb',
+                            200: '#ebe0d6',
+                            500: '#bca692',
+                            600: '#a08774',
+                            700: '#8c7662',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        },
+                        "accent-tan": "#c2a894",
+                    },
+                    fontFamily: {
+                        "serif": ["Fraunces", "serif"],
+                        "sans": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                        "inner-light": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)"
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+    <style>
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .heatmap-cell {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            transition: background-color 0.4s ease;
+        }
+
+        .heatmap-level-0 {
+            background-color: #f7f5f0;
+        }
+
+        .heatmap-level-1 {
+            background-color: #cedad5;
+        }
+
+        .heatmap-level-2 {
+            background-color: #8fb3a6;
+        }
+
+        .heatmap-level-3 {
+            background-color: #617a71;
+        }
+
+        .heatmap-level-4 {
+            background-color: #2b3632;
+        }
+
+        .heatmap-container {
+            transition: opacity 0.3s ease;
+        }
+
+        /* Custom calendar picker indicator to match light aesthetic */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body class="bg-parchment-100 text-ink font-sans antialiased selection:bg-sage-200 selection:text-sage-900">
+    <div class="noise-overlay"></div>
+    <div class="p-8 max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="mb-10 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button onclick="navigateToIndex()" id="backButton"
+                    class="hidden flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div>
+                    <h1 class="text-3xl font-serif text-ink mb-1">My Usage</h1>
+                    <p class="text-ink-light text-sm">Detailed usage statistics and history.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Date filter bar -->
+
+
+
+                <!-- User Profile Badge -->
+                <div class="relative pl-6 border-l border-parchment-200">
+                    <div id="userProfileBadge" class="flex items-center cursor-pointer">
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-slate-900" id="userName"></p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400" id="userRole"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main style="opacity: 0">
+            <!-- Stats Cards Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                <!-- Total Prompts Card -->
+                <div class="bg-white rounded-clay shadow-clay-sm p-5 border border-white/50">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="h-12 w-12 rounded-full bg-sage-100 flex items-center justify-center border border-sage-200">
+                            <span class="material-symbols-outlined text-sage-600">forum</span>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-ink-light font-bold mb-1">Total Prompts</p>
+                            <p id="totalPromptsCount" class="text-3xl font-serif text-ink"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Average Pumps Per Day Card -->
+                <div class="bg-white rounded-clay shadow-clay-sm p-5 border border-white/50">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="h-12 w-12 rounded-full bg-sage-100 flex items-center justify-center border border-sage-200">
+                            <span class="material-symbols-outlined text-sage-600">bar_chart</span>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-ink-light font-bold mb-1">Avg. Messages /
+                                Day
+                            </p>
+                            <p id="avgPumpsCount" class="text-3xl font-serif text-ink"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Model Used Card -->
+                <div class="bg-white rounded-clay shadow-clay-sm p-5 border border-white/50">
+                    <div class="flex items-center gap-4">
+                        <div id="topModelIcon"
+                            class="h-12 w-12 rounded-full bg-sage-100 flex items-center justify-center border border-sage-200">
+                            <span class="material-symbols-outlined text-sage-600">smart_toy</span>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-ink-light font-bold mb-1">Top Model Used</p>
+                            <p id="topModelName" class="text-3xl font-serif text-ink"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Trend Chart -->
+            <div class="bg-white rounded-clay shadow-clay-sm p-6 border border-white/50 mb-8 relative">
+                <!-- Circular Date Filter (Top Right) -->
+                <div class="absolute top-6 right-6 z-30 pointer-events-none flex justify-end">
+                    <div id="date-filter-mount" class="pointer-events-auto"></div>
+                </div>
+                <h3 class="text-lg font-serif text-ink mb-4">Activity Trend</h3>
+                <div class="relative h-64">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Bottom Section: Category Breakdown & Heatmap -->
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Prompts by Category -->
+                <div class="bg-white rounded-clay shadow-clay-sm p-6 border border-white/50">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h3 class="text-lg font-serif text-ink">Usage by Subcategory</h3>
+                            <p class="text-xs text-ink-light uppercase tracking-widest mt-1">Based on prompt intent
+                                analysis</p>
+                        </div>
+                    </div>
+                    <div id="categoryBreakdown"
+                        class="flex-grow flex flex-col items-center justify-center relative py-4">
+                        <!-- Chart and Grid will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Contribution Heatmap -->
+                <div class="bg-white rounded-clay shadow-clay-sm p-6 border border-white/50">
+
+                    <div id="contributionHeatmap" class="heatmap-container">
+                        <!-- Heatmap will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+
+    <!-- Extension Warning Modal -->
+    <div id="extension-warning-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-ink/50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-clay shadow-clay max-w-md w-full mx-4 p-6 animate-modal-in">
+            <div class="flex justify-center mb-4">
+                <div class="p-3 bg-amber-100 rounded-full">
+                    <span class="material-symbols-outlined text-4xl text-amber-600">extension_off</span>
+                </div>
+            </div>
+            <h2 id="extension-warning-title" class="text-xl font-bold text-ink text-center mb-2">Browser Extension Not
+                Connected</h2>
+            <p id="extension-warning-browser" class="text-sm text-ink-light text-center mb-4"></p>
+            <p id="extension-warning-message" class="text-sm text-ink-light text-center mb-6">
+                Your prompts in this browser may not be captured. Please check that the Steward AI extension is installed and
+                enabled.
+            </p>
+            <a id="extension-warning-install-link" href="#"
+                class="w-full bg-ink hover:bg-ink/90 text-white h-14 rounded-2xl font-semibold text-base shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2.5 mb-4 no-underline">
+                <span class="material-symbols-outlined text-lg">extension</span>
+                <span>Install from Chrome Web Store</span>
+                <span class="material-symbols-outlined text-sm opacity-70">open_in_new</span>
+            </a>
+            <div class="bg-parchment-50 rounded-lg p-4">
+                <p id="extension-warning-steps-title" class="text-xs font-bold text-ink uppercase tracking-wide mb-2">
+                    Already installed? To fix this:</p>
+                <ol id="extension-warning-steps-list" class="text-sm text-ink-light space-y-1 list-decimal list-inside">
+                    <li>Open your browser's extension settings</li>
+                    <li>Find the Steward AI extension</li>
+                    <li>Make sure it's enabled</li>
+                </ol>
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-6 text-xs text-parchment-400">
+                <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="extension-warning-status">Waiting for extension to reconnect...</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modal-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-modal-in {
+            animation: modal-in 0.25s ease-out forwards;
+        }
+    </style>
+
+    <script src="../shared/utils/icons.js"></script>
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script src="../shared/components/dateFilter.js"></script>
+    <script src="myUsage.js"></script>
+</body>
+
+</html>

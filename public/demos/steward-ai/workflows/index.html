@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Steward AI - Workflows</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:italic&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="../shared/tailwind.cdn.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4d6159",
+                        "background-light": "#f9f7f2",
+                        "accent-tan": "#c2a894",
+                        "accent-green-light": "#7d8c82",
+                        "accent-brown": "#5e503f",
+                        parchment: {
+                            50: '#fbfaf8',
+                            100: '#f7f5f0',
+                            200: '#efece4',
+                            300: '#e6e1d6',
+                            400: '#dcd6c8',
+                        },
+                        sage: {
+                            100: '#e8ecea',
+                            200: '#cedad5',
+                            300: '#b0c4bd',
+                            500: '#7a998e',
+                            600: '#617a71',
+                            700: '#4e615a',
+                            900: '#2b3632',
+                        },
+                        ink: {
+                            DEFAULT: '#2c2b29',
+                            light: '#5e5b56',
+                        }
+                    },
+                    fontFamily: {
+                        display: ["Instrument Serif", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "clay": "1.5rem",
+                        "pill": "9999px"
+                    },
+                    boxShadow: {
+                        "clay": "0 20px 40px -10px rgba(44, 43, 41, 0.08), 0 10px 20px -5px rgba(44, 43, 41, 0.04)",
+                        "clay-sm": "0 10px 20px -5px rgba(44, 43, 41, 0.06)",
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="../shared/styles.css" rel="stylesheet" />
+</head>
+
+<body class="bg-parchment-100 text-ink font-sans overflow-hidden antialiased selection:bg-sage-200 selection:text-sage-900">
+    <div class="flex h-screen w-full relative z-10">
+        <main class="flex-1 h-full overflow-y-auto relative flex flex-col bg-background-light" style="opacity: 0">
+            <!-- Header -->
+            <header class="px-10 pt-12 pb-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button onclick="navigateBack()" id="backButton"
+                            class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-parchment-300 shadow-sm hover:border-sage-300 hover:text-sage-700 transition-all">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <h1 class="font-display italic text-3xl font-medium text-ink">Workflows</h1>
+                        <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded-full bg-sage-100 text-sage-600 border border-sage-200 shadow-sm">Beta</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="date-filter-mount" class="pointer-events-auto"></div>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="mt-5 flex items-center gap-1 relative">
+                    <div id="tabPill" class="absolute rounded-lg bg-white shadow-clay-sm border border-parchment-300 transition-all duration-300 ease-out" style="height:0;width:0;"></div>
+                    <button data-tab="brief" class="workflow-tab relative z-10 px-4 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 text-ink">
+                        <span class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">insights</span>
+                            Intelligence Brief
+                        </span>
+                    </button>
+                    <button data-tab="taxonomy" class="workflow-tab relative z-10 px-4 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 text-slate-400">
+                        <span class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">stacked_line_chart</span>
+                            Engagement Taxonomy
+                        </span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- TAB: Intelligence Brief (new, default)     -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div id="tab-brief" class="flex-1 px-10 pt-4 pb-8 overflow-y-auto">
+                <div id="briefContent" class="max-w-5xl mx-auto space-y-6">
+                    <div class="flex items-center gap-2 text-slate-300 py-16 w-full justify-center">
+                        <span class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                        <span class="text-sm">Analyzing workflows...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- TAB: Engagement Taxonomy (original)        -->
+            <!-- ═══════════════════════════════════════════ -->
+            <div id="tab-taxonomy" class="flex-1 px-10 pt-4 pb-8 overflow-y-auto hidden">
+            <div class="max-w-5xl mx-auto space-y-8">
+
+                <!-- Stacked Area Chart Card -->
+                <div class="bg-white p-10 rounded-xl shadow-clay-sm border border-slate-100">
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <h2 class="font-display italic text-xl text-slate-700">Workflow Taxonomy</h2>
+                            <p id="chartSubtitle" class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Loading...</p>
+                        </div>
+                        <div id="chartModeToggle" class="flex items-center"></div>
+                    </div>
+                    <div id="bloomChartArea" class="w-full flex items-center justify-center" style="height: 280px;">
+                        <!-- Chart or loading/building state injected by app.js -->
+                        <div class="flex items-center gap-2 text-slate-300">
+                            <span class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                            <span class="text-sm">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards Row -->
+                <div id="summaryCards" class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Populated by app.js when data loads -->
+                </div>
+
+            </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../shared/mockBackend.js"></script><script src="../shared/utils/common.js"></script>
+    <script>
+        if (window.electronAPI && electronAPI.platform !== 'darwin') {
+            const backBtn = document.getElementById('backButton');
+            if (backBtn) backBtn.style.marginLeft = '0';
+        }
+    </script>
+    <script src="../shared/components/dateFilter.js"></script>
+
+    <!-- Tab switching logic -->
+    <script>
+    (function() {
+        const tabs = document.querySelectorAll('.workflow-tab');
+        const briefPanel = document.getElementById('tab-brief');
+        const taxonomyPanel = document.getElementById('tab-taxonomy');
+        const pill = document.getElementById('tabPill');
+        let currentTab = sessionStorage.getItem('workflowTab') || 'brief';
+        let briefLoaded = false;
+        let taxonomyLoaded = false;
+
+        function positionPill(animate) {
+            const activeBtn = document.querySelector(`.workflow-tab[data-tab="${currentTab}"]`);
+            if (!activeBtn) return;
+            if (!animate) pill.style.transition = 'none';
+            pill.style.left = activeBtn.offsetLeft + 'px';
+            pill.style.top = activeBtn.offsetTop + 'px';
+            pill.style.width = activeBtn.offsetWidth + 'px';
+            pill.style.height = activeBtn.offsetHeight + 'px';
+            if (!animate) {
+                pill.offsetHeight;
+                pill.style.transition = '';
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            sessionStorage.setItem('workflowTab', tab);
+
+            tabs.forEach(btn => {
+                btn.classList.toggle('text-ink', btn.dataset.tab === tab);
+                btn.classList.toggle('text-slate-400', btn.dataset.tab !== tab);
+            });
+
+            briefPanel.classList.toggle('hidden', tab !== 'brief');
+            taxonomyPanel.classList.toggle('hidden', tab !== 'taxonomy');
+            positionPill(true);
+
+            // Lazy-load tab content
+            if (tab === 'brief' && !briefLoaded && window.loadBriefData) {
+                briefLoaded = true;
+                window.loadBriefData();
+            }
+            if (tab === 'taxonomy' && !taxonomyLoaded && window.loadBloomAnalytics) {
+                taxonomyLoaded = true;
+                window.loadBloomAnalytics();
+            }
+        }
+
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        // Expose for date filter reload
+        window.switchWorkflowTab = switchTab;
+        window.reloadCurrentTab = function() {
+            if (currentTab === 'brief') {
+                briefLoaded = false;
+                if (window.loadBriefData) { briefLoaded = true; window.loadBriefData(); }
+            } else {
+                taxonomyLoaded = false;
+                if (window.loadBloomAnalytics) { taxonomyLoaded = true; window.loadBloomAnalytics(); }
+            }
+        };
+        window.getCurrentWorkflowTab = () => currentTab;
+
+        // Initial setup after DOM
+        requestAnimationFrame(() => {
+            positionPill(false);
+            switchTab(currentTab);
+        });
+
+        // Button widths change once the web font loads — re-measure the pill
+        // (without this, a fresh load leaves the pill sized to fallback fonts)
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => positionPill(false));
+        }
+        window.addEventListener('load', () => positionPill(false));
+        window.addEventListener('resize', () => positionPill(false));
+    })();
+    </script>
+
+    <script src="app.js"></script>
+    <script src="brief.js"></script>
+</body>
+
+</html>
