@@ -163,7 +163,11 @@ body.ld-locked .ld-expand { opacity: 0; }
 .ld-overlay-frame {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  /* clip, not hidden: the iframe inside can be laid out wider than the
+     frame and transform-scaled down (see frameGeom in live-demo.js), and a
+     hidden-overflow box is still programmatically scrollable — a focus
+     jump inside the app could drag the canvas off its top-left anchor */
+  overflow: clip;
   background: #0d0d0d;
   opacity: 0;
   transition: opacity 0.45s ease;

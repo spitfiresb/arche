@@ -977,7 +977,9 @@ ul.bands > li:nth-child(even) {
    would otherwise get handed the two-column track. */
 ul.bands > li.solo,
 ul.bands > li.solo:nth-child(even) {
-  grid-template-columns: 1fr;
+  /* minmax(0, …) like the two-up tracks: a bare 1fr means minmax(auto, 1fr),
+     and a fixed-width embed inside would push the track past the column */
+  grid-template-columns: minmax(0, 1fr);
 }
 
 ul.bands > li.solo .band-prose,
@@ -1153,6 +1155,41 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   background: #FCFCFB;
 }
 
+/* With JS, live-demo.js wraps the inline embed in .ld-inline-box and lays the
+   iframe out at a desktop width, scaled down to fit — so a narrow column gets
+   a shrunken desktop view instead of a squeezed one. The frame chrome moves
+   up to the box: on the iframe it would scale down with the content. */
+.band-artifact .ld-inline-box {
+  /* clip, not hidden: a hidden-overflow box is still a scroll container,
+     and anything that scrolls it (scrollIntoView, a focus jump) would
+     shove the scaled canvas off its top-left anchor */
+  overflow: clip;
+  /* anchors the absolutely-positioned iframe below */
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--line);
+  border-radius: var(--ld-corner);
+  background: #FCFCFB;
+}
+
+.band-artifact .ld-inline-box .ld-inline {
+  /* Fill the box outright — without an explicit height the iframe falls to
+     its 150px default and the demo's own vertical centering happens inside
+     that sliver at the top of the box. live-demo.js overrides the size
+     with a desktop layout (scaled down) when the box is narrow.
+     Absolute, so the oversized layout height never counts as content:
+     in flow it would stretch the box past its 16/10 aspect, leaving a
+     band of bare background under the scaled canvas. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border: none;
+  border-radius: 0;
+}
+
 /* The system map's page shares the site background, so a frame would draw a
    box around what should read as part of the page itself — and for the same
    reason it stays square while the other previews round off. */
@@ -1215,9 +1252,16 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   .page-head {
     margin-bottom: 3rem;
   }
+  /* :nth-child(even) is listed too — the wide layout's even-band rule
+     carries that same specificity, so a bare `ul.bands > li` here would
+     lose to it and leave every second band on the two-column track,
+     squeezing its stacked children into the narrow 1fr share. */
   ul.bands > li,
+  ul.bands > li:nth-child(even),
   ul.bands > li.solo {
-    grid-template-columns: 1fr;
+    /* minmax(0, …), not 1fr: same guard as the wide tracks, so the
+       desktop-width demo canvases can't push the band past the column */
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
     margin-bottom: 4rem;
   }

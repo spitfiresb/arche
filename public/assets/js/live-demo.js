@@ -119,6 +119,48 @@
     overlay.appendChild(back);
     document.body.appendChild(overlay);
 
+    // The embedded apps are desktop layouts; handed a narrow viewport they
+    // crumple — headers overlap, cards collapse — long before the site's own
+    // breakpoints care. So the iframe never lays out narrower than MIN_APP_W:
+    // below that, it keeps a desktop-width canvas and is transform-scaled
+    // down to fit the frame, so a narrow window gets a shrunken desktop app
+    // instead of a squeezed one. The scale is inside the frame wrapper, so
+    // the park/grow transform on the wrapper composes with it.
+    //
+    // The parked geometry has a second job. The thumb's aspect is clamped
+    // (see syncThumbAspect) while the overlay stays at the viewport's, so on
+    // a portrait-ish window collapsed() maps overlay onto thumb with sx ≠ sy
+    // — which used to squash the parked miniature vertically. Parked, the
+    // iframe therefore carries the inverse y-scale (and a canvas height cut
+    // to match, so the app lays out at the thumb's own aspect): the two
+    // transforms compose back to a uniform scale on screen. Opening animates
+    // the compensation away on the grow's own clock; on an unclamped
+    // viewport every value collapses to the fullscreen ones and none of
+    // this does anything.
+    var MIN_APP_W = 1024;
+    function frameGeom(parked) {
+      var w = overlay.clientWidth, h = overlay.clientHeight;
+      var s = Math.min(1, w / MIN_APP_W);
+      var iy = s;
+      if (parked) {
+        var r = thumb.getBoundingClientRect();
+        if (r.width && r.height) iy = s * (r.width / w) / (r.height / h);
+      }
+      return { w: w / s, h: h / iy, sx: s, sy: iy };
+    }
+    // anim: transition for the inner scale (the grow/shrink curve), or none.
+    // keepH: leave the canvas height alone — the close animates only the
+    // scale and re-lays the canvas out once the shrink has landed, so the
+    // frame never uncovers the overlay's bottom edge mid-flight.
+    function setFrameGeom(g, anim, keepH) {
+      frame.style.transition = anim || 'none';
+      frame.style.width = g.w.toFixed(1) + 'px';
+      if (!keepH) frame.style.height = g.h.toFixed(1) + 'px';
+      frame.style.transformOrigin = '0 0';
+      frame.style.transform =
+        'scale(' + g.sx.toFixed(4) + ', ' + g.sy.toFixed(4) + ')';
+    }
+
     var srcSet = false, ready = false, grown = false, revealT = null;
     var readyT = null;     // backstop for the back control's entrance
     var shown = false;     // has the live miniature been revealed at least once
@@ -290,6 +332,7 @@
     function park() {
       if (!ready || overlay.classList.contains('open')) return;
       overlay.hidden = false;
+      setFrameGeom(frameGeom(true));   // desktop canvas at the thumb's aspect
       overlay.classList.add('parked');
       poster.hidden = true;
       fw.style.transition = 'none';
@@ -364,6 +407,11 @@
         void fw.offsetWidth;                         // commit it
         overlay.classList.remove('parked');
         overlay.classList.add('open');
+        // Undo the parked aspect compensation on the grow's own clock: the
+        // canvas snaps to full height (the extra rows stay clipped under
+        // the frame while it's still small) and the inner y-scale rides
+        // the same curve as the wrapper's transform.
+        setFrameGeom(frameGeom(false), GROW);
         fw.style.transition = GROW + ', ' + GROW_R;  // round corner -> square
         fw.style.transform = expanded();
         var doneG = function (e) {
@@ -378,6 +426,7 @@
       // Fallback (clicked before the app finished booting): the still
       // poster grows, then cross-fades to the app once it's ready.
       mode = 'poster';
+      setFrameGeom(frameGeom(false));   // boot straight into fullscreen geometry
       poster.hidden = false;
       overlay.classList.remove('revealed');
       poster.style.transition = 'none';
@@ -409,6 +458,11 @@
       if (mode === 'frame') {
         // Shrink the live iframe back onto the thumbnail and leave it
         // parked there — still running, no swap back to a screenshot.
+        // The parked aspect compensation rides back in on the shrink's
+        // clock; the canvas keeps its fullscreen height until the shrink
+        // lands (keepH) so the frame never uncovers the overlay's bottom
+        // edge mid-flight — doneF below re-lays it out once parked.
+        setFrameGeom(frameGeom(true), SHRINK, true);
         fw.style.transition = SHRINK + ', ' + SHRINK_R;  // square -> round again
         fw.style.transform = collapsed();
         // Drop .open (rounds the corners back) but hold the overlay on top
@@ -422,6 +476,7 @@
           overlay.classList.remove('closing');   // now settle below the page
           overlay.classList.add('parked');
           fw.style.transition = 'none';
+          setFrameGeom(frameGeom(true));   // settle the canvas at parked height
         };
         fw.addEventListener('transitionend', doneF);
         return;
@@ -451,9 +506,12 @@
     window.addEventListener('resize', function () {
       syncThumbAspect();
       if (overlay.classList.contains('parked')) {
+        setFrameGeom(frameGeom(true));
         fw.style.transition = 'none';
         fw.style.transform = collapsed();
         setCorner();
+      } else if (!overlay.hidden) {
+        setFrameGeom(frameGeom(false));
       }
     });
 
@@ -475,4 +533,35 @@
   }
 
   document.querySelectorAll('[data-live-demo]').forEach(init);
+
+  // Inline embeds (.ld-inline) get the same desktop-canvas treatment as the
+  // overlay frames: below MIN_INLINE_W the iframe lays out at that width and
+  // is transform-scaled down to its box. The box (built here) takes over the
+  // hairline, corner and aspect from the iframe — scaling the iframe itself
+  // would shrink its border and radius along with the content.
+  var MIN_INLINE_W = 720;
+  function initInline(iframe) {
+    var box = document.createElement('div');
+    box.className = 'ld-inline-box';
+    iframe.parentNode.insertBefore(box, iframe);
+    box.appendChild(iframe);
+    function fit() {
+      var w = box.clientWidth, h = box.clientHeight;
+      if (!w) return;
+      if (w >= MIN_INLINE_W) {
+        iframe.style.width = '';
+        iframe.style.height = '';
+        iframe.style.transform = '';
+        return;
+      }
+      var s = w / MIN_INLINE_W;
+      iframe.style.width = MIN_INLINE_W + 'px';
+      iframe.style.height = (h / s).toFixed(1) + 'px';
+      iframe.style.transformOrigin = '0 0';
+      iframe.style.transform = 'scale(' + s.toFixed(4) + ')';
+    }
+    fit();
+    window.addEventListener('resize', fit);
+  }
+  document.querySelectorAll('iframe.ld-inline').forEach(initInline);
 })();
