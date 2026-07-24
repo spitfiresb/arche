@@ -426,6 +426,9 @@
     items.concat([coil]).forEach((el) => reveal.observe(el));
     buildFloor();
     addEventListener('resize', buildFloor);
+    // the web fonts land after first layout and reflow the timeline,
+    // moving the floor's anchor point — rebuild against the settled text
+    if (document.fonts) document.fonts.ready.then(buildFloor);
     return;
   }
 
@@ -1151,6 +1154,12 @@
     mw = innerWidth; mh = innerHeight;
     measure();
   });
+  // The first measure runs against fallback-font layout; when the web
+  // fonts land the entries rewrap and every offset moves — dots drift
+  // off the rock and reveal positions go stale. Re-measure against the
+  // settled text (it resolves during the kicker typing, before he ever
+  // appears, so the rebuild is never a visible mid-scene snap).
+  if (document.fonts) document.fonts.ready.then(() => measure());
 
   function reveal(i) {
     if (i < nodes.length) nodes[i].el.classList.add('shown');
