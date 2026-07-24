@@ -14,13 +14,31 @@ const MODEL_ID = "floorplans-r7e9l-vjwg9";
 const VERSION = "2";
 const CONFIDENCE = 40; // 0.40 confidence threshold, expressed 0-100
 
+// Uploads above this are refused before the body is read into memory.
+const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+
 export async function onRequestPost({ request, env }) {
   try {
+    // Only the site's own pages call this; a cross-site Origin means someone
+    // is scripting the endpoint from elsewhere to spend the Roboflow quota.
+    const origin = request.headers.get("Origin");
+    if (origin && new URL(origin).hostname !== new URL(request.url).hostname) {
+      return json({ error: "Forbidden" }, 403);
+    }
+
+    const declared = Number(request.headers.get("Content-Length") || 0);
+    if (declared > MAX_BYTES) {
+      return json({ error: "File too large (8 MB max)" }, 413);
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
 
     if (!file || typeof file === "string") {
       return json({ error: "No file provided" }, 400);
+    }
+    if (file.size > MAX_BYTES) {
+      return json({ error: "File too large (8 MB max)" }, 413);
     }
 
     const apiKey = env.ROBOFLOW_API_KEY;
