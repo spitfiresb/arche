@@ -7,10 +7,45 @@
 <meta name="description" content="The story so far: computer science and data science at the University of Oregon, internships, research, a hackathon win, and co-founding Unpak.">
 <meta property="og:title" content="About - Zain Saeed">
 <meta property="og:description" content="The story so far: computer science and data science at the University of Oregon, internships, research, a hackathon win, and co-founding Unpak.">
-<meta property="og:type" content="website">
+<meta property="og:type" content="profile">
 <meta property="og:url" content="https://zsaeed.com/about">
+<meta property="og:site_name" content="Zain Saeed">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://zsaeed.com/assets/img/li-avatar.jpeg">
+<meta property="og:image:alt" content="Zain Saeed">
+<meta name="twitter:card" content="summary">
+<meta name="author" content="Zain Saeed">
 <link rel="canonical" href="https://zsaeed.com/about">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- ProfilePage pointing at the same Person node the home page declares, so
+     the timeline below reads as biography for that entity rather than as a
+     second, unrelated Zain Saeed -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "@id": "https://zsaeed.com/about#webpage",
+  "url": "https://zsaeed.com/about",
+  "name": "About - Zain Saeed",
+  "isPartOf": { "@id": "https://zsaeed.com/#website" },
+  "mainEntity": {
+    "@type": "Person",
+    "@id": "https://zsaeed.com/#person",
+    "name": "Zain Saeed",
+    "url": "https://zsaeed.com/",
+    "image": "https://zsaeed.com/assets/img/li-avatar.jpeg",
+    "alumniOf": {
+      "@type": "CollegeOrUniversity",
+      "name": "University of Oregon",
+      "sameAs": "https://en.wikipedia.org/wiki/University_of_Oregon"
+    },
+    "sameAs": [
+      "https://www.linkedin.com/in/zain-saeed24/",
+      "https://github.com/spitfiresb"
+    ]
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
