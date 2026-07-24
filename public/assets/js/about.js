@@ -27,7 +27,7 @@
      and a transform on an ancestor makes THAT ancestor the offsetParent.
      The page-enter transition puts a transform on ul.timeline for the
      length of its rise animation, so a plain li.offsetTop read while it is
-     up comes back relative to the list instead of main — every dot, ring
+     up comes back relative to the list instead of main: every dot, ring
      and reveal point then lands a whole list-offset too high, and nothing
      re-measures once the transform lifts. Summing the offsets all the way
      up and subtracting main's own is immune to that: it's pure layout
@@ -42,7 +42,7 @@
 
   /* ---- The floor: a campground meadow running the full width of the
      viewport at the base of the descent, drawn in the wall's ink
-     language — doubled ground edge, white-filled silhouettes so near
+     language: doubled ground edge, white-filled silhouettes so near
      shapes occlude far ones, everything rooted in a continuous turf
      line. Left props anchor off the viewport's left edge, the camp
      anchors off the cliff base, the treeline off the right edge; any
@@ -102,7 +102,7 @@
            FQ(px, py + 2, px - 2.5, py) }));
     }
 
-    // pine: trunk first, filled canopy over it — the hem cuts the
+    // pine: trunk first, filled canopy over it; the hem cuts the
     // trunk exactly at the join
     function pine(x, h, seed) {
       const tw = [0.27, 0.2, 0.14, 0.09].map((w, i) =>
@@ -213,7 +213,7 @@
     }
 
     // tent: bell silhouette of concave sweeps with a ridge shoulder,
-    // centre pole, swept-open door, guy lines — no shading
+    // centre pole, swept-open door, guy lines, no shading
     function tent(x, w) {
       const h = w * 0.62, ay = gy - h;
       const lx = x - w / 2, rx = x + w / 2;
@@ -260,7 +260,7 @@
         }
         return d + 'Z';
       };
-      // silhouette: [x-offset, height-fraction, isTip, phase] — tips
+      // silhouette: [x-offset, height-fraction, isTip, phase]; tips
       // are doubled so they stay pointed through the smoothing
       const T = [
         [-11, 0.02, 0], [-15, 0.22, 0],
@@ -305,7 +305,7 @@
       floorFlame = upd;
     }
 
-    // turf: dense overlapping blade clusters — the grass IS the
+    // turf: dense overlapping blade clusters: the grass IS the
     // ground line, drawn last so it fronts everything planted in it
     function turf(x0, x1, seed) {
       let d = '', tx = x0, i = 0;
@@ -327,7 +327,7 @@
 
     // the owner's 4Runner, parked on the turf right of the tent (art in
     // car-art.js): a white body silhouette that occludes the scene behind
-    // it, then the black line detail on top — scaled from its source box
+    // it, then the black line detail on top, scaled from its source box
     // and seated so the tyres meet the ground line.
     let carPlan = null;
     function drawCar(x, h, sink) {
@@ -341,7 +341,7 @@
         CAR.tr + '">' + CAR.line + '</g></g>';
       // settle the tyres into the dirt: for each wheel, mask the buried
       // bottom behind the ground and heap a little displaced soil at the
-      // contact — drawn over the car so the dirt reads in FRONT of the
+      // contact, drawn over the car so the dirt reads in FRONT of the
       // sunk wheel (grass, drawn later, still fronts it all)
       if (sink) {
         const tw = 15;                          // tyre half-width, scene px
@@ -445,7 +445,7 @@
     buildFloor();
     addEventListener('resize', buildFloor);
     // the web fonts land after first layout and reflow the timeline,
-    // moving the floor's anchor point — rebuild against the settled text
+    // moving the floor's anchor point, so rebuild against the settled text
     if (document.fonts) document.fonts.ready.then(buildFloor);
     return;
   }
@@ -453,7 +453,7 @@
   document.documentElement.classList.add('man');
   // The rope is rigged before he ever appears: it hangs from the top
   // anchor, threaded through every bolt ring, and its tail already
-  // lies coiled at the base — it never has to appear out of nowhere
+  // lies coiled at the base; it never has to appear out of nowhere
   coil.classList.add('shown');
   // Stickman mode draws the rope live all the way into the turf; the
   // static tail only reserves layout space (set inline so a stale
@@ -496,7 +496,7 @@
 
   // The cliff face he rappels against: a jagged outer edge doubled by
   // an inner echo line, the band between them filled with parallel
-  // hatch rules — drawn like a sliced solid, regenerated to fit the
+  // hatch rules, drawn like a sliced solid, regenerated to fit the
   // page on every measure
   const wall = shape('svg', { class: 'wall', 'aria-hidden': 'true' }, main);
   // The hatch rules live in a group clipped to the exact band shape,
@@ -523,11 +523,11 @@
   // rule; profile offsets (wallOff) push the rock in and out of that
   const WALL_W = 72, FACE_X = 30;
   let wallPts = [];
-  // x of the inner echo line at a given document y — assigned by
+  // x of the inner echo line at a given document y, assigned by
   // buildWall, used to pin the timeline dots onto that line
   let innerAt = () => FACE_X;
   // Horizontal offset of the rock surface from the base line at a
-  // given document y — the feet plant on this
+  // given document y: the feet plant on this
   function wallOff(y) {
     if (!wallPts.length) return 0;
     if (y <= wallPts[0][1]) return wallPts[0][0] - FACE_X;
@@ -542,7 +542,7 @@
   function buildWall() {
     // The silhouette: two slow sine layers carve real bays and
     // buttresses into the line (the drama), jitter roughens it, and
-    // set pieces punctuate it — overhanging shelves that jut out over
+    // set pieces punctuate it: overhanging shelves that jut out over
     // a tucked-under face, and clefts biting back into the rock
     const ph1 = noise(1) * 6.28, ph2 = noise(2) * 6.28;
     const macro = (yy) =>
@@ -582,9 +582,9 @@
     wallFace.setAttribute('d', facePath);
 
     // The inner echo: the silhouette offset into the rock. Width is
-    // driven by the smoothed surface angle — thin where the face
+    // driven by the smoothed surface angle: thin where the face
     // leans out into the light, thick where it cuts back into
-    // shadow — with a guaranteed clearance so a sharp shelf step
+    // shadow, with a guaranteed clearance so a sharp shelf step
     // can't make the two lines cross
     const surf = (yy) =>
       FACE_X + wallOff(Math.max(0, Math.min(floorY, yy)));
@@ -625,9 +625,9 @@
     wallClipPath.setAttribute('d', region + 'Z');
 
     // Hatch rules: long parallel 58° strokes across the whole strip,
-    // clipped to the band. Only the spacing varies — wide (shadowed)
+    // clipped to the band. Only the spacing varies: wide (shadowed)
     // stretches and under-lip pockets pack tighter, thin lit runs
-    // open up — so density reads as shading and parallel lines can
+    // open up, so density reads as shading and parallel lines can
     // never touch or cross
     const DYDX = 0.29 / 0.45;
     const underLip = (yy) => {
@@ -673,7 +673,7 @@
   let belowPts = [];
   // 0..1 while he reaches for a ring: the fist leaves the rope, so
   // the strand above blends from ending in his hand to ending at the
-  // harness device — the rope moves with the action, never snapping
+  // harness device; the rope moves with the action, never snapping
   let reach = 0;
 
   // Rope pinned between two points: straight where it can be,
@@ -726,7 +726,7 @@
   }
 
   // The pre-rigged line before he appears: top anchor through every
-  // ring down into the turf. It breathes — a slow low-amplitude sway
+  // ring down into the turf. It breathes: a slow low-amplitude sway
   // that fades to nothing near the pinned points (anchors and both
   // ends), so even the waiting rope reads as rope, not a drawn rule
   function drawPreRig(now) {
@@ -737,7 +737,7 @@
 
   // The sway is a mapping over the drawn slack, shared between the
   // pre-rig and the ride: when he takes the rope its gain eases out
-  // over the first moments instead of vanishing between two frames —
+  // over the first moments instead of vanishing between two frames;
   // the strand he grabs is the exact strand that was breathing
   let swayT0 = null;
   function swayMap(pts, now) {
@@ -753,14 +753,14 @@
     });
   }
 
-  // A freshly freed stretch of rope. At the pop its exact route —
-  // bight through the ring, the chain below it — is captured as a
+  // A freshly freed stretch of rope. At the pop its exact route
+  // (bight through the ring, the chain below it) is captured as a
   // dense point set, and render morphs those points out to the
   // hanging line; the springs only take over once the morph lands
   // exactly on their positions. No frame ever changes shape in a step
   let freed = null;
   // the strand's full route on the frame he releases, and its last
-  // drawn control points while riding — captured for the fall morph
+  // drawn control points while riding, captured for the fall morph
   let releaseMorph = null;
   let lastSlackPts = null;
   // where his fist left the rope: the freed end eases down from
@@ -769,7 +769,7 @@
 
   // Point at fraction f along the hanging line from the brake hand
   // (hbx, hby) down to nxt: the chord plus a bow that sags toward
-  // down/away-from-wall, clamped out of the rock — the shape an
+  // down/away-from-wall, clamped out of the rock: the shape an
   // unloaded strand wants to take
   function hangTarget(f, hbx, hby, nxt) {
     const ddx = nxt[0] - hbx, ddy = nxt[1] - hby;
@@ -784,13 +784,13 @@
   // Fractions of the below strand carrying the live springs. The
   // first sits close to the brake hand so the drawn curve's rounding
   // at the hand is the same whether the strand is spring-drawn or
-  // being settle-morphed — the two representations must agree there
+  // being settle-morphed; the two representations must agree there
   const BFR = [0.05, 0.3, 0.62, 0.88];
 
   // The exact geometry ropePath draws for a control polyline (start,
   // quadratics through successive midpoints, line to the end) as a
-  // dense polyline. Capturing and targeting drawn CURVES — not
-  // control skeletons — is what keeps the settle seamless: skeleton
+  // dense polyline. Capturing and targeting drawn CURVES, not
+  // control skeletons, is what keeps the settle seamless: skeleton
   // corners get rounded by the renderer, curves don't move
   function flattenRope(ctrl, steps) {
     const out = [[ctrl[0][0], ctrl[0][1]]];
@@ -847,7 +847,7 @@
   // Split a polyline at its vertex nearest to p. The settle morphs
   // the body lead-in (fist -> device -> brake hand) and the freed
   // strand as separate pieces anchored at the brake hand, so rope
-  // material stays where it is — the freed bight falls onto its hang
+  // material stays where it is: the freed bight falls onto its hang
   // line and can never slide across toward the other hand
   function splitAt(poly, p) {
     let bi = 0, bd = 1e9;
@@ -861,7 +861,7 @@
   // Capture the exact curve a control skeleton draws right now, split
   // at the brake hand, as the "from" end of a settle morph.
   // 3px sampling on the freed side: the strand hairpins ~10px around
-  // the brake hand, and a coarser grid flattens that loop — the
+  // the brake hand, and a coarser grid flattens that loop: the
   // visible "rope pulls off the hand" pop
   function captureFreed(t0, ctrl) {
     const hb = [S.handB.x, S.handB.y];
@@ -871,8 +871,8 @@
 
   // Pop the strand out of the ring at hand: the ring goes bare and
   // the route below is rebuilt without it. The strand's exact route
-  // at this instant — brake hand, bight springs, the ring, the old
-  // chain below it — is captured densely for the settle morph, so
+  // at this instant (brake hand, bight springs, the ring, the old
+  // chain below it) is captured densely for the settle morph, so
   // the drawn rope doesn't move at all on the frame of the pop
   function doClean(now) {
     const a = anchors[cleaned];
@@ -902,7 +902,7 @@
     endY = coil.getBoundingClientRect().top - main.getBoundingClientRect().top;
     floorY = endY + 148;
     // The rope's true end: it runs live all the way down and
-    // disappears into the turf — no static tail takes over
+    // disappears into the turf; no static tail takes over
     tailY = floorY;
     // The bounce run-out ends where a landing puts his feet straight
     // onto the turf: a grip at this height means feet on the ground
@@ -960,7 +960,7 @@
     buildBelow();
     // Before he appears the rope is already rigged: the whole line,
     // top anchor through every ring down to the coil. It's unloaded,
-    // so it's drawn as the slack stroke — the loaded main stroke only
+    // so it's drawn as the slack stroke; the loaded main stroke only
     // exists above his device once he's on the rope, and it rides
     // into view with him instead of swapping in
     if (state === 'wait' && anchors.length) {
@@ -979,10 +979,10 @@
   // ---- tiny physics + kinematics toolkit ----
   const clamp01 = (v) => Math.min(1, Math.max(0, v));
   const easeInOut = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
-  // one arch of a sine inside [a,b], zero outside — for anticipation,
+  // one arch of a sine inside [a,b], zero outside, for anticipation,
   // landing absorption etc.
   const bell = (t, a, b) => (t <= a || t >= b) ? 0 : Math.sin(Math.PI * (t - a) / (b - a));
-  // like bell but with zero SLOPE at both ends — ramps in/out with no
+  // like bell but with zero SLOPE at both ends: ramps in/out with no
   // velocity kick, so a knee tuck can't jolt the leg the instant it starts
   const sbump = (t, a, b) => (t <= a || t >= b) ? 0 : 0.5 - 0.5 * Math.cos(2 * Math.PI * (t - a) / (b - a));
   // smooth minimum: like Math.min but rounds the corner over blend width k,
@@ -1048,15 +1048,15 @@
   // letting go on the dismount
   const RELEASE_AFTER = 190;
 
-  // Joint springs — stiffness/damping tuned per part: feet plant
+  // Joint springs, stiffness/damping tuned per part: feet plant
   // crisply, the head is loose and lags, the rope tail is looser still
   const S = {
     pelvis: sp(), chest: sp(), head: sp(),
     handG: sp(), handB: sp(), elbowG: sp(), elbowB: sp(), f1: sp(), f2: sp(),
-    // points along the strand below the brake hand — it hangs down
+    // points along the strand below the brake hand; it hangs down
     // to the next ring and swings loose whenever a ring is cleaned
     b1: sp(), b2: sp(), b3: sp(), b4: sp(),
-    // points along the strand above — anchored at the ceiling, pulled
+    // points along the strand above, anchored at the ceiling, pulled
     // around by his grip, so the whole line flexes and whips
     r1: sp(), r2: sp(), r3: sp(), r4: sp(),
   };
@@ -1067,7 +1067,7 @@
   // pivots the body around the rope grip; planted feet stay put, so a
   // sway reads as a lean.
   // gx is how far the grip (and the rope with it) is pushed out from
-  // plumb — the body hangs from wherever the rope end is
+  // plumb: the body hangs from wherever the rope end is
   function perchPose(gy, sway, gx) {
     gx = gx || 0;
     // the classic rappel pictogram: body reclined out to the LEFT of
@@ -1080,7 +1080,7 @@
     // Feet plant exactly on the rock face line, wherever it wanders.
     // The body slides toward or away from the rope by a fraction of
     // the local face offset so the legs stay braced at a natural
-    // bend — never folded shut where the face crowds the rope, never
+    // bend: never folded shut where the face crowds the rope, never
     // overstretched or buried where it leans away
     const w1 = wallOff(gy + 36), w2 = wallOff(gy + 44);
     const bs = gx + Math.max(-14, Math.min(10,
@@ -1112,7 +1112,7 @@
     };
   }
 
-  // Stands at idleX if the walk set one, else at standX — the spot
+  // Stands at idleX if the walk set one, else at standX: the spot
   // clear of the cliff base picked in measure
   function standPose(now) {
     return standPoseAt(idleX !== null ? idleX : standX, now);
@@ -1164,7 +1164,7 @@
   measure();
   // transition.js fires a synthetic resize when the page-enter animation
   // ends; the viewport hasn't changed, but a full re-measure tears down
-  // and redraws the rigged rope mid-scene — a visible snap. Only real
+  // and redraws the rigged rope mid-scene, a visible snap. Only real
   // size changes need the rebuild.
   let mw = innerWidth, mh = innerHeight;
   addEventListener('resize', () => {
@@ -1177,7 +1177,7 @@
   // land, and document.fonts.ready can resolve before that when the fonts
   // come warm out of cache on an internal navigation. A drifted entry means
   // dots off the rock and stale reveal points, so re-check on both signals
-  // and rebuild only if something actually moved — a settled page never
+  // and rebuild only if something actually moved; a settled page never
   // pays for a teardown mid-scene. Both fire during the kicker typing,
   // before he appears, so a rebuild is never a visible snap.
   function remeasureIfStale() {
@@ -1264,7 +1264,7 @@
         sdx = bx2 / bl; sdy = by2 / bl;
       }
       // gripped at its butt end: just a short nub behind the fist, the
-      // length of it out in front — long enough to reach the flames
+      // length of it out in front, long enough to reach the flames
       // rising from the bowl's centre rather than falling short at the rim.
       // A touch shorter while lying flat (34), growing to 40 as it comes up.
       const sLen = 34 + 6 * stickLift;
@@ -1277,7 +1277,7 @@
     }
     // The strand above ends in his fist normally; while he reaches
     // for a ring the fist leaves the rope, so it eases over to end
-    // at the harness device instead — the line always moves with him
+    // at the harness device instead; the line always moves with him
     let bx = 0, by = tailY;
     if (onRope) {
       bx = S.handG.x + (S.pelvis.x - 1 - S.handG.x) * reach;
@@ -1301,7 +1301,7 @@
         // rope drew at the pop toward the exact curve the springs
         // will draw at handoff. Both include the fist -> harness ->
         // brake-hand prefix, so the renderer's corner rounding at
-        // the hands is identical on both edges of the settle — the
+        // the hands is identical on both edges of the settle, so the
         // strand can't shift even a pixel when representations swap
         const e = easeInOut(clamp01((now - freed.t0) / 900));
         const nxt = nextPin();
@@ -1362,8 +1362,8 @@
     } else if (releaseMorph) {
       // he's let go: the strand he was holding falls onto the plumb
       // line over the drop, instead of fading out of existence. The
-      // collapse runs down the line as a wave — his end lets go
-      // first — and the coil at the floor never moves
+      // collapse runs down the line as a wave: his end lets go
+      // first, and the coil at the floor never moves
       const u = (now - fallT0) / 750;
       const n = releaseMorph.length - 1;
       slackEl.setAttribute('d', ropePath(releaseMorph.map((p, i) => {
@@ -1376,7 +1376,7 @@
       slackEl.setAttribute('d', '');
     }
     // The strand above: from the top anchor through the flex points
-    // down to the rope's end — his side of the device while he rides
+    // down to the rope's end: his side of the device while he rides
     // it, hanging plumb to the coil once he's let go
     ropeEl.setAttribute('d', ropePath([
       [0, 0],
@@ -1386,7 +1386,7 @@
     ]));
   }
 
-  // Sweat: short-lived droplets flicked off during the brow wipe —
+  // Sweat: short-lived droplets flicked off during the brow wipe:
   // simple ballistic points drawn in the figure's own svg
   const drops = [];
   function spawnSweat(hx, hy, n) {
@@ -1427,14 +1427,14 @@
   }
 
   const bends = { g: -1, b: 1, l: -1 };
-  // During the walk each arm swings as a driven double pendulum — the whole
+  // During the walk each arm swings as a driven double pendulum: the whole
   // upper arm rotates about the shoulder and the elbow flexes on top of it,
   // instead of a hand target with IK guessing (and freezing) the elbow. When
   // armFK.g/.b is set, render draws through the sprung elbow rather than the
-  // IK solve — which still holds the previous frame's solve, so FK takes
+  // IK solve, which still holds the previous frame's solve, so FK takes
   // over from where the arm already is instead of snapping in.
   const armFK = { g: false, b: false };
-  // Debug knob: the whole rig — hops, cleaning beats, spring physics —
+  // Debug knob: the whole rig (hops, cleaning beats, spring physics)
   // runs off one scaled clock. 1 = normal speed, 0.25 = quarter speed
   const SPEED = 1;
   let vnow = performance.now();
@@ -1487,7 +1487,7 @@
     }
 
     if (state === 'perch') {
-      // He rappels down to the lowest perch visible in the viewport —
+      // He rappels down to the lowest perch visible in the viewport:
       // on load that means bouncing down everything on screen, and each
       // scroll uncovers more wall for him to descend. Never upward:
       // you can't hop up a rope.
@@ -1536,7 +1536,7 @@
           if (finalHop) {
             // the last bounce has run its course. Hold the reclined pose (feet
             // driving firmly onto the turf) until they're actually PLANTED, then
-            // stand up — so he never uprights in mid-air. hop stays non-null so
+            // stand up, so he never uprights in mid-air. hop stays non-null so
             // this frame's leg-swing keeps his feet on the turf (it's nulled on
             // the first touch frame), avoiding a one-frame wall-snap.
             y = restY;
@@ -1565,7 +1565,7 @@
       T = perchPose(y, sway, gx);
       // cleaning beat: seated at the ring, the guide hand lets go of
       // the rope above (the strand eases over to hang from the
-      // harness device — the brake hand behind his back never leaves
+      // harness device; the brake hand behind his back never leaves
       // the rope), reaches out, pops the strand below him out of the
       // ring at the top of the reach, and comes back to the rope as
       // the freed stretch swings loose toward plumb
@@ -1631,7 +1631,7 @@
       const e = easeInOut(u);
       const c = bell(u, 0, 0.65);   // the absorbing crouch
       // guide hand: grips the rope (x≈0) until RELEASE_AFTER, then eases off to
-      // the walk's neutral position. Both hands only ever drop — no reaching up.
+      // the walk's neutral position. Both hands only ever drop, never reaching up.
       const g = easeInOut(clamp01((now - touchT0 - RELEASE_AFTER) / 180));
       T = {
         pelvis: [-3 + 8 * e, fy - 26 + 2 * e + 6 * c],
@@ -1647,7 +1647,7 @@
         feetFast: true,
       };
       // the moment the let-go delay elapses, the rope drops off his hand and
-      // settles to plumb — it stayed attached to his grip right up to here
+      // settles to plumb; it stayed attached to his grip right up to here
       if (!released && (now - touchT0) >= RELEASE_AFTER) {
         released = true;
         releaseMorph = lastSlackPts;
@@ -1674,7 +1674,7 @@
       // foot is well BEHIND the hip at toe-off, then it lifts and swings
       // through. The hip height is driven by the leg geometry, so he
       // vaults up over a near-straight stance leg and dips at each
-      // contact — which is what lets the trailing leg extend cleanly
+      // contact, which is what lets the trailing leg extend cleanly
       // behind him instead of staying tucked underneath. The numbers below
       // were dialled in by eye in a scratch page that is no longer in the
       // repo, so treat them as tuned constants rather than derived ones.
@@ -1689,7 +1689,7 @@
       const vHip = A / (DUTY * STEP);
       const x = Math.min(walkTo, walkFrom + vHip * t);
       // +0.5 starts him mid-stride so the very first frame matches the
-      // dismount's step-out stance (near foot rear, far foot front) — the
+      // dismount's step-out stance (near foot rear, far foot front), so the
       // first stride flows straight out of the touchdown with no foot pop
       const phi = t / (2 * STEP) + 0.5;           // strides elapsed
       // one foot's fore/aft offset (dx, relative to the hip) and lift (h)
@@ -1709,7 +1709,7 @@
       // hip height: as high as EACH leg can still reach its foot (the
       // straight-leg reach shrinks as the foot gets further fore/aft),
       // softened a touch under the hips at mid-stance. The binding leg
-      // wins, rounded at the handoff so there's no kink at contact — so
+      // wins, rounded at the handoff so there's no kink at contact, so
       // the hips ride up over the straight stance leg and dip as it passes.
       const reach = (f) => {
         const straight = Math.sqrt(Math.max(1, LEGLEN * LEGLEN - f.dx * f.dx));
@@ -1732,10 +1732,10 @@
         armFKg: true, armFKb: true,   // whole-arm swing, not IK-to-hand
       };
       // The arm rig settled on: the whole arm swings from the
-      // shoulder. `a` is the arm-forward metric (+1 forward, -1 back) — the
+      // shoulder. `a` is the arm-forward metric (+1 forward, -1 back): the
       // negated same-side foot offset, so each arm swings opposite its own
       // leg. thU rotates the upper arm about the shoulder; the elbow flexes
-      // more up front (a>0) and straightens toward the back — so both
+      // more up front (a>0) and straightens toward the back, so both
       // segments move together instead of a stiff shoulder with only the
       // forearm folding.
       const shX = T.chest[0] + (T.head[0] - T.chest[0]) * 0.25;
@@ -1753,7 +1753,7 @@
       T.handG = gArm.hand; T.elbowG = gArm.elbow;
       T.handB = bArm.hand; T.elbowB = bArm.elbow;
       // he already let go on the dismount, so both arms swing freely from the
-      // first stride — no peeling the guide hand off the rope here
+      // first stride, with no peeling the guide hand off the rope here
       // a few strides in he wipes his brow with the free hand and
       // flicks the sweat away
       const wp = (t - 750) / 1350;
@@ -1819,12 +1819,12 @@
       // lies, then raises it into the poking grip. The hand reaches down
       // (ease in), dwells a beat to grasp, then lifts back up (ease out);
       // the stick itself is handed off from the floor to his fist at the
-      // grasp and tracks his hand the whole way up — no teleport.
+      // grasp and tracks his hand the whole way up, no teleport.
       const u = clamp01((now - grabT0) / 1100);
       T = sitPose(now, 0);
       const rest = T.handG;                       // resting grip on the stump
       // grip point: the near (left) end of the stick as it lies in rig
-      // space — floor stick spans ~169..203, so grasp it around 171
+      // space: floor stick spans ~169..203, so grasp it around 171
       const grip = [stumpX + 38, floorY - 2.5];
       let hx, hy;
       if (u < 0.46) {                             // reach down and grasp
@@ -1855,7 +1855,7 @@
       }
     } else if (state === 'sit') {
       // camp idle, forever: mostly just sitting and breathing; every
-      // little while — at random — he leans in and gives the fire a
+      // little while, at random, he leans in and gives the fire a
       // double jab (two quick pokes), each knocking a burst of embers
       // loose off the coals
       let pk = 0;
@@ -1877,7 +1877,7 @@
         }
         if (u >= 1) {
           poke = null;
-          // next double jab comes soon — a random 2, 3 or 4 second wait
+          // next double jab comes soon: a random 2, 3 or 4 second wait
           pokeAt = now + (2 + Math.floor(Math.random() * 3)) * 1000;
         }
       }
@@ -1930,12 +1930,12 @@
         // the strand below the brake hand: loose springs with a bowed
         // target line down to the next uncleaned ring (or the coil
         // once everything's cleaned) give it weight and let it swing
-        // out when a ring is cleaned — never passing into the rock
+        // out when a ring is cleaned, never passing into the rock
         if (onRope) {
           const nxt = nextPin();
           if (freed) {
             // the settle morph owns the strand; when it lands, seed
-            // the springs exactly where it landed and hand over —
+            // the springs exactly where it landed and hand over;
             // both shapes are the same hanging line, so the swap is
             // invisible
             if (now - freed.t0 >= 900) {
@@ -2015,7 +2015,7 @@
         // taking the rope: the strand below him still lies exactly
         // along its pre-rigged drape (through the old top-anchor
         // line), and settles onto his brake hand with the same morph
-        // a cleaned ring uses — so nothing switches at the handover
+        // a cleaned ring uses, so nothing switches at the handover
         freed = captureFreed(vnow, [
           [S.handG.x, S.handG.y],
           [S.pelvis.x - 1, S.pelvis.y + 2],

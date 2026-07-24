@@ -1,7 +1,7 @@
 <!-- A white sphere lit from the upper left. The gradient stops trace a measured
      falloff rather than an even ramp: flat through the lit half, then dropping
      away over the last third, which is what reads as a lit ball instead of a
-     disc with a vignette. It bottoms out at #a2a2a2 — deeper than a real white
+     disc with a vignette. It bottoms out at #a2a2a2, deeper than a real white
      sphere would go, because at 16px on a light tab bar that lower-right gray
      is the only thing giving the silhouette an edge. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">

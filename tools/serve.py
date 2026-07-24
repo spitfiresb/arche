@@ -1,6 +1,6 @@
 """Static dev server for the site: python3 tools/serve.py, then open localhost:8712.
 
-Serves public/ — the same directory Cloudflare Pages deploys — and imitates the
+Serves public/, the same directory Cloudflare Pages deploys, and imitates the
 two Pages behaviours the site depends on:
 
   no-store      Plain `python -m http.server` sends Last-Modified and no
@@ -11,13 +11,13 @@ two Pages behaviours the site depends on:
 
   clean URLs    Pages serves /work/personal out of work/personal.html, and the
                 pages link that way throughout. Without this, every internal
-                link would 404 locally while working in production — the worst
+                link would 404 locally while working in production, the worst
                 kind of split between the two.
 
-Add ?edit to any page to make its text editable in place — see edit-mode.js.
+Add ?edit to any page to make its text editable in place; see edit-mode.js.
 
-This serves flat files only. The one server-side piece — POST /api/detect,
-which the FloorSense demo calls — is a Cloudflare Pages Function, so testing
+This serves flat files only. The one server-side piece (POST /api/detect,
+which the FloorSense demo calls) is a Cloudflare Pages Function, so testing
 that path needs `npx wrangler pages dev public` instead.
 """
 import http.server
@@ -31,7 +31,7 @@ ROOT = os.path.normpath(os.path.join(HERE, os.pardir, 'public'))
 # Edit mode. Requesting any page with ?edit gets tools/edit-mode.js injected;
 # the file is served from tools/ under a name public/ has no route for, so the
 # whole feature exists only here. Nothing about it is deployable, which is the
-# point — public/ is the deployed site and it stays free of dev tooling.
+# point: public/ is the deployed site and it stays free of dev tooling.
 EDIT_URL = '/__edit.js'
 EDIT_FILE = os.path.join(HERE, 'edit-mode.js')
 EDIT_TAG = b'<script src="' + EDIT_URL.encode() + b'"></script>\n</body>'

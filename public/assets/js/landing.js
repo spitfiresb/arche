@@ -24,7 +24,7 @@
       var width = list.clientWidth;
 
       if (!cards[i].classList.contains("gh-card")) {
-        // room between the viewport edge and the mark's right edge —
+        // room between the viewport edge and the mark's right edge,
         // exactly the span a leftward-opening card has to live in
         var room = host.getBoundingClientRect().right - EDGE_GUTTER;
         var opensLeft = room >= Math.min(OPEN_LEFT_MIN, width);
@@ -196,7 +196,7 @@
     };
     sizeAllPills();
     // the fallback face is wider than Söhne, so the box moves once the
-    // real one lands — redraw rather than stroke a stale outline
+    // real one lands, so redraw rather than stroke a stale outline
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(sizeAllPills);
     }
@@ -213,7 +213,7 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     e.preventDefault();
 
-    // pin the box open, flush that frame, then let it shut — so the
+    // pin the box open, flush that frame, then let it shut, so the
     // collapse plays from full width whether or not the pointer hovered
     link.classList.add("open");
     void link.offsetWidth;

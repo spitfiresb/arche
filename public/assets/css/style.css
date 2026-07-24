@@ -1,7 +1,7 @@
 /* Type:
    --font-sans   Söhne (a licensed Klim face). It isn't hosted here, so when
-                 it isn't installed we fall to Helvetica Neue — the neo-
-                 grotesque Söhne descends from and reads almost identically —
+                 it isn't installed we fall to Helvetica Neue, the neo-
+                 grotesque Söhne descends from and reads almost identically,
                  then to Inter as a hosted web-font backstop for other OSes.
    --font-serif  Newsreader italic, for emphasized lead-ins.
    Both web fonts load from Google Fonts via <link> tags in each page's
@@ -12,13 +12,13 @@
   /* Dark theme + greys */
   --bg: #1a1a1a;
   --fg: #f2f2f2;
-  --muted: #a0a0a0;         /* gray11 — descriptions and intro body */
-  --faint: #7e7e7e;         /* gray10 — section labels */
+  --muted: #a0a0a0;         /* gray11: descriptions and intro body */
+  --faint: #7e7e7e;         /* gray10: section labels */
   --line: rgba(242, 242, 242, 0.1);   /* hairline: artifact frames, spec rules */
-  --head-size: 0.9375rem;   /* 15px — page title and its description, one size */
+  --head-size: 0.9375rem;   /* 15px: page title and its description, one size */
   --content-width: 48rem;   /* content column width (768px) */
   --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
-  --ld-corner: 40px;        /* rounded corner on the demo preview boxes — the
+  --ld-corner: 40px;        /* rounded corner on the demo preview boxes; the
                                single knob: the thumb and inline embed read it
                                directly, and live-demo.js reads it to scale the
                                parked live app's corner to match */
@@ -30,7 +30,7 @@
 html, body {
   height: 100%;
   margin: 0;
-  /* stop iOS Safari from inflating text in landscape — the site sets every
+  /* stop iOS Safari from inflating text in landscape; the site sets every
      size explicitly, so the "adjustment" only breaks the scale */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -95,7 +95,7 @@ body.home main {
 }
 
 /* The one emphasized phrase lifts to full white against the muted body
-   copy. A plain span, not <em> — the browser's default italic for <em>
+   copy. A plain span, not <em>, because the browser's default italic for <em>
    would need overriding, and a stale stylesheet would show it italic */
 .intro .stress {
   color: var(--fg);
@@ -113,7 +113,7 @@ body.home main {
   padding-top: 3rem;
 }
 
-/* Only the column label is centered — it is the one line that has to sit
+/* Only the column label is centered: it is the one line that has to sit
    on the same axis as the About link above it. Everything under it goes
    back to a left edge, which is what the stacked items want. */
 .col > h2 {
@@ -123,7 +123,7 @@ body.home main {
      back, so the label and the items under it land where they did before
      the padding existed */
   margin: -0.45em 0 calc(1.25rem - 0.45em);
-  font-size: 0.8125rem;   /* 13px — a step below the 17px item titles */
+  font-size: 0.8125rem;   /* 13px: a step below the 17px item titles */
   font-weight: 400;
   color: var(--faint);
 }
@@ -158,7 +158,7 @@ body.home main {
 }
 
 /* Item: a bare title with a muted description stacked beneath it. No
-   underline at rest — with nothing marking these as links, the hover
+   underline at rest: with nothing marking these as links, the hover
    draws one under the title so pointing at one still registers as a
    target. */
 .col .item-title {
@@ -180,7 +180,7 @@ body.home main {
   bottom: -0.18em;
   height: 1px;
   background: currentColor;
-  /* keep the rule on its own compositing layer even at rest — without
+  /* keep the rule on its own compositing layer even at rest; without
      this, the layer the transform animation creates is dropped when the
      transition ends, and the re-rasterized 1px line can land on a
      subpixel boundary and antialias to grey (visible in Safari on the
@@ -211,7 +211,7 @@ body.home main {
 /* Left-aligned, but floating in the gap: margin-top:auto takes an equal
    share of the page's leftover height to the auto margins on the work
    grid below, so the block settles midway between the intro and the
-   columns instead of hugging the paragraph. The padding is the floor —
+   columns instead of hugging the paragraph. The padding is the floor:
    on a short window there is no slack to share and this is all that
    keeps it off the text above. */
 .elsewhere {
@@ -246,7 +246,7 @@ body.home main {
    instead of switched on: both start at the bottom centre and travel up
    the opposite sides to meet at the top. landing.js sizes the paths to
    their link, since the geometry depends on its rendered box. Shared by
-   About me and the three column labels — anything that wraps one of these
+   About me and the three column labels; anything that wraps one of these
    only has to be position:relative with the padding to hold the outline. */
 .pill-border {
   position: absolute;
@@ -261,7 +261,7 @@ body.home main {
   fill: none;
   stroke: var(--fg);
   stroke-width: 1;
-  /* dash 100, gap 200 — the gap is longer than the path on purpose. With
+  /* dash 100, gap 200: the gap is longer than the path on purpose. With
      an equal 100/100 pattern the *next* dash begins exactly at the far end
      of the path, and at rest it antialiases into a faint dot at the top
      where the two halves meet. An oversized gap puts that repeat out past
@@ -290,12 +290,12 @@ a:focus-visible > .pill-border path {
 }
 
 /* Click: the outline unwinds back down both sides on an accelerating
-   curve — slow to let go, quick at the end — while the label drops out
+   curve (slow to let go, quick at the end) while the label drops out
    ahead of it. Navigation waits for it to finish (landing.js).
 
    .open is the starting frame, stamped on by landing.js and held for one
    reflow before .collapsing lands. Without it the retraction has nothing
-   to travel from on any pointer that never hovers — a touch tap would set
+   to travel from on any pointer that never hovers; a touch tap would set
    the offset back to 100 on a stroke that was already at 100, animating
    nothing. */
 .elsewhere .about a.open .pill-border path {
@@ -358,7 +358,7 @@ main {
   padding: 0 1.5em;
 }
 
-/* Phones: the interior pages open closer to the top — 11.25rem of headroom
+/* Phones: the interior pages open closer to the top: 11.25rem of headroom
    was sized for a desktop window, and on a phone it reads as a blank
    first screen. The floating back disc sits in the top 3.5rem, so the
    column still clears it comfortably. */
@@ -407,7 +407,7 @@ ul.links ul.social-row li {
   margin-bottom: 0;
 }
 
-/* The item is just the icon's footprint — the card is revealed as an
+/* The item is just the icon's footprint; the card is revealed as an
    overlay on top of the page, so nothing else shifts */
 ul.links li.li-hover {
   position: relative;
@@ -423,8 +423,8 @@ ul.links li.li-hover:focus-within {
 }
 
 /* On hover the mark travels from its spot in the row onto the top-left
-   of the card — over the banner photo for LinkedIn, into the header
-   gutter for GitHub — while the card expands out from under it */
+   of the card (over the banner photo for LinkedIn, into the header
+   gutter for GitHub) while the card expands out from under it */
 .li-link {
   display: block;
   height: 100%;
@@ -450,7 +450,7 @@ li.li-hover:focus-within .li-logo {
   left: 0.55em;
 }
 
-/* The LinkedIn card opens the other way — down and to the LEFT, into the
+/* The LinkedIn card opens the other way: down and to the LEFT, into the
    empty page margin rather than over the work columns. Pinning the
    reveal's right edge to the mark makes the box grow leftward, and the
    mark lands inside the card's top-right corner, which sits right where
@@ -485,7 +485,7 @@ li.li-hover.opens-left:focus-within .li-logo {
   overflow: hidden;
   min-height: 0;
   opacity: 0;
-  /* fills the box, which grows from the top-left — right and down */
+  /* fills the box, which grows from the top-left, right and down */
   transition: opacity 0.5s ease 0.1s, transform 0.5s ease,
     box-shadow 0.5s ease;
 }
@@ -512,13 +512,13 @@ li.li-hover:focus-within .li-hover-card {
 .li-hover-card {
   margin-top: 0;
   /* the cards reproduce LinkedIn's and GitHub's own layouts, so they have
-     to opt out of whatever the surrounding list is doing — the centered
+     to opt out of whatever the surrounding list is doing; the centered
      About block would otherwise centre the name, headline and location */
   text-align: left;
   border-radius: 0.6em;
   /* flat card: a soft drop shadow and a hairline border, no 3d tilt.
      Both cards are dark like the page, so the shadow has to be deep
-     enough to separate them from it — each card sets its own border
+     enough to separate them from it, and each card sets its own border
      color from its site's dark palette */
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.6);
@@ -530,14 +530,14 @@ li.li-hover:focus-within .li-hover-card {
 
 /* Back: a bare chevron, no label and no underline, pinned to the top-left
    of the viewport rather than to the content column. The columns differ
-   page to page — 30em on About, 78rem on the work pages, a centered block
-   on the Work index — so a mark sitting in the flow lands somewhere
+   page to page (30em on About, 78rem on the work pages, a centered block
+   on the Work index) so a mark sitting in the flow lands somewhere
    different on each one; fixed to the viewport it's in the same place
    everywhere. On About that also puts it clear of the cliff face, which
    is drawn down the left edge of the text column.
 
    It's a direct child of <body>, not of <main>, so it positions against
-   the page rather than the column — main is position:relative and would
+   the page rather than the column; main is position:relative and would
    otherwise be its containing block, putting it back on a different x per
    page. Fixed rather than absolute so it stays pinned to the top-left of
    the viewport as the page scrolls, keeping the exit in reach anywhere
@@ -578,7 +578,7 @@ li.li-hover:focus-within .li-hover-card {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Shallower than a 45° chevron — 8 across to 6 down each way, so it reads
+/* Shallower than a 45° chevron: 8 across to 6 down each way, so it reads
    as a soft arrow rather than a bracket */
 .back-chevron {
   fill: none;
@@ -590,12 +590,12 @@ li.li-hover:focus-within .li-hover-card {
 
 /* The ring is drawn on, not switched on: one dash the length of the
    circle, parked out of sight at rest and closed on hover. The gap is
-   longer than the circumference on purpose — same reason as .pill-border,
+   longer than the circumference on purpose, same reason as .pill-border,
    an equal pattern would repeat a second dash onto the far end. The
    rotate(-90) attribute in the markup starts the draw at the top.
 
    The dash values are duplicated as attributes in the markup so the ring
-   is hidden at rest even on a stale stylesheet — the CSS here only has to
+   is hidden at rest even on a stale stylesheet; the CSS here only has to
    win the transition, which it does, presentation attributes being the
    weakest thing in the cascade.
 
@@ -620,7 +620,7 @@ li.li-hover:focus-within .li-hover-card {
 
 /* Phones: the viewport-pinned mark floats over the text column as the page
    scrolls (there is no spare margin for it to live in), so it carries its
-   own contrast the way the live-demo overlay's back control does — a dark
+   own contrast the way the live-demo overlay's back control does: a dark
    disc with a hairline and a shadow, legible over anything it crosses.
    The .ld-back variant opts out: it already has this styling at a larger
    size, and reshaping it here would shrink the one exit from a demo. */
@@ -908,7 +908,7 @@ html.man body.page main:has(.rope) {
 }
 
 /* Stickman mode draws the rope live all the way into the turf, so the
-   static tail only reserves the layout space — its stroke is hidden */
+   static tail only reserves the layout space; its stroke is hidden */
 html.man .rope {
   visibility: hidden;
 }
@@ -938,9 +938,9 @@ ul.timeline p {
    takes; the spec sheet is the reference layer for anyone who wants the
    build details.
 
-   The artifact column carries the evidence — a live preview of the thing
-   running (see live-demo.css). A project with no interface to show — a
-   pipeline, an agent, a stub — drops the column entirely and runs as a
+   The artifact column carries the evidence: a live preview of the thing
+   running (see live-demo.css). A project with no interface to show (a
+   pipeline, an agent, a stub) drops the column entirely and runs as a
    .solo band, because the spec sheet already states the stack and a
    plate repeating it was the same facts twice.
 
@@ -956,7 +956,7 @@ body.page.work main {
   margin-bottom: 5rem;
 }
 
-/* The page label repeats the landing page's column heading verbatim —
+/* The page label repeats the landing page's column heading verbatim:
    you clicked "Personal" over there, you're under "Personal" here. */
 .page-title {
   margin: 0;
@@ -1007,14 +1007,14 @@ ul.bands > li[id] {
 }
 
 /* Placed explicitly rather than by source order, so the columns can swap
-   without the markup moving — the prose always follows the title for a
+   without the markup moving; the prose always follows the title for a
    screen reader, whichever side it's painted on. */
 .band-artifact { grid-row: 1; grid-column: 1; }
 .band-prose    { grid-row: 1; grid-column: 2; }
 ul.bands > li:nth-child(even) .band-artifact { grid-column: 2; }
 ul.bands > li:nth-child(even) .band-prose    { grid-column: 1; }
 
-/* Sides swap on even bands, so the wide track has to swap with them —
+/* Sides swap on even bands, so the wide track has to swap with them;
    otherwise every other artifact lands in the narrow column. */
 ul.bands > li:nth-child(even) {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
@@ -1022,7 +1022,7 @@ ul.bands > li:nth-child(even) {
 
 /* A project with no interface to show: one column at a reading measure, wide
    enough that the spec sheet below the summary still gets a label column and a
-   value column. The :nth-child(even) duplicate isn't redundant — the even rule
+   value column. The :nth-child(even) duplicate isn't redundant: the even rule
    above out-specifies a bare .solo, so a solo band sitting in an even slot
    would otherwise get handed the two-column track. */
 ul.bands > li.solo,
@@ -1077,7 +1077,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   font-size: 0.85em;
 }
 
-/* An accolade riding after the date — same size and position in the title
+/* An accolade riding after the date, at the same size and position in the title
    line, but the text itself is a slowly drifting rainbow gradient (clipped to
    the glyphs) so it glints without shouting. A leading dot separates it from
    the date the way the date is separated from a part label. */
@@ -1195,7 +1195,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 }
 
 /* An always-live embed: same hairline frame as a thumb, but the demo runs
-   in place — no expansion step, the iframe itself is the interface. */
+   in place: no expansion step, the iframe itself is the interface. */
 .band-artifact .ld-inline {
   display: block;
   width: 100%;
@@ -1206,7 +1206,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 }
 
 /* With JS, live-demo.js wraps the inline embed in .ld-inline-box and lays the
-   iframe out at a desktop width, scaled down to fit — so a narrow column gets
+   iframe out at a desktop width, scaled down to fit, so a narrow column gets
    a shrunken desktop view instead of a squeezed one. The frame chrome moves
    up to the box: on the iframe it would scale down with the content. */
 .band-artifact .ld-inline-box {
@@ -1223,7 +1223,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 }
 
 .band-artifact .ld-inline-box .ld-inline {
-  /* Fill the box outright — without an explicit height the iframe falls to
+  /* Fill the box outright; without an explicit height the iframe falls to
      its 150px default and the demo's own vertical centering happens inside
      that sliver at the top of the box. live-demo.js overrides the size
      with a desktop layout (scaled down) when the box is narrow.
@@ -1241,7 +1241,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 }
 
 /* The system map's page shares the site background, so a frame would draw a
-   box around what should read as part of the page itself — and for the same
+   box around what should read as part of the page itself, and for the same
    reason it stays square while the other previews round off. */
 #unpak-system .ld-thumb {
   border: none;
@@ -1268,7 +1268,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 
 /* Label column fixed rather than auto-sized, so the values line up on one
    edge instead of stepping in and out with each label's length. The row
-   wrappers are display:contents — they exist to pair a dt with its dd for
+   wrappers are display:contents; they exist to pair a dt with its dd for
    the single-column collapse below, not to lay anything out. */
 .band-spec dl {
   display: grid;
@@ -1292,9 +1292,9 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   color: var(--muted);
 }
 
-/* Narrow screens: bands stack, prose above artifact every time — the
+/* Narrow screens: bands stack, prose above artifact every time: the
    title and summary introduce the demo before it appears. The threshold
-   tracks the band width — once the two-up can't give the prose ~440px it
+   tracks the band width; once the two-up can't give the prose ~440px it
    stops being two-up. */
 @media (max-width: 64rem) {
   body.page.work main {
@@ -1303,7 +1303,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   .page-head {
     margin-bottom: 3rem;
   }
-  /* :nth-child(even) is listed too — the wide layout's even-band rule
+  /* :nth-child(even) is listed too: the wide layout's even-band rule
      carries that same specificity, so a bare `ul.bands > li` here would
      lose to it and leave every second band on the two-column track,
      squeezing its stacked children into the narrow 1fr share. */
@@ -1326,7 +1326,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
     grid-row: 2;
     grid-column: 1;
   }
-  /* Too narrow for a label column — stack each label over its value. The row
+  /* Too narrow for a label column, so stack each label over its value. The row
      wrappers stop being display:contents here and become the blocks that
      carry the spacing, since a dt and its dd are never DOM siblings. */
   .band-spec dl {
@@ -1347,7 +1347,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 /* Phones proper. The 40px preview corner was drawn for a 700px-wide
    artifact column; on a 360px thumb it eats the picture, so the one knob
    steps down and the parked live app follows it (live-demo.js reads the
-   computed value). Title rows are allowed to wrap — "Agricultural
+   computed value). Title rows are allowed to wrap: "Agricultural
    Analytics Platform" plus a date and a repo link is more than one phone
    line holds. */
 @media (max-width: 40rem) {
@@ -1364,7 +1364,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 }
 
 /* LinkedIn profile header, replicated 1:1 (font stack, type scale,
-   colors, and layout matching linkedin.com) — in LinkedIn's own dark
+   colors, and layout matching linkedin.com), in LinkedIn's own dark
    theme, since the site around it is dark: #1d2226 surfaces, #38434f
    hairlines, and the lighter #70b5f9 for the blue accents */
 .li-card {
@@ -1428,7 +1428,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 }
 
 /* GitHub card: 53 weeks of boxes need more room than the text column,
-   so on hover this card grows past the list width — as wide as the year
+   so on hover this card grows past the list width: as wide as the year
    wants, capped by the viewport. One shared value (--ghw) sizes both
    the growing box and the content laid out inside it, so the card can
    never clip its own right edge. */
@@ -1454,7 +1454,7 @@ ul.links li.li-hover.gh:focus-within .li-hover-reveal {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Noto Sans", Helvetica, Arial, sans-serif;
   /* GitHub's own dark theme, to match the page: #0d1117 canvas, #30363d
-     hairlines, #e6edf3 ink — the green calendar still carries the color,
+     hairlines, #e6edf3 ink; the green calendar still carries the color,
      on the darker ramp landing.js draws */
   background: #0d1117;
   color: #e6edf3;
@@ -1478,7 +1478,7 @@ ul.links li.li-hover.gh:focus-within .li-hover-reveal {
   padding-left: 28px;
 }
 
-/* The octocat is near-black (#1f2328), so it's forced to pure white —
+/* The octocat is near-black (#1f2328), so it's forced to pure white:
    brightness(0) crushes it to black first, because inverting #1f2328 on
    its own only reaches an off-white #e0dcd7. It keeps that white on the
    dark card too, parked vertically centered on the avatar */
@@ -1605,7 +1605,7 @@ html.page-enter-back body {
    work bands list is skipped as a slab so its items can stagger on their
    own instead. About's cliff scenery (.wall, .floor, .rig, rope, stickman)
    is pinned to measured positions in the margin, so rising it would tear
-   it away from the timeline it's anchored to — it just fades in with the
+   it away from the timeline it's anchored to; it just fades in with the
    page instead. */
 html.page-enter main > :not(.bands, .wall, .floor, .rig, .rope, .stickman),
 html.page-enter-back main > :not(.bands, .wall, .floor, .rig, .rope, .stickman),
@@ -1635,8 +1635,8 @@ html.page-enter-back main > :nth-child(n+6),
 html.page-enter .bands > li:nth-child(n+5),
 html.page-enter-back .bands > li:nth-child(n+5) { animation-delay: 350ms; }
 
-/* The pinned scenery still joins the entrance, but with a pure fade —
-   no translate — so it never leaves its measured spot. Delayed to land
+/* The pinned scenery still joins the entrance, but with a pure fade and
+   no translate, so it never leaves its measured spot. Delayed to land
    with the tail of the stagger instead of popping in first. */
 html.page-enter main > :is(.wall, .floor, .rig, .rope, .stickman),
 html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {

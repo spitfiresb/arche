@@ -1,11 +1,11 @@
-/* Edit mode — injected by tools/serve.py into any page requested with ?edit.
+/* Edit mode, injected by tools/serve.py into any page requested with ?edit.
  *
  * It never ships: the file lives in tools/, outside public/, and the dev server
  * is the only thing that serves it. Production has no idea it exists.
  *
  * What it does: makes every block of text on the page directly editable, then
  * hands you the result as a diff you can paste into a chat. Nothing is written
- * to disk — a reload throws the edits away. That is deliberate; the copy button
+ * to disk; a reload throws the edits away. That is deliberate; the copy button
  * is the way out.
  *
  * A block is any element holding text of its own. Where a paragraph contains
@@ -36,7 +36,7 @@
 
   // An empty <p> is a paragraph waiting to be written, and text is the one
   // thing this tool has to be able to add. Without this an entry with nothing
-  // in it yet is the one place you cannot type — so empty text holders arm
+  // in it yet is the one place you cannot type, so empty text holders arm
   // too, and CSS gives them a hint and enough height to aim at.
   var EMPTY_OK = { P: 1, H1: 1, H2: 1, H3: 1, H4: 1, FIGCAPTION: 1, BLOCKQUOTE: 1 };
 
@@ -51,7 +51,7 @@
     return false;
   }
 
-  // A short, readable path — enough for me to find the line in the file.
+  // A short, readable path: enough for me to find the line in the file.
   function keyFor(el) {
     var parts = [];
     for (var n = el; n && n.tagName !== 'BODY'; n = n.parentElement) {
@@ -144,7 +144,7 @@
 
   function report(all) {
     var list = all ? blocks : changed();
-    var head = ['Text edits — ' + pagePath()];
+    var head = ['Text edits: ' + pagePath()];
     if (document.title !== titleOriginal) {
       head.push('', '[title]', '  - ' + titleOriginal, '  + ' + document.title);
     }

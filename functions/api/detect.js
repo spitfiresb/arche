@@ -1,4 +1,4 @@
-// Cloudflare Pages Function — POST /api/detect
+// Cloudflare Pages Function: POST /api/detect
 //
 // This is the ONLY server-side piece of the FloorSense demo. It exists solely
 // to hold the Roboflow API key so it never ships to the browser. It receives an
@@ -7,7 +7,7 @@
 // (app/api/detect/route.ts) onto Cloudflare's edge runtime.
 //
 // Required environment variable (set in the Cloudflare Pages dashboard, or in a
-// local .dev.vars file — NEVER commit it):
+// local .dev.vars file, NEVER commit it):
 //   ROBOFLOW_API_KEY = <your Roboflow private API key>
 
 const MODEL_ID = "floorplans-r7e9l-vjwg9";
