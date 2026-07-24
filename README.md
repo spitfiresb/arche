@@ -121,6 +121,48 @@ fullscreen overlay and the back control, boots the app in a hidden iframe, and
 parks the running app on the thumbnail so the preview *is* the live thing. The
 optional attributes are documented at the top of that file.
 
+## Search metadata
+
+Notes that used to live as HTML comments in `<head>`. They are here instead:
+anything in a served file is one Inspect Element away from a reader, and none
+of this is for them.
+
+**No comments in `public/**/*.html`.** The five pages and `404.html` ship
+without a single one. Explain things here, or in the CSS and JS, not in the
+markup that goes over the wire.
+
+**One Person, referenced everywhere.** `index.html` declares a `Person` with
+`@id` `https://zsaeed.com/#person`, alongside a `WebSite` and a `WebPage` in
+one `@graph`. Every other page points at that `@id` rather than redeclaring
+it — About as a `ProfilePage` whose `mainEntity` is that person, the three
+work pages as a `CollectionPage` authored by them. Redeclaring instead of
+referencing would read as several unrelated people who happen to share a name.
+
+**`sameAs` is the load-bearing field.** The LinkedIn and GitHub URLs are what
+fuse the three profiles into one entity; keep them in step with the links in
+the markup whenever either changes. Every other field is there to
+*disambiguate* — there is a novelist, a valuation director and a freelance
+designer with this name. Fields that merely describe (job titles, prose bios,
+self-asserted expertise) are not ranking inputs and get discounted, so they
+were deliberately left out. If a field doesn't distinguish, don't add it.
+
+**Descriptions state what the site is, not what its owner is.** No job title,
+no seniority, nothing that dates or that someone else gets to dispute.
+
+**`404.html` exists so Pages has a real 404 to serve.** Without it every
+unknown path fell through to the home page with a `200`, which reads to a
+crawler as an unbounded set of duplicate pages. `noindex` on it is
+belt-and-braces on top of the status code.
+
+**`/demos/*` is `noindex` via `X-Robots-Tag` in `public/_headers`, not a
+`Disallow` in `robots.txt`.** A `Disallow` would stop crawlers fetching the
+page at all, and a header they never fetch is a header they never obey.
+Crawling stays open precisely so the header lands. Three of the demos are
+vendored copies of sites that exist elsewhere, and the Unpak one would
+otherwise compete with the real marketing site.
+
+**`sitemap.xml` lists the five real pages.** Add a page, add it there.
+
 ## Secrets
 
 `.env` (Cloudflare account id and API token, for manual deploys) and
