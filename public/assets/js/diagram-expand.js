@@ -100,6 +100,8 @@
     }
 
     function open() {
+      // same guard as live-demo.js: no fullscreen below 700px
+      if (window.innerWidth < 700) return;
       if (!overlay.hidden) return;
       overlay.hidden = false;
       overlay.classList.add('open');

@@ -133,6 +133,49 @@ body.ld-locked .ld-expand { opacity: 0; }
   .ld-expand .ld-arrow-bl { transform: none; transition: none; }
 }
 
+/* Below 700px the fullscreen expansion is disabled outright (the guard
+   lives in live-demo.js and diagram-expand.js): the previews stay live,
+   but a tap or click no longer opens them. Hide the mark so nothing
+   advertises an interaction that won't happen, and drop the pointer. */
+@media (max-width: 43.75rem) {
+  .ld-expand { display: none !important; }
+  .ld-thumb { cursor: default; }
+}
+
+/* Touch screens have no hover to reveal the expand mark, and a preview
+   with no visible control reads as a picture rather than a door. So on
+   coarse pointers the mark sits on the preview at rest — smaller and
+   quieter than the hover version, arrows already drawn, riding the
+   corner instead of covering the middle of the app. */
+@media (hover: none) and (pointer: coarse) {
+  .ld-expand {
+    top: auto;
+    left: auto;
+    right: 0.9em;
+    bottom: 0.9em;
+    font-size: 0.8rem;
+    width: 3.4em;
+    height: 3.4em;
+    opacity: 1;
+    transform: none;
+    background: rgba(20, 20, 20, 0.6);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22),
+                0 0.25rem 0.9rem rgba(0, 0, 0, 0.35);
+  }
+  .ld-expand svg line,
+  .ld-expand svg polyline { stroke-dashoffset: 0; }
+  .ld-expand .ld-arrow-tr,
+  .ld-expand .ld-arrow-bl { transform: none; }
+  /* a tap flashes :hover on some mobile browsers; the hover rules above
+     re-center the mark, so pin it in its corner at higher specificity */
+  .ld-thumb:hover .ld-expand,
+  .ld-thumb:focus-visible .ld-expand {
+    transform: none;
+    background: rgba(20, 20, 20, 0.6);
+  }
+  body.ld-locked .ld-expand { opacity: 0; }
+}
+
 /* The overlay is anchored in DOCUMENT coordinates (position:absolute at the
    top of the page), and the parked miniature is placed with a transform that
    includes the scroll offset. Scrolling therefore moves it natively with the
@@ -143,6 +186,10 @@ body.ld-locked .ld-expand { opacity: 0; }
   left: 0;
   width: 100%;
   height: 100vh;
+  /* dynamic viewport units where they exist: on phones 100vh includes the
+     space under the collapsing browser chrome, which would leave a strip
+     of a fullscreen demo hidden behind the toolbar */
+  height: 100dvh;
   z-index: 20;
 }
 .ld-overlay[hidden] { display: none; }

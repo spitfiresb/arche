@@ -18,6 +18,10 @@
  *   data-bg="#fdfbf7"    — frame/poster background while the app boots
  *                          (default #0d0d0d).
  *   data-title="Foo"     — accessible title for the iframe.
+ *   data-mobile="native" — the app is responsive: at fullscreen on a narrow
+ *                          viewport it lays out at the viewport's own width
+ *                          (its mobile layout) instead of as a scaled-down
+ *                          desktop canvas. Parked previews are unaffected.
  *
  * The overlay and the expand mark are built by this script; nothing else to
  * add to the page. Multiple demos per page are supported.
@@ -47,6 +51,14 @@
                        : 'border-radius 1.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
   var SHRINK_R = still ? 'border-radius 0.01s linear'
                        : 'border-radius 1.05s cubic-bezier(0.55, 0, 0.55, 0.55)';
+
+  // Below this viewport width the fullscreen expansion is off entirely —
+  // phones, and desktop windows squeezed this narrow. The parked live
+  // miniatures still run; a click just doesn't open them. live-demo.css
+  // hides the expand mark under the same threshold (43.75rem = 700px) so
+  // the preview never advertises an interaction this guard refuses.
+  var EXPAND_MIN_W = 700;
+  function canExpand() { return window.innerWidth >= EXPAND_MIN_W; }
 
   function init(thumb) {
     var app      = thumb.getAttribute('data-live-demo');
@@ -138,9 +150,17 @@
     // viewport every value collapses to the fullscreen ones and none of
     // this does anything.
     var MIN_APP_W = 1024;
+    // data-mobile="native": this app has a real responsive layout, so at
+    // fullscreen on a narrow viewport it's handed the viewport's own width
+    // and lays out as its mobile self, instead of arriving as a desktop
+    // canvas scaled down to unreadable. Parked stays the scaled-down
+    // desktop miniature either way — as a preview, a whole desktop app in
+    // a card reads better than a phone layout squeezed into one.
+    var nativeMobile = thumb.getAttribute('data-mobile') === 'native';
     function frameGeom(parked) {
       var w = overlay.clientWidth, h = overlay.clientHeight;
-      var s = Math.min(1, w / MIN_APP_W);
+      var minW = (!parked && nativeMobile && w < MIN_APP_W) ? w : MIN_APP_W;
+      var s = Math.min(1, w / minW);
       var iy = s;
       if (parked) {
         var r = thumb.getBoundingClientRect();
@@ -391,6 +411,7 @@
     }
 
     function open() {
+      if (!canExpand()) return;
       preload();
       grown = false;
       overlay.hidden = false;

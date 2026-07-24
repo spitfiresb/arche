@@ -29,6 +29,10 @@
 html, body {
   height: 100%;
   margin: 0;
+  /* stop iOS Safari from inflating text in landscape — the site sets every
+     size explicitly, so the "adjustment" only breaks the scale */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -317,11 +321,18 @@ a:focus-visible > .pill-border path {
   body.home main {
     width: auto;
     max-width: none;
-    padding: 8vh 1.5rem 4rem;
+    padding: 10vh 1.5rem 4rem;
+    /* small viewport units: the phone browser chrome collapsing and
+       expanding doesn't reflow the centered layout */
+    min-height: 100svh;
   }
   .work-grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
+  }
+  /* a little more air between one column's last item and the next label */
+  .col > h2 {
+    margin-bottom: calc(1.4rem - 0.45em);
   }
 }
 
@@ -344,6 +355,16 @@ body.page main {
 main {
   max-width: 24em;
   padding: 0 1.5em;
+}
+
+/* Phones: the interior pages open closer to the top — 11.25rem of headroom
+   was sized for a desktop window, and on a phone it reads as a blank
+   first screen. The floating back disc sits in the top 3.5rem, so the
+   column still clears it comfortably. */
+@media (max-width: 40rem) {
+  body.page main {
+    padding-top: 7rem;
+  }
 }
 
 h1 {
@@ -594,6 +615,34 @@ li.li-hover:focus-within .li-hover-card {
 .back:focus-visible .back-ring {
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Phones: the viewport-pinned mark floats over the text column as the page
+   scrolls (there is no spare margin for it to live in), so it carries its
+   own contrast the way the live-demo overlay's back control does — a dark
+   disc with a hairline and a shadow, legible over anything it crosses.
+   The .ld-back variant opts out: it already has this styling at a larger
+   size, and reshaping it here would shrink the one exit from a demo. */
+@media (max-width: 40rem) {
+  .back:not(.ld-back) {
+    top: 0.9rem;
+    left: 0.9rem;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(26, 26, 26, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18),
+                0 0.3rem 1rem rgba(0, 0, 0, 0.4);
+  }
+  .back:not(.ld-back) .back-mark {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
 }
 
 /* ── On-page section rail ─────────────────────────────────────────────
@@ -1242,9 +1291,10 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   color: var(--muted);
 }
 
-/* Narrow screens: bands stack, artifact above prose every time. The
-   threshold tracks the band width — once the two-up can't give the prose
-   ~440px it stops being two-up. */
+/* Narrow screens: bands stack, prose above artifact every time — the
+   title and summary introduce the demo before it appears. The threshold
+   tracks the band width — once the two-up can't give the prose ~440px it
+   stops being two-up. */
 @media (max-width: 64rem) {
   body.page.work main {
     padding-top: 4em;
@@ -1265,13 +1315,13 @@ ul.bands > li.solo:nth-child(even) .band-prose {
     gap: 1.5rem;
     margin-bottom: 4rem;
   }
-  .band-artifact,
-  ul.bands > li:nth-child(even) .band-artifact {
+  .band-prose,
+  ul.bands > li:nth-child(even) .band-prose {
     grid-row: 1;
     grid-column: 1;
   }
-  .band-prose,
-  ul.bands > li:nth-child(even) .band-prose {
+  .band-artifact,
+  ul.bands > li:nth-child(even) .band-artifact {
     grid-row: 2;
     grid-column: 1;
   }
@@ -1290,6 +1340,25 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   }
   .band-spec dt {
     margin-bottom: 0.2rem;
+  }
+}
+
+/* Phones proper. The 40px preview corner was drawn for a 700px-wide
+   artifact column; on a 360px thumb it eats the picture, so the one knob
+   steps down and the parked live app follows it (live-demo.js reads the
+   computed value). Title rows are allowed to wrap — "Agricultural
+   Analytics Platform" plus a date and a repo link is more than one phone
+   line holds. */
+@media (max-width: 40rem) {
+  :root {
+    --ld-corner: 22px;
+  }
+  .band-head {
+    flex-wrap: wrap;
+    row-gap: 0.15rem;
+  }
+  .band-title {
+    font-size: 1.25rem;
   }
 }
 
