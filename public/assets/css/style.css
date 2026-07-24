@@ -627,13 +627,11 @@ li.li-hover:focus-within .li-hover-card {
 
 .toc-link {
   display: block;
-  max-width: 13rem;
+  max-width: 10rem;
   padding: 0.55rem 0;   /* the air between entries */
   overflow: hidden;
   font-size: 0.8125rem;
   line-height: 1.35;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   color: var(--faint);
   text-decoration: none;
   transition: color 0.2s ease,
@@ -1008,6 +1006,77 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   margin: 0 0.5em;
 }
 
+/* When the project was built, riding just off the end of the title. Small and
+   faint so it reads as a footnote to the name, not part of it; nowrap keeps the
+   month and year together when a long title pushes it onto its own line. */
+.band-date {
+  margin-left: 0.7em;
+  font-size: 0.8125rem;
+  color: var(--faint);
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* On the multi-part Unpak titles a second, slightly smaller dot separates the
+   part label from the date, echoing the one between name and part. */
+.band-part + .band-date::before {
+  content: "\00b7";
+  margin-right: 0.7em;
+  font-size: 0.85em;
+}
+
+/* An accolade riding after the date — same size and position in the title
+   line, but the text itself is a slowly drifting rainbow gradient (clipped to
+   the glyphs) so it glints without shouting. A leading dot separates it from
+   the date the way the date is separated from a part label. */
+.band-award {
+  margin-left: 0.7em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.band-award::before {
+  content: "\00b7";
+  margin-right: 0.7em;
+  font-size: 0.85em;
+  color: var(--faint);
+  font-weight: 400;
+}
+
+/* Each letter carries its own copy of the gradient and its own hop, both
+   staggered by --i so the colour and the jump travel down the word as one
+   wave. font-style resets the <i> wrappers, which are only there because
+   background-clip and transform need a per-letter box. */
+.band-award i {
+  display: inline-block;
+  font-style: normal;
+  background: linear-gradient(
+    90deg,
+    #d97757, #c9a24f, #5aa87a, #4f9cc9, #8b6fc9, #c1699e, #d97757
+  );
+  background-size: 900% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    award-drift 14s linear calc(var(--i) * -0.08s) infinite,
+    award-jump 2.4s ease-in-out calc(var(--i) * 0.08s) infinite;
+}
+
+@keyframes award-drift {
+  to { background-position: -900% 0; }
+}
+
+@keyframes award-jump {
+  0%, 12%, 100% { transform: translateY(0); }
+  6% { transform: translateY(-0.22em); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-award i { animation: none; }
+}
+
 /* A caveat under a demo: what the visitor is looking at isn't real data */
 .band-note {
   margin-top: 0.9rem;
@@ -1023,6 +1092,47 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 
 .band-prose p + p {
   margin-top: 0.9rem;
+}
+
+/* Title row: the project name on the left, its repo link pinned to the right
+   edge of the prose column, both sharing the title's baseline. */
+.band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* A quiet way to the source, riding alongside the title. Muted at rest like
+   the label it sits under; on hover it brightens and the arrow nudges
+   up-and-right, the same gesture an external link makes. */
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.repo-link:hover,
+.repo-link:focus-visible {
+  color: var(--fg);
+}
+
+.repo-link svg {
+  width: 0.85em;
+  height: 0.85em;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.repo-link:hover svg,
+.repo-link:focus-visible svg {
+  transform: translate(1px, -1px);
 }
 
 /* Live preview sits flush in the band, framed by a hairline */

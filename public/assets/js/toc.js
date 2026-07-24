@@ -12,7 +12,13 @@
 
   function labelOf(li) {
     var t = li.querySelector('.band-title');
-    return t ? t.textContent.replace(/\s+/g, ' ').trim() : '';
+    if (!t) return '';
+    // The title carries a trailing .band-date; the rail wants the name alone,
+    // so read from a copy with the date removed.
+    var copy = t.cloneNode(true);
+    var date = copy.querySelector('.band-date');
+    if (date) date.parentNode.removeChild(date);
+    return copy.textContent.replace(/\s+/g, ' ').trim();
   }
 
   function slug(s) {
@@ -45,7 +51,10 @@
     a.addEventListener('click', function (e) {
       e.preventDefault();
       var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      sec.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      // Center the band in the viewport (the demo lives mid-band, so this
+      // puts it front and centre). The browser clamps at either end of the
+      // page, so top and bottom sections just get as close as they can.
+      sec.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
       if (history.replaceState) history.replaceState(null, '', '#' + sec.id);
     });
 

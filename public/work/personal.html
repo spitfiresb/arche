@@ -34,50 +34,35 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">System</span></h2>
+          <h2 class="band-title">Unpak <span class="band-part">System</span><time class="band-date" datetime="2026-04">April 2026</time></h2>
           <p>The capture and processing core of Unpak. A Rust agent on each
           machine reads the focused window through AX Tree and OCR capture, and
-          scrubs PII's on device before anything is sent to the cloud. After
+          scrubs PII's on device. After
           storage, a pipeline then distills that raw activity down in stages:
-          individual actions get grouped into tasks, tasks into the workflows
-          they belong to, and workflows into an overview of the work. Cheaper,
-          faster models handle the high-volume grouping at the bottom of the
-          funnel, and more expensive, smarter models take over toward the top
-          where the reasoning is harder. A nightly pass clusters recurring
+          individual actions get grouped into tasks, and tasks into workflows.
+          Cheaper models handle the high-volume grouping and smarter models
+          handle the complicated reasoning sections. A nightly pass clusters recurring
           workflows across the workforce into families, so variations of the
-          same workflow can still be deterministically grouped together.</p>
+          same workflow can still be deterministically grouped together</p>
 
           <p>The idea: a worker's day is made up of various workflows, each a
           generally set list of tasks. If you can map those workflows and
           build a picture of how a company actually does its work, down to the
           smallest step, then you can pinpoint where an AI solution plugs in
           most effectively and compute, down to the minute, how much time it
-          would save.</p>
+          would save</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
-                <dt>What it is</dt>
-                <dd>The capture agent and the pipeline behind it: what
-                runs on the machine, and what turns raw activity into a readable
-                account of the work.</dd>
-              </div>
-              <div>
-                <dt>Data</dt>
-                <dd>The focused window, the accessibility tree and on-screen
-                text. Text is kept and the image discarded, and a scrubbing pass
-                runs over a throwaway copy of the local database before anything
-                leaves the machine.</dd>
-              </div>
-              <div>
                 <dt>Built on</dt>
                 <dd>Rust for the agent, Swift for the macOS client, Python for
-                the pipeline. SQLite on the device, Neon Postgres upstream.</dd>
+                the pipeline. SQLite on the device, Neon Postgres upstream</dd>
               </div>
               <div>
                 <dt>Hosting</dt>
-                <dd>Modal for the pipeline, Cloudflare R2 for storage.</dd>
+                <dd>Modal for the pipeline, Cloudflare R2 for storage</dd>
               </div>
             </dl>
           </div>
@@ -95,43 +80,29 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Steward AI</h2>
+          <h2 class="band-title">Steward AI<time class="band-date" datetime="2026-01">January 2026</time><span class="band-award" aria-label="Hackathon winner"><i style="--i:0">H</i><i style="--i:1">a</i><i style="--i:2">c</i><i style="--i:3">k</i><i style="--i:4">a</i><i style="--i:5">t</i><i style="--i:6">h</i><i style="--i:7">o</i><i style="--i:8">n</i> <i style="--i:9">w</i><i style="--i:10">i</i><i style="--i:11">n</i><i style="--i:12">n</i><i style="--i:13">e</i><i style="--i:14">r</i></span></h2>
           <p>A desktop application that lets businesses understand their
           employees' AI usage. An Electron app and a browser extension read the
-          accessibility-tree text of AI tools as people use them (the
-          words, never the pixels) and a Haiku 4.5 model categorizes
-          each conversation into use cases, models and risk events. The
-          dashboard rolls that up for a team lead: what the team uses AI for,
-          which models it reaches for, and which prompts carried something out
-          the door that shouldn't have.</p>
-          <p>It took 1st place in the AI-assisted development track at Carnegie
-          Mellon's NexHacks hackathon.</p>
+          accessibility-tree text of AI tools as people use them and a Haiku
+          4.5 model categorizes each conversation. The platform also
+          identifies PII's included in prompts, along with files, which it
+          displays inside the dashboard</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
-                <dt>What it is</dt>
-                <dd>An admin console over live AI usage: use-case analytics,
-                per-employee drill-downs, a prompt-flow breakdown, and a
-                security log where flagged uploads open in a file viewer.</dd>
-              </div>
-              <div>
-                <dt>Data</dt>
-                <dd>Accessibility-tree text captured by the Electron app and
-                browser extension, categorized by Claude Haiku 4.5 and stored
-                in Supabase.</dd>
+                <dt>How it works</dt>
+                <dd>Use-case analytics, per-employee drill-downs, a
+                prompt-flow breakdown, and a security log where flagged
+                uploads open in a file viewer</dd>
               </div>
               <div>
                 <dt>Built on</dt>
-                <dd>Electron and a browser extension for capture; the dashboard
-                is plain HTML and JavaScript with every donut, sankey and trend
-                chart hand-written SVG.</dd>
-              </div>
-              <div>
-                <dt>Recognition</dt>
-                <dd>1st place, AI-assisted development track, Carnegie
-                Mellon NexHacks.</dd>
+                <dd>An Electron app built on HTML and JavaScript displays
+                data, and uses Swift to grab data from macOS desktop
+                applications, paired with a browser extension to grab DOM
+                text from Chrome. Data is stored in Supabase</dd>
               </div>
             </dl>
           </div>
@@ -149,36 +120,45 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">FloorSense</h2>
+          <div class="band-head">
+            <h2 class="band-title">FloorSense<time class="band-date" datetime="2025-11">November 2025</time></h2>
+            <a class="repo-link" href="https://github.com/spitfiresb/FloorSense"
+            target="_blank" rel="noopener">
+              View repo
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+                <path d="M5 11 L11 5"/>
+                <path d="M6 5 H11 V10"/>
+              </svg>
+            </a>
+          </div>
           <p>A computer vision web app that identifies architectural elements in
           floorplan images using YOLO-based object detection, with real-time
-          detection visualization and correction tools.</p>
+          detection visualization and correction tools</p>
+
+          <p>The idea: floor plans are notoriously difficult to digitize,
+          since there are so many different variations of objects in them, and
+          no standardized system to create them. A model that can visually
+          classify what's on the page gets around that</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
-                <dt>What it is</dt>
-                <dd>Drop in a floor plan and the model marks what it finds. The
-                overlay stays editable: add a box, click one to remove
-                it, export the corrected plan as a PNG.</dd>
-              </div>
-              <div>
-                <dt>Model</dt>
-                <dd>A YOLO detector trained on Roboflow. Six classes
-                (perimeter, bathroom, door, window, stairs, furniture)
-                kept above a 0.40 confidence floor.</dd>
-              </div>
-              <div>
                 <dt>Built on</dt>
-                <dd>Vanilla JavaScript, no framework, a port of the
-                original Next.js and React build. A single Cloudflare Pages
-                Function holds the Roboflow key so it never reaches the
-                browser.</dd>
+                <dd>Next.js, React, TypeScript, Tailwind</dd>
+              </div>
+              <div>
+                <dt>Why I built it</dt>
+                <dd>I was attempting to impress a group of founders at a
+                company I wanted to work at, so I built the product they
+                showed me in a demo</dd>
               </div>
               <div>
                 <dt>Hosting</dt>
-                <dd>Cloudflare Pages.</dd>
+                <dd>Website hosted on Vercel, YOLO model hosted on
+                Roboflow</dd>
               </div>
             </dl>
           </div>
@@ -197,40 +177,21 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">Website</span></h2>
-          <p>The product site: twenty routes across three product lines, a
-          pricing page, an essay, a help centre and a two-step intake form.</p>
-          <p>The hero sits on a WebGL ripple shader behind a headline that
-          rolls through the word it is asking about. Below it every section
-          carries its own diagram: scattered activity resolving into an
-          ordered procedure, work streaming in from four departments, a stack
-          of layers that writes its own labels a character at a time as it
-          scrolls into view. Fonts are self-hosted and nothing is fetched from
-          a CDN, so the whole site is a directory of flat files.</p>
+          <h2 class="band-title">Unpak <span class="band-part">Website</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
+          <p>The main website for Unpak. One of my most polished pieces of
+          work</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
-                <dt>What it is</dt>
-                <dd>The marketing site: three product lines, pricing, a thesis
-                essay, a help centre, careers, and a two-step intake form.</dd>
-              </div>
-              <div>
-                <dt>Data</dt>
-                <dd>None at runtime. Content compiles into the build and the
-                fonts are self-hosted, so the site ships as a directory of flat
-                files with nothing fetched from a CDN.</dd>
-              </div>
-              <div>
                 <dt>Built on</dt>
-                <dd>Astro. A WebGL ripple shader behind the hero, and a
-                hand-written canvas or SVG diagram for each section below
-                it.</dd>
+                <dd>Astro with Tailwind, the diagrams and the WebGL ripple
+                shader hand-written in vanilla JavaScript, HTML and CSS</dd>
               </div>
               <div>
                 <dt>Hosting</dt>
-                <dd>Cloudflare Pages.</dd>
+                <dd>Cloudflare Pages</dd>
               </div>
             </dl>
           </div>
@@ -248,42 +209,22 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">Dashboard</span></h2>
-          <p>The console a customer reads their own operating picture from:
-          which procedures their workforce actually repeats, where the hours
-          go, how much run times vary, and where AI has already turned up in
-          the work without anyone deciding it should.</p>
-          <p>No framework and no charting library: every ring, dial,
-          sparkline, box plot and trunk-and-branch diagram is SVG written by
-          hand, which is what let the run-shape rows sit on the same station
-          grid as the procedure they describe and visibly add up to its run
-          count. The numbers hold themselves to the same standard: a comparison
-          that lacks the runs to support it says <em>measuring</em> and names
-          what it is waiting for, rather than printing a figure that reads as
-          settled.</p>
+          <h2 class="band-title">Unpak <span class="band-part">Dashboard</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
+          <p>Unpak's dashboard. It shows the customer the workflows their
+          workforce repeats, where the hours go, and where AI has already
+          shown up in the work</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
-                <dt>What it is</dt>
-                <dd>Three views over one engagement: an overview, the procedures
-                a workforce repeats, and where AI has turned up in the work.</dd>
-              </div>
-              <div>
-                <dt>Data</dt>
-                <dd>One JSON document per engagement, served by a Pages
-                Function from Postgres: 29 people, 32 procedures and
-                2,779 runs over a 42-day window.</dd>
-              </div>
-              <div>
                 <dt>Built on</dt>
-                <dd>Astro, with no charting library: every ring, dial,
-                sparkline and box plot is hand-written SVG. Fonts self-hosted.</dd>
+                <dd>Astro, with every chart hand-written in SVG. Data served
+                from Postgres (Neon)</dd>
               </div>
               <div>
                 <dt>Hosting</dt>
-                <dd>Cloudflare Pages.</dd>
+                <dd>Cloudflare Pages</dd>
               </div>
             </dl>
           </div>

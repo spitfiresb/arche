@@ -26,47 +26,6 @@
     <ul class="bands">
       <li>
         <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/papeagnet/"
-          data-ready="canvas" data-title="PapeAgNet - live demo"
-          tabindex="0" role="button"
-          aria-label="Expand the PapeAgNet live demo to fullscreen">
-            <img src="/assets/img/papeagnet/preview.png"
-            alt="PapeAgNet dashboard: Pacific Northwest dealer regions and county agriculture metrics on an interactive map">
-          </figure>
-        </div>
-        <div class="band-prose">
-          <h2 class="band-title">PapeAgNet</h2>
-          <p>A geospatial analytics platform for Oregon's largest equipment
-          dealer, serving 1,500 employees across six states.</p>
-
-          <div class="band-spec">
-            <h3>Technical specifications</h3>
-            <dl>
-              <div>
-                <dt>What it is</dt>
-                <dd>A single map. County farm data as a choropleth, with rival
-                dealerships plotted on top.</dd>
-              </div>
-              <div>
-                <dt>Data</dt>
-                <dd>USDA Census of Agriculture, 250 counties across six states.
-                Boundaries from the Census Bureau's TIGER/Line files.</dd>
-              </div>
-              <div>
-                <dt>Built on</dt>
-                <dd>React, TypeScript, Vite, MapLibre GL.</dd>
-              </div>
-              <div>
-                <dt>Hosting</dt>
-                <dd>Vercel.</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </li>
-
-      <li>
-        <div class="band-artifact">
           <figure class="ld-thumb" data-live-demo="/demos/olander/"
           data-bg="#faf7f1" data-title="Olander Agents - live demo"
           tabindex="0" role="button"
@@ -76,33 +35,65 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">AI Sales Agent</h2>
-          <p>A streaming chat agent that turns plain-English questions into live
-          ERP lookups across catalog, inventory, and orders, currently serving
-          around 70 employees.</p>
+          <h2 class="band-title">AI Sales Agent<time class="band-date" datetime="2026-04">April 2026</time></h2>
+          <p>A chat agent built for a distribution company in the Bay Area.
+          Connects to their ERP system and allows their employees to save
+          time doing data lookups. Currently serving around 70 employees</p>
 
           <div class="band-spec">
             <h3>Technical specifications</h3>
             <dl>
               <div>
-                <dt>What it is</dt>
-                <dd>A chat window over the ERP. Ask in plain English, the model
-                runs the lookups and answers from the rows.</dd>
-              </div>
-              <div>
                 <dt>Data</dt>
                 <dd>Epicor Prophet 21: catalog, stock, customers, orders. Read
                 through a fixed-IP proxy. Catalog search on a Qdrant vector
-                index.</dd>
+                index</dd>
               </div>
               <div>
                 <dt>Built on</dt>
                 <dd>Next.js, TypeScript, GPT-5 nano. Neon Postgres, Qdrant,
-                Microsoft SSO.</dd>
+                Microsoft SSO</dd>
               </div>
               <div>
                 <dt>Hosting</dt>
-                <dd>Vercel, plus one always-on proxy for the fixed IP.</dd>
+                <dd>Vercel, plus one always-on proxy for the fixed IP</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/papeagnet/"
+          data-ready="canvas" data-title="PapeAgNet - live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the PapeAgNet live demo to fullscreen">
+            <img src="/assets/img/papeagnet/preview.png"
+            alt="PapeAgNet dashboard: Pacific Northwest dealer regions and county agriculture metrics on an interactive map">
+          </figure>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Agricultural Analytics Platform<time class="band-date" datetime="2025-11">November 2025</time></h2>
+          <p>A geospatial analytics platform for Oregon's largest equipment
+          dealer. Currently being used by over 1,500 employees across six
+          states</p>
+
+          <div class="band-spec">
+            <h3>Technical specifications</h3>
+            <dl>
+              <div>
+                <dt>Data</dt>
+                <dd>USDA Census of Agriculture, 250 counties across six states.
+                Boundaries from the Census Bureau's TIGER/Line files</dd>
+              </div>
+              <div>
+                <dt>Built on</dt>
+                <dd>React, TypeScript, Vite, MapLibre GL</dd>
+              </div>
+              <div>
+                <dt>Hosting</dt>
+                <dd>Vercel</dd>
               </div>
             </dl>
           </div>
