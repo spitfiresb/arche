@@ -1469,3 +1469,79 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   font-size: 13px;
   color: #8b949e;
 }
+
+/* Page transitions, driven by transition.js. Forward navigation slides the
+   page left as it fades; the new page arrives from the right. Going back
+   mirrors it. The html background stops the white flash between documents. */
+html {
+  background: #1a1a1a;
+}
+
+html.page-exit body,
+html.page-exit-back body {
+  animation: page-fade-out 180ms ease-in both;
+}
+
+html.page-enter body,
+html.page-enter-back body {
+  animation: page-fade-in 320ms ease-out both;
+}
+
+/* On arrival each top-level block rises into place, one after another. The
+   work bands list is skipped as a slab so its items can stagger on their
+   own instead. */
+html.page-enter main > :not(.bands),
+html.page-enter-back main > :not(.bands),
+html.page-enter .bands > li,
+html.page-enter-back .bands > li {
+  animation: page-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+html.page-enter main > :nth-child(2),
+html.page-enter-back main > :nth-child(2),
+html.page-enter .bands > li:nth-child(1),
+html.page-enter-back .bands > li:nth-child(1) { animation-delay: 70ms; }
+html.page-enter main > :nth-child(3),
+html.page-enter-back main > :nth-child(3),
+html.page-enter .bands > li:nth-child(2),
+html.page-enter-back .bands > li:nth-child(2) { animation-delay: 140ms; }
+html.page-enter main > :nth-child(4),
+html.page-enter-back main > :nth-child(4),
+html.page-enter .bands > li:nth-child(3),
+html.page-enter-back .bands > li:nth-child(3) { animation-delay: 210ms; }
+html.page-enter main > :nth-child(5),
+html.page-enter-back main > :nth-child(5),
+html.page-enter .bands > li:nth-child(4),
+html.page-enter-back .bands > li:nth-child(4) { animation-delay: 280ms; }
+html.page-enter main > :nth-child(n+6),
+html.page-enter-back main > :nth-child(n+6),
+html.page-enter .bands > li:nth-child(n+5),
+html.page-enter-back .bands > li:nth-child(n+5) { animation-delay: 350ms; }
+
+@keyframes page-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.page-exit body,
+  html.page-exit-back body,
+  html.page-enter body,
+  html.page-enter-back body,
+  html.page-enter main > *,
+  html.page-enter-back main > *,
+  html.page-enter .bands > li,
+  html.page-enter-back .bands > li {
+    animation: none;
+  }
+}

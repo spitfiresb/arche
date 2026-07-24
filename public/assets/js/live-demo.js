@@ -298,6 +298,27 @@
       // becomeReady() owns the very first reveal (it fades in); every later
       // park is a return to a state the visitor has already seen, so snap.
       if (shown) overlay.classList.add('revealed');
+      // If the page-entrance animation is still running, the thumb is
+      // mid-rise and the rect above is transient. Rather than freeze at a
+      // stale spot (or hold the reveal and flash a stand-in), chase it:
+      // re-pin every frame until the rise settles, so the miniature rides
+      // up with its band.
+      if (entranceActive()) requestAnimationFrame(trackEntrance);
+    }
+
+    function entranceActive() {
+      return /\bpage-enter\b|\bpage-enter-back\b/
+        .test(document.documentElement.className);
+    }
+    function trackEntrance() {
+      if (!overlay.classList.contains('parked')) return;
+      fw.style.transition = 'none';
+      fw.style.transform = collapsed();
+      if (entranceActive()) {
+        requestAnimationFrame(trackEntrance);
+      } else {
+        setCorner();   // one last pin against the settled layout
+      }
     }
 
     // Cross-fade to the live app once the poster grow has finished AND the
