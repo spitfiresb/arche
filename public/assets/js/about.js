@@ -711,13 +711,25 @@
   function drawPreRig(now) {
     const pts = [[0, 0]].concat(
       chainPts([0, 0], [anchors[0].x, anchors[0].y]), belowPts);
+    slackEl.setAttribute('d', ropePath(swayMap(pts, now)));
+  }
+
+  // The sway is a mapping over the drawn slack, shared between the
+  // pre-rig and the ride: when he takes the rope its gain eases out
+  // over the first moments instead of vanishing between two frames —
+  // the strand he grabs is the exact strand that was breathing
+  let swayT0 = null;
+  function swayMap(pts, now) {
+    const g = swayT0 === null ? 1
+      : 1 - easeInOut(clamp01((now - swayT0) / 700));
+    if (g <= 0) return pts;
     const pins = [0, tailY].concat(anchors.map((a) => a.y));
-    slackEl.setAttribute('d', ropePath(pts.map((p) => {
+    return pts.map((p) => {
       let dmin = Infinity;
       for (const py of pins) dmin = Math.min(dmin, Math.abs(p[1] - py));
-      const amp = 2.2 * Math.min(1, dmin / 55);
+      const amp = g * 2.2 * Math.min(1, dmin / 55);
       return [p[0] + amp * Math.sin(now / 700 + p[1] / 65), p[1]];
-    })));
+    });
   }
 
   // A freshly freed stretch of rope. At the pop its exact route —
@@ -1129,7 +1141,16 @@
   let cleanPause = null; // paused at a ring, unclipping the strand below
 
   measure();
-  addEventListener('resize', measure);
+  // transition.js fires a synthetic resize when the page-enter animation
+  // ends; the viewport hasn't changed, but a full re-measure tears down
+  // and redraws the rigged rope mid-scene — a visible snap. Only real
+  // size changes need the rebuild.
+  let mw = innerWidth, mh = innerHeight;
+  addEventListener('resize', () => {
+    if (innerWidth === mw && innerHeight === mh) return;
+    mw = innerWidth; mh = innerHeight;
+    measure();
+  });
 
   function reveal(i) {
     if (i < nodes.length) nodes[i].el.classList.add('shown');
@@ -1298,7 +1319,7 @@
         pts.push(nextPin());
       }
       for (const p of belowPts) pts.push(p);
-      slackEl.setAttribute('d', ropePath(pts));
+      slackEl.setAttribute('d', ropePath(swayMap(pts, now)));
       lastSlackPts = pts;
     } else if (releaseMorph) {
       // he's let go: the strand he was holding falls onto the plumb
@@ -1951,6 +1972,7 @@
         // above the top edge of the page
         state = 'perch';
         y = -110;
+        swayT0 = vnow;   // the idle sway eases out, never steps out
         seed(perchPose(y, 0, 0));
         // taking the rope: the strand below him still lies exactly
         // along its pre-rigged drape (through the old top-anchor

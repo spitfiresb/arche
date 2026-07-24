@@ -1489,9 +1489,12 @@ html.page-enter-back body {
 
 /* On arrival each top-level block rises into place, one after another. The
    work bands list is skipped as a slab so its items can stagger on their
-   own instead. */
-html.page-enter main > :not(.bands),
-html.page-enter-back main > :not(.bands),
+   own instead. About's cliff scenery (.wall, .floor, .rig, rope, stickman)
+   is pinned to measured positions in the margin, so rising it would tear
+   it away from the timeline it's anchored to — it just fades in with the
+   page instead. */
+html.page-enter main > :not(.bands, .wall, .floor, .rig, .rope, .stickman),
+html.page-enter-back main > :not(.bands, .wall, .floor, .rig, .rope, .stickman),
 html.page-enter .bands > li,
 html.page-enter-back .bands > li {
   animation: page-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -1517,6 +1520,15 @@ html.page-enter main > :nth-child(n+6),
 html.page-enter-back main > :nth-child(n+6),
 html.page-enter .bands > li:nth-child(n+5),
 html.page-enter-back .bands > li:nth-child(n+5) { animation-delay: 350ms; }
+
+/* The pinned scenery still joins the entrance, but with a pure fade —
+   no translate — so it never leaves its measured spot. Delayed to land
+   with the tail of the stagger instead of popping in first. */
+html.page-enter main > :is(.wall, .floor, .rig, .rope, .stickman),
+html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
+  animation: page-fade-in 520ms ease-out both;
+  animation-delay: 210ms;
+}
 
 @keyframes page-fade-out {
   to { opacity: 0; }
