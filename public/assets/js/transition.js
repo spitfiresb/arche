@@ -1,8 +1,8 @@
 /* Directional page transitions for same-origin navigation. On click the
    current page animates out, then we navigate; the destination page reads
    the stored direction and animates in from the matching side. Everything
-   else — new tabs, modified clicks, hash jumps on the same page, external
-   links — passes through untouched. */
+   else (new tabs, modified clicks, hash jumps on the same page, external
+   links) passes through untouched. */
 (() => {
   const root = document.documentElement;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -40,7 +40,7 @@
     sessionStorage.setItem('page-transition', back ? 'back' : 'fwd');
     root.classList.add(back ? 'page-exit-back' : 'page-exit');
     // Navigate right away: the fade-out plays while the next document loads
-    // in parallel — the browser keeps this page painted until it's ready.
+    // in parallel: the browser keeps this page painted until it's ready.
     // Waiting for the animation first would stack fade + fetch into a
     // visible freeze.
     location.href = a.href;
@@ -61,7 +61,7 @@
   });
 
   // A bfcache restore (browser back/forward) resurrects the page exactly as
-  // it left — mid-exit. Strip any transition state so it isn't stuck faded.
+  // it left, mid-exit. Strip any transition state so it isn't stuck faded.
   addEventListener('pageshow', (e) => {
     if (e.persisted) {
       root.classList.remove('page-exit', 'page-exit-back', 'page-enter', 'page-enter-back');

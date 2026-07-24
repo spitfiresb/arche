@@ -1,7 +1,7 @@
 # zsaeed.com
 
-A personal site, hand-written. No framework, no build step, no dependencies —
-every page is a flat file the browser reads as-is. Deployed on Cloudflare Pages.
+A personal site, hand-written. No framework, no build step, no dependencies: every page
+is a flat file the browser reads as-is. Deployed on Cloudflare Pages.
 
 ## Running it
 
@@ -16,7 +16,7 @@ hard refresh, and clean URLs, so `/work/personal` resolves to
 
 ### Editing the words
 
-Add `?edit` to any page — `localhost:8712/work/personal?edit` — and every block
+Add `?edit` to any page (`localhost:8712/work/personal?edit`) and every block
 of text on it becomes editable in place. Click a line, change it, and a panel in
 the corner tracks what you've touched. **Copy changes** puts a diff of just the
 edits on your clipboard; **Copy all text** takes the whole page.
@@ -31,7 +31,7 @@ and is injected on the way out, so there is nothing to strip before deploying
 and no way for it to reach production.
 
 Flat files only. The one server-side piece is `POST /api/detect` (the
-FloorSense demo's model call), which is a Cloudflare Pages Function — to
+FloorSense demo's model call), which is a Cloudflare Pages Function. To
 exercise that path you need Wrangler and a Roboflow key:
 
 ```sh
@@ -42,7 +42,7 @@ npx wrangler pages dev public
 ## Layout
 
 `public/` is the document root: everything in it is served, nothing outside it
-is. On Cloudflare Pages that is the **build output directory** — set it to
+is. On Cloudflare Pages that is the **build output directory**: set it to
 `public`, with no build command. `functions/` stays at the repo root, which is
 where Pages looks for it regardless of the output directory.
 
@@ -89,7 +89,7 @@ standalone.
 ### The three vendored demos
 
 `unpak-site/`, `unpak-dashboard/` and `papeagnet/` are build output copied in
-from their own repos — marked *vendored* above because they are not source, and
+from their own repos, marked *vendored* above because they are not source, and
 a few MB of minified Astro and Vite output shouldn't be mistaken for it.
 
 **Don't edit them by hand.** Changes belong in the source repo; anything done
@@ -97,7 +97,7 @@ here is lost on the next copy-in.
 
 **Re-run `tools/vendor-rebase.sh` after every copy-in.** Each was built with its
 base path set to the repo root, so its output refers to `/unpak-site/…`,
-`/papeagnet/…` and so on — root-absolute, and wrong here, where they are served
+`/papeagnet/…` and so on: root-absolute, and wrong here, where they are served
 from `/demos/…`. The script rewrites those ~1,100 references and is idempotent.
 The real fix is to set the base path in each source repo's build config, after
 which the script can be deleted.
@@ -109,14 +109,14 @@ to the relevant work page:
 
 ```html
 <figure class="ld-thumb" data-live-demo="/demos/<project>/"
-        data-bg="#fdfbf7" data-title="Project — live demo"
+        data-bg="#fdfbf7" data-title="Project live demo"
         tabindex="0" role="button"
         aria-label="Expand the live demo to fullscreen">
   <img src="/assets/img/<project>/preview.png" alt="...">
 </figure>
 ```
 
-`public/assets/js/live-demo.js` does the rest — it builds the expand mark, the
+`public/assets/js/live-demo.js` does the rest. It builds the expand mark, the
 fullscreen overlay and the back control, boots the app in a hidden iframe, and
 parks the running app on the thumbnail so the preview *is* the live thing. The
 optional attributes are documented at the top of that file.
@@ -134,14 +134,14 @@ markup that goes over the wire.
 **One Person, referenced everywhere.** `index.html` declares a `Person` with
 `@id` `https://zsaeed.com/#person`, alongside a `WebSite` and a `WebPage` in
 one `@graph`. Every other page points at that `@id` rather than redeclaring
-it — About as a `ProfilePage` whose `mainEntity` is that person, the three
+it: About as a `ProfilePage` whose `mainEntity` is that person, the three
 work pages as a `CollectionPage` authored by them. Redeclaring instead of
 referencing would read as several unrelated people who happen to share a name.
 
 **`sameAs` is the load-bearing field.** The LinkedIn and GitHub URLs are what
 fuse the three profiles into one entity; keep them in step with the links in
 the markup whenever either changes. Every other field is there to
-*disambiguate* — there is a novelist, a valuation director and a freelance
+*disambiguate*: there is a novelist, a valuation director and a freelance
 designer with this name. Fields that merely describe (job titles, prose bios,
 self-asserted expertise) are not ranking inputs and get discounted, so they
 were deliberately left out. If a field doesn't distinguish, don't add it.
@@ -168,5 +168,5 @@ otherwise compete with the real marketing site.
 `.env` (Cloudflare account id and API token, for manual deploys) and
 `.dev.vars` (`ROBOFLOW_API_KEY`, read by `wrangler pages dev`) are gitignored
 and have never been committed. `.example` files show the shape. In production
-the key lives in the Cloudflare Pages dashboard — it is never sent to the
+the key lives in the Cloudflare Pages dashboard, and is never sent to the
 browser, which is the entire reason `functions/api/detect.js` exists.

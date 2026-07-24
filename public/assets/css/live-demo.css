@@ -1,10 +1,10 @@
 /* Live-demo component: a preview thumbnail that expands into a live app.
-   Plug-and-play — see live-demo.js for the markup contract.
+   Plug-and-play; see live-demo.js for the markup contract.
 
    Lifecycle: the thumb shows its screenshot immediately (never a blank
    box). The app boots hidden behind it; when ready, the live miniature
    fades in over the screenshot ("parked"). Clicking grows the parked
-   miniature to fullscreen; closing shrinks it back — the same running
+   miniature to fullscreen; closing shrinks it back, the same running
    pixels the whole time, nothing ever swaps. */
 
 .ld-thumb {
@@ -23,7 +23,7 @@
   object-fit: cover;
   /* Top-anchored, NOT centered: the box is the viewport's aspect ratio but the
      screenshot is the capture's, so cover always trims some height. A live
-     viewport that's shorter than the capture drops content off the BOTTOM —
+     viewport that's shorter than the capture drops content off the BOTTOM;
      centering instead trims the top too, which reads as a zoom-in that pops
      back out the moment the real app parks over it. */
   object-position: top center;
@@ -34,7 +34,7 @@
 /* ── Rounded corners on the demo previews ─────────────────────────────
    The thumb's own radius is set on .band-artifact .ld-thumb in style.css.
    But at rest the visible box is the live app parked in .ld-overlay-frame,
-   transform-scaled down onto the thumb — so a raw radius here would shrink
+   transform-scaled down onto the thumb, so a raw radius here would shrink
    with it. --ld-r, published on the overlay by live-demo.js, is that radius
    pre-divided by the parked scale, so the corner lands at the same on-screen
    size as the thumb's; the frame and the fallback poster both read it.
@@ -56,7 +56,7 @@
    live-demo.js). Hidden until the thumbnail is hovered: at rest the preview
    is just the running app, with no chrome sitting on top of it. Hover
    works even though a live iframe
-   covers the thumb because the parked overlay is pointer-events:none — the
+   covers the thumb because the parked overlay is pointer-events:none, so the
    hover lands on the figure.
 
    font-size is pinned rather than inherited so the button is the same size
@@ -97,7 +97,7 @@ body.ld-locked .ld-expand { opacity: 0; }
 
 /* The arrows draw themselves outward from the centre of the button on
    reveal. Every stroke is authored so its START point is the one nearest
-   the middle, and pathLength="1" renormalises each one to a single unit —
+   the middle, and pathLength="1" renormalises each one to a single unit,
    so `stroke-dasharray: 1` is exactly one path long whatever the real
    geometry, and dashoffset 1 -> 0 sweeps the ink from the centre out. */
 .ld-expand svg line,
@@ -144,7 +144,7 @@ body.ld-locked .ld-expand { opacity: 0; }
 
 /* Touch screens have no hover to reveal the expand mark, and a preview
    with no visible control reads as a picture rather than a door. So on
-   coarse pointers the mark sits on the preview at rest — smaller and
+   coarse pointers the mark sits on the preview at rest: smaller and
    quieter than the hover version, arrows already drawn, riding the
    corner instead of covering the middle of the app. */
 @media (hover: none) and (pointer: coarse) {
@@ -179,7 +179,7 @@ body.ld-locked .ld-expand { opacity: 0; }
 /* The overlay is anchored in DOCUMENT coordinates (position:absolute at the
    top of the page), and the parked miniature is placed with a transform that
    includes the scroll offset. Scrolling therefore moves it natively with the
-   page — no scroll listener, no one-frame lag, no jiggle. */
+   page: no scroll listener, no one-frame lag, no jiggle. */
 .ld-overlay {
   position: absolute;
   top: 0;
@@ -196,13 +196,13 @@ body.ld-locked .ld-expand { opacity: 0; }
 /* Open OR closing both stay above the page. The grow rides up on top of
    everything; the shrink has to ride back down the same way, revealing the
    page from under the frame as it goes rather than dropping below it at the
-   first click — which would pop the TOC and the other demos up over a frame
+   first click, which would pop the TOC and the other demos up over a frame
    that's still moving. .closing is cleared on transitionend (live-demo.js);
    it deliberately does NOT force the corners square the way .open does, so
    the radius rounds back off as the frame shrinks. */
 .ld-overlay.open,
 .ld-overlay.closing { z-index: 1000; }
-/* Parked: purely visual — clicks fall through to the thumbnail underneath. */
+/* Parked: purely visual; clicks fall through to the thumbnail underneath. */
 .ld-overlay.parked { pointer-events: none; }
 
 /* The live app. Scaling this wrapper performs the grow/shrink, so the end
@@ -212,7 +212,7 @@ body.ld-locked .ld-expand { opacity: 0; }
   inset: 0;
   /* clip, not hidden: the iframe inside can be laid out wider than the
      frame and transform-scaled down (see frameGeom in live-demo.js), and a
-     hidden-overflow box is still programmatically scrollable — a focus
+     hidden-overflow box is still programmatically scrollable, and a focus
      jump inside the app could drag the canvas off its top-left anchor */
   overflow: clip;
   background: #0d0d0d;
@@ -237,13 +237,13 @@ body.ld-locked .ld-expand { opacity: 0; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top center;   /* same framing as the thumb — see above */
+  object-position: top center;   /* same framing as the thumb, see above */
   transform-origin: top left;
   will-change: transform, opacity;
   background: #0d0d0d;
 }
 /* once revealed the poster is invisible but would still swallow every
-   click — an opacity-0 element still hit-tests — so let events through */
+   click (an opacity-0 element still hit-tests), so let events through */
 .ld-overlay.revealed .ld-overlay-poster { opacity: 0; pointer-events: none; }
 
 /* The site's back control, re-provided inside the overlay (built in
@@ -256,16 +256,16 @@ body.ld-locked .ld-expand { opacity: 0; }
      fullscreen app and has to be an obvious target;
    - it gets a scrim. The page's back link can rely on the site's own dark
      background; this one sits over whatever the embedded app painted,
-     which is cream in FloorSense and near-black in PapeAgNet — so it
+     which is cream in FloorSense and near-black in PapeAgNet, so it
      carries its own contrast rather than hoping for it.
    - it does NOT auto-hide or wait on a hover. It is the only control on
-     screen once a demo is open, and once it has arrived it stays put — an
+     screen once a demo is open, and once it has arrived it stays put; an
      exit you have to go looking for isn't one. Its one piece of timing is
      the entrance: it holds off until the grow has landed, then pops in. */
 .ld-back {
   /* Fixed, matching the page's own .back: the overlay is anchored in
      document coordinates, so an absolute child would sit wherever the top
-     of the page is — i.e. off-screen entirely for any demo opened below
+     of the page is, i.e. off-screen entirely for any demo opened below
      the fold. While a demo is open the body is locked and nothing scrolls,
      so viewport-pinned is the only thing that stays on screen. */
   position: fixed;
@@ -282,14 +282,14 @@ body.ld-locked .ld-expand { opacity: 0; }
   cursor: pointer;
   color: #fff;
   background: rgba(20, 20, 20, 0.8);
-  /* A dark disc alone is only guaranteed to read on a light app — over
+  /* A dark disc alone is only guaranteed to read on a light app; over
      PapeAgNet's near-black header it vanishes into the chrome. The hairline
      and the shadow are what make it legible in BOTH directions: the light
      ring separates it from a dark app, the shadow from a light one. */
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25),
               0 0.35rem 1.25rem rgba(0, 0, 0, 0.45);
   /* Hidden and intangible until .ld-ready, which live-demo.js sets when the
-     grow lands — then it pops into existence. The overshoot curve is the
+     grow lands, and then it pops into existence. The overshoot curve is the
      one .back already uses for its own hover swell in style.css, so the
      control arrives the way the rest of the site moves. */
   opacity: 0;

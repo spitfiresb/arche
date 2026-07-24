@@ -8,17 +8,17 @@
  *   <script src="/assets/js/live-demo.js"></script>
  *
  * data-live-demo is anything an iframe can load: a file, or a directory whose
- * index the server resolves — which is what the demos here pass, so the app's
+ * index the server resolves, which is what the demos here pass, so the app's
  * own relative paths keep working.
  *
  * Optional data attributes on the figure:
- *   data-ready="canvas"  — wait until the app's <canvas> has pixels before
+ *   data-ready="canvas":  wait until the app's <canvas> has pixels before
  *                          treating it as ready (same-origin apps only);
  *                          default is the iframe's load event.
- *   data-bg="#fdfbf7"    — frame/poster background while the app boots
+ *   data-bg="#fdfbf7":    frame/poster background while the app boots
  *                          (default #0d0d0d).
- *   data-title="Foo"     — accessible title for the iframe.
- *   data-mobile="native" — the app is responsive: at fullscreen on a narrow
+ *   data-title="Foo":     accessible title for the iframe.
+ *   data-mobile="native": the app is responsive: at fullscreen on a narrow
  *                          viewport it lays out at the viewport's own width
  *                          (its mobile layout) instead of as a scaled-down
  *                          desktop canvas. Parked previews are unaffected.
@@ -34,8 +34,8 @@
   // `transition: none` override would never fire.
   var still = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // The expansion eases OUT — fast then slow — over 1.7s; the close eases
-  // IN — slow then fast — over 1.05s. The two curves are mirror images, so
+  // The expansion eases OUT (fast then slow) over 1.7s; the close eases
+  // IN (slow then fast) over 1.05s. The two curves are mirror images, so
   // the open and close read as one motion run in reverse.
   var GROW   = still ? 'transform 0.01s linear'
                      : 'transform 1.7s cubic-bezier(0.45, 0.45, 0.45, 1)';
@@ -43,7 +43,7 @@
                      : 'transform 1.05s cubic-bezier(0.55, 0, 0.55, 0.55)';
   var FADE   = still ? 'opacity 0.01s linear' : 'opacity 0.45s ease';
   // The rounded corner morphs to square as the frame grows, and back as it
-  // shrinks, on the SAME clock as the transform — so the corners are only
+  // shrinks, on the SAME clock as the transform, so the corners are only
   // fully sharp once the frame is fully expanded, and round again by the
   // time it's back on the thumbnail. Same durations and easings as GROW /
   // SHRINK, appended to their transition so both properties move together.
@@ -52,7 +52,7 @@
   var SHRINK_R = still ? 'border-radius 0.01s linear'
                        : 'border-radius 1.05s cubic-bezier(0.55, 0, 0.55, 0.55)';
 
-  // Below this viewport width the fullscreen expansion is off entirely —
+  // Below this viewport width the fullscreen expansion is off entirely:
   // phones, and desktop windows squeezed this narrow. The parked live
   // miniatures still run; a click just doesn't open them. live-demo.css
   // hides the expand mark under the same threshold (43.75rem = 700px) so
@@ -67,7 +67,7 @@
 
     // The expand mark. Built here rather than written into every figure: it
     // advertises an interaction only this script can perform, so a page
-    // without it shouldn't show one — and six hand-copied SVGs are six
+    // without it shouldn't show one, and six hand-copied SVGs are six
     // chances to drift. It sits at rest as opacity:0, so it costs nothing
     // to arrive a frame after the page's own first paint.
     var expand = document.createElement('span');
@@ -90,7 +90,7 @@
     overlay.hidden = true;
     // Tag the overlay with the demo it belongs to (the nearest id'd ancestor
     // of the thumb, e.g. the band's <li id="floorsense">), since the overlay
-    // is appended to <body> and otherwise has no link back to its band — a
+    // is appended to <body> and otherwise has no link back to its band: a
     // handle for scoping or debugging a single demo.
     var host = thumb.closest('[id]');
     if (host) overlay.dataset.demo = host.id;
@@ -106,7 +106,7 @@
     poster.src = thumbImg.currentSrc || thumbImg.src;
     poster.alt = '';
     poster.style.background = bg;
-    // At fullscreen the demo covers the whole page, header and all — and the
+    // At fullscreen the demo covers the whole page, header and all, and the
     // embedded apps hide their own navigation when they're framed. So the
     // way out has to be re-provided here, in the site's own visual language:
     // this is the same mark and the same hover as the .back link in
@@ -132,7 +132,7 @@
     document.body.appendChild(overlay);
 
     // The embedded apps are desktop layouts; handed a narrow viewport they
-    // crumple — headers overlap, cards collapse — long before the site's own
+    // crumple (headers overlap, cards collapse) long before the site's own
     // breakpoints care. So the iframe never lays out narrower than MIN_APP_W:
     // below that, it keeps a desktop-width canvas and is transform-scaled
     // down to fit the frame, so a narrow window gets a shrunken desktop app
@@ -141,8 +141,8 @@
     //
     // The parked geometry has a second job. The thumb's aspect is clamped
     // (see syncThumbAspect) while the overlay stays at the viewport's, so on
-    // a portrait-ish window collapsed() maps overlay onto thumb with sx ≠ sy
-    // — which used to squash the parked miniature vertically. Parked, the
+    // a portrait-ish window collapsed() maps overlay onto thumb with sx ≠ sy,
+    // which used to squash the parked miniature vertically. Parked, the
     // iframe therefore carries the inverse y-scale (and a canvas height cut
     // to match, so the app lays out at the thumb's own aspect): the two
     // transforms compose back to a uniform scale on screen. Opening animates
@@ -154,7 +154,7 @@
     // fullscreen on a narrow viewport it's handed the viewport's own width
     // and lays out as its mobile self, instead of arriving as a desktop
     // canvas scaled down to unreadable. Parked stays the scaled-down
-    // desktop miniature either way — as a preview, a whole desktop app in
+    // desktop miniature either way: as a preview, a whole desktop app in
     // a card reads better than a phone layout squeezed into one.
     var nativeMobile = thumb.getAttribute('data-mobile') === 'native';
     function frameGeom(parked) {
@@ -169,7 +169,7 @@
       return { w: w / s, h: h / iy, sx: s, sy: iy };
     }
     // anim: transition for the inner scale (the grow/shrink curve), or none.
-    // keepH: leave the canvas height alone — the close animates only the
+    // keepH: leave the canvas height alone; the close animates only the
     // scale and re-lays the canvas out once the shrink has landed, so the
     // frame never uncovers the overlay's bottom edge mid-flight.
     function setFrameGeom(g, anim, keepH) {
@@ -190,7 +190,7 @@
     // The screenshot is a fixed-resolution capture; the parked miniature is a
     // live render at the visitor's own viewport. A responsive app laid out at
     // 1512x800 is NOT the same picture as the same app captured at 1440x900,
-    // so the two can never be made to line up — showing the screenshot first
+    // so the two can never be made to line up; showing the screenshot first
     // and the app a moment later always reads as a zoom/jump.
     //
     // So the screenshot is not shown at rest at all: the thumb starts as the
@@ -219,7 +219,7 @@
 
     // Where the overlay's own origin sits relative to the viewport. Parked,
     // the overlay is a normal absolutely-positioned box at the top of the
-    // document, so that's the live scroll offset — and the miniature then
+    // document, so that's the live scroll offset, and the miniature then
     // scrolls with the page natively, no scroll handler, no lag. Open, the
     // body is pinned and the offset is frozen at whatever it was when the
     // lock went on.
@@ -275,7 +275,7 @@
         sx ? (LD_CORNER / sx).toFixed(1) + 'px' : LD_CORNER + 'px');
     }
 
-    // Start loading the app — full-size and hidden behind the preview, so
+    // Start loading the app: full-size and hidden behind the preview, so
     // booting never touches any animation.
     function preload() {
       if (srcSet) return;
@@ -284,7 +284,7 @@
         if (thumb.getAttribute('data-ready') === 'canvas') {
           // 'load' fires long before a heavy app paints. Same-origin apps
           // can opt into polling for a <canvas> with pixels, then settling
-          // briefly — "ready" then means "fully rendered".
+          // briefly, at which point "ready" means "fully rendered".
           var poll = setInterval(function () {
             var doc = frame.contentDocument;
             var cv = doc && doc.querySelector('canvas');
@@ -306,7 +306,7 @@
     // can see it's empty, treat the app as dead and hand the thumb back to the
     // screenshot rather than revealing an empty rectangle.
     // A cross-origin frame is opaque (contentDocument is null and there's
-    // nothing to inspect), so only same-origin apps can be checked — and a
+    // nothing to inspect), so only same-origin apps can be checked, and a
     // failed navigation nulls contentDocument too, which is why the origin
     // test comes first rather than reading a null document as "cross-origin".
     var ownApp = (function () {
@@ -334,7 +334,7 @@
       if (overlay.classList.contains('open')) return;   // fallback grow owns it
       park();
       // Two frames so the browser has committed the parked transform before
-      // the opacity transition starts — otherwise it fades in from the wrong
+      // the opacity transition starts; otherwise it fades in from the wrong
       // place on the very first reveal.
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
@@ -346,7 +346,7 @@
     }
 
     // Park the live app scaled-down over the thumbnail. From here on the
-    // preview IS the running app — the same pixels at rest, during the grow,
+    // preview IS the running app: the same pixels at rest, during the grow,
     // at fullscreen, and after close. The screenshot stays underneath as a
     // permanent backstop; the miniature just fades in over it.
     function park() {
@@ -478,11 +478,11 @@
 
       if (mode === 'frame') {
         // Shrink the live iframe back onto the thumbnail and leave it
-        // parked there — still running, no swap back to a screenshot.
+        // parked there, still running, no swap back to a screenshot.
         // The parked aspect compensation rides back in on the shrink's
         // clock; the canvas keeps its fullscreen height until the shrink
         // lands (keepH) so the frame never uncovers the overlay's bottom
-        // edge mid-flight — doneF below re-lays it out once parked.
+        // edge mid-flight; doneF below re-lays it out once parked.
         setFrameGeom(frameGeom(true), SHRINK, true);
         fw.style.transition = SHRINK + ', ' + SHRINK_R;  // square -> round again
         fw.style.transform = collapsed();
@@ -547,7 +547,7 @@
       if (e.key === 'Escape' && overlay.classList.contains('open')) close();
     });
 
-    // Boot immediately — one frame's delay so the host page gets its own first
+    // Boot immediately: one frame's delay so the host page gets its own first
     // paint in first, and no longer. Every millisecond here is a millisecond
     // the thumb sits as a flat colour instead of showing the running app.
     requestAnimationFrame(preload);
@@ -558,7 +558,7 @@
   // Inline embeds (.ld-inline) get the same desktop-canvas treatment as the
   // overlay frames: below MIN_INLINE_W the iframe lays out at that width and
   // is transform-scaled down to its box. The box (built here) takes over the
-  // hairline, corner and aspect from the iframe — scaling the iframe itself
+  // hairline, corner and aspect from the iframe; scaling the iframe itself
   // would shrink its border and radius along with the content.
   var MIN_INLINE_W = 720;
   function initInline(iframe) {

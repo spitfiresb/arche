@@ -9,6 +9,6 @@
 # elsewhere (unpak-site above all). Indexing them would put ~38 near-duplicate
 # pages in front of the five that are actually meant to rank, and would put
 # this copy of the Unpak marketing site in competition with the real one.
-# Crawling stays allowed so this header is actually seen — see robots.txt.
+# Crawling stays allowed so this header is actually seen; see robots.txt.
 /demos/*
   X-Robots-Tag: noindex

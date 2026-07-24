@@ -2,7 +2,7 @@
 #
 # Everything is crawlable on purpose. The demos under /demos/ are kept out of
 # the index with an X-Robots-Tag: noindex header (see public/_headers) rather
-# than a Disallow here — a Disallow would stop crawlers reading the page at
+# than a Disallow here, because a Disallow would stop crawlers reading the page at
 # all, and a header they never fetch is a header they never obey.
 
 User-agent: *

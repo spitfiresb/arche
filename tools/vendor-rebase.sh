@@ -5,7 +5,7 @@
 # public/demos/unpak-site, unpak-dashboard and papeagnet are build output copied
 # in from their own repos. Each was built with its base path set to the repo
 # root, so the Astro and Vite output refers to "/unpak-site/…" and friends as
-# root-absolute URLs — which is wrong here, where they are served from
+# root-absolute URLs, which is wrong here, where they are served from
 # "/demos/unpak-site/…".
 #
 # Run this after copying in a fresh build:
@@ -29,7 +29,7 @@ done
 total=0
 for name in "${DEMOS[@]}"; do
   # -I skips binaries; fonts and images have no paths to rewrite.
-  # A path is always introduced by a quote or by CSS url( — anchoring on that
+  # A path is always introduced by a quote or by CSS url(, and anchoring on that
   # is what keeps the rewrite from touching prose or an already-rebased path.
   files=$(grep -rlIE '["'\''(]/(unpak-site|unpak-dashboard|papeagnet)/' "$ROOT/$name" || true)
   [ -n "$files" ] || continue
@@ -42,4 +42,4 @@ for name in "${DEMOS[@]}"; do
   echo "rebased $name ($count files)"
 done
 
-[ "$total" -gt 0 ] || echo "nothing to rebase — already on /demos/"
+[ "$total" -gt 0 ] || echo "nothing to rebase, already on /demos/"

@@ -1,6 +1,6 @@
 /* Diagram expander: a static-image cousin of the live-demo component, for
  * artifacts that are a drawing rather than a running app. The thumb shows
- * the image at its own natural aspect ratio (no viewport matching — a tall
+ * the image at its own natural aspect ratio (no viewport matching: a tall
  * diagram fills the column instead of letterboxing inside a wide box), and
  * clicking zooms it to fullscreen with the same expand mark and back
  * control as the live demos. Because the thumb, the image and the

@@ -1,4 +1,4 @@
-/* On-page section rail — the fixed table of contents down the left margin
+/* On-page section rail: the fixed table of contents down the left margin
    of the work pages (styled as .toc in style.css). It reads the project
    bands already in the page and, for each, drops a title that scrolls to
    the band on click, lighting whichever one you're currently reading. No
@@ -65,7 +65,7 @@
     return li;
   });
 
-  // The lone marker dot — a nav child, positioned relative to the rail, that
+  // The lone marker dot, a nav child positioned relative to the rail, that
   // slides down to sit beside whichever entry is active.
   var dot = document.createElement('span');
   dot.className = 'toc-dot';
