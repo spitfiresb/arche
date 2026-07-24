@@ -13,11 +13,13 @@
   function labelOf(li) {
     var t = li.querySelector('.band-title');
     if (!t) return '';
-    // The title carries a trailing .band-date; the rail wants the name alone,
-    // so read from a copy with the date removed.
+    // The title carries a trailing .band-date and possibly a .band-award badge;
+    // the rail wants the name alone, so read from a copy with those removed.
     var copy = t.cloneNode(true);
-    var date = copy.querySelector('.band-date');
-    if (date) date.parentNode.removeChild(date);
+    ['.band-date', '.band-award'].forEach(function (sel) {
+      var el = copy.querySelector(sel);
+      if (el) el.parentNode.removeChild(el);
+    });
     return copy.textContent.replace(/\s+/g, ' ').trim();
   }
 
