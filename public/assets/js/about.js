@@ -22,6 +22,24 @@
     return s - Math.floor(s);
   };
 
+  /* ---- Where an element sits inside main.
+     offsetTop/offsetLeft are measured against the element's offsetParent,
+     and a transform on an ancestor makes THAT ancestor the offsetParent.
+     The page-enter transition puts a transform on ul.timeline for the
+     length of its rise animation, so a plain li.offsetTop read while it is
+     up comes back relative to the list instead of main — every dot, ring
+     and reveal point then lands a whole list-offset too high, and nothing
+     re-measures once the transform lifts. Summing the offsets all the way
+     up and subtracting main's own is immune to that: it's pure layout
+     geometry, identical with the transform up or down. ---- */
+  const sumOff = (el, key) => {
+    let v = 0;
+    for (let n = el; n; n = n.offsetParent) v += n[key];
+    return v;
+  };
+  const inMainY = (el) => sumOff(el, 'offsetTop') - sumOff(main, 'offsetTop');
+  const inMainX = (el) => sumOff(el, 'offsetLeft') - sumOff(main, 'offsetLeft');
+
   /* ---- The floor: a campground meadow running the full width of the
      viewport at the base of the descent, drawn in the wall's ink
      language — doubled ground edge, white-filled silhouettes so near
@@ -60,7 +78,7 @@
     const fw = document.documentElement.clientWidth;
     const gy = 172;                       // ground line y inside this svg
     const fy = coil.getBoundingClientRect().top - mrect.top + 148;
-    const cliffX = mrect.left + ul.offsetLeft - 1;
+    const cliffX = mrect.left + inMainX(ul) - 1;
     floorSvg.setAttribute('viewBox', '0 0 ' + fw + ' 205');
     floorSvg.setAttribute('width', fw);
     floorSvg.setAttribute('height', 205);
@@ -878,8 +896,8 @@
   }
 
   function measure() {
-    ropeX = ul.offsetLeft - 1;
-    nodes = items.map((li) => ({ el: li, y: li.offsetTop + 6 }));
+    ropeX = inMainX(ul) - 1;
+    nodes = items.map((li) => ({ el: li, y: inMainY(li) + 6 }));
     // SVG elements have no offsetTop, so place the coil via rects
     endY = coil.getBoundingClientRect().top - main.getBoundingClientRect().top;
     floorY = endY + 148;
@@ -917,7 +935,7 @@
     ringEls = [];
     anchors = [];
     items.forEach((li, i) => {
-      const dy = li.offsetTop + 10;
+      const dy = inMainY(li) + 10;
       li.style.setProperty('--dotx', (wallOff(dy) - 1).toFixed(1) + 'px');
       if (i % 2 === 0) {
         li.classList.add('anchor');
@@ -1154,12 +1172,23 @@
     mw = innerWidth; mh = innerHeight;
     measure();
   });
-  // The first measure runs against fallback-font layout; when the web
-  // fonts land the entries rewrap and every offset moves — dots drift
-  // off the rock and reveal positions go stale. Re-measure against the
-  // settled text (it resolves during the kicker typing, before he ever
-  // appears, so the rebuild is never a visible mid-scene snap).
-  if (document.fonts) document.fonts.ready.then(() => measure());
+  // Layout can still move under a finished measure: the first one runs
+  // against fallback-font layout and the entries rewrap when the web fonts
+  // land, and document.fonts.ready can resolve before that when the fonts
+  // come warm out of cache on an internal navigation. A drifted entry means
+  // dots off the rock and stale reveal points, so re-check on both signals
+  // and rebuild only if something actually moved — a settled page never
+  // pays for a teardown mid-scene. Both fire during the kicker typing,
+  // before he appears, so a rebuild is never a visible snap.
+  function remeasureIfStale() {
+    if (!nodes.length) return;
+    const moved = nodes.some((n) => Math.abs(inMainY(n.el) + 6 - n.y) > 0.5);
+    if (moved) measure();
+  }
+  if (document.fonts) document.fonts.ready.then(remeasureIfStale);
+  // transition.js signals the end of the page-enter animation, once the
+  // transform it puts on the timeline is off and offsets are plain again.
+  addEventListener('pagetransitionend', remeasureIfStale);
 
   function reveal(i) {
     if (i < nodes.length) nodes[i].el.classList.add('shown');
