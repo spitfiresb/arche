@@ -1,4 +1,4 @@
-# zainsaeed.com
+# zsaeed.com
 
 A personal site, hand-written. No framework, no build step, no dependencies —
 every page is a flat file the browser reads as-is. Deployed on Cloudflare Pages.
@@ -69,6 +69,8 @@ public/                   the deployed site
     notch/                  recreation of the macOS notch utility     ── source
     floorsense/             floorplan detection (calls /api/detect)   ── source
     olander/                recreation of the AI sales agent          ── source
+    liquid-glass/           the WebGL liquid-glass tab bar            ── source
+    steward-ai/             the Steward AI dashboard, browser port    ── source
     unpak-site/             marketing site                            ── vendored
     unpak-dashboard/        the dashboard                             ── vendored
     papeagnet/              contract build                            ── vendored

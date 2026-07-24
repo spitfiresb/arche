@@ -90,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize event listeners from main process
 function initEventListeners() {
     if (!window.electronAPI) {
-        console.log('Electron API not available - running in browser mode');
         return;
     }
 
@@ -279,7 +278,6 @@ function startDashboardPolling() {
             // If interaction is stale (>5 seconds), force update anyway
             const interactionAge = Date.now() - (state.interactionTimestamp || 0);
             if (interactionAge < 5000) {
-                console.log('Skipping dashboard update during user interaction');
                 return; // Skip this poll cycle
             }
         }
@@ -1345,7 +1343,6 @@ function navigateToMyUsage() {
     } else if (window.electronAPI) {
         window.electronAPI.navigateTo('myUsage');
     } else {
-        console.log('Using fallback navigation');
         window.location.href = '../employees/myUsage.html';
     }
 }

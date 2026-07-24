@@ -975,7 +975,6 @@ async function redeemInviteWithHandling() {
         const refreshedProfile = await api.refreshUserProfile?.();
         if (refreshedProfile) {
           state.userProfile = refreshedProfile;
-          console.log('Refreshed profile after 409:', state.userProfile.role);
         }
       } catch (e) {
         console.error('Failed to refresh profile after 409:', e);

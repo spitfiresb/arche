@@ -87,7 +87,6 @@ async function refreshEmployeeData() {
             return (a[0]?.id !== b[0]?.id) || (a[a.length - 1]?.id !== b[b.length - 1]?.id);
         })();
         if (promptsChanged) {
-            console.log('[EmployeeDetail] New data detected, updating displays');
             state.prompts = prompts;
             updateAllDisplays();
         } else {
@@ -151,14 +150,11 @@ function renderAfterTransition(renderFn) {
 
 // Load employee data from IPC (Electron) or sessionStorage (browser fallback)
 async function loadEmployeeData() {
-    console.log('[EmployeeDetail] loadEmployeeData called');
 
     // Get employee info via IPC (Electron) or sessionStorage (browser)
     if (window.electronAPI) {
         try {
-            console.log('[EmployeeDetail] Calling getSelectedEmployee via IPC...');
             state.employee = await window.electronAPI.getSelectedEmployee();
-            console.log('[EmployeeDetail] Received employee data:', state.employee);
 
             if (!state.employee) {
                 console.error('[EmployeeDetail] No employee data found via IPC');
@@ -174,7 +170,6 @@ async function loadEmployeeData() {
     } else {
         // Browser fallback - use sessionStorage
         const employeeJson = sessionStorage.getItem('selectedEmployee');
-        console.log('[EmployeeDetail] Browser mode - sessionStorage data:', employeeJson);
 
         if (!employeeJson) {
             console.error('[EmployeeDetail] No employee data found in sessionStorage');
@@ -184,7 +179,6 @@ async function loadEmployeeData() {
 
         try {
             state.employee = JSON.parse(employeeJson);
-            console.log('[EmployeeDetail] Parsed employee:', state.employee);
             updateEmployeeProfile(state.employee);
         } catch (e) {
             console.error('[EmployeeDetail] Failed to parse employee data:', e);
@@ -198,7 +192,6 @@ async function loadEmployeeData() {
         try {
             // Support both 'id' and 'user_id' field names from backend
             const employeeId = state.employee.id || state.employee.user_id;
-            console.log('[EmployeeDetail] Fetching prompts for employee ID:', employeeId);
 
             if (!employeeId) {
                 console.error('[EmployeeDetail] No employee ID found. Employee object:', state.employee);
@@ -207,7 +200,6 @@ async function loadEmployeeData() {
             }
 
             state.prompts = await window.electronAPI.getEmployeePrompts(employeeId);
-            console.log('[EmployeeDetail] Received', state.prompts?.length || 0, 'prompts');
             renderAfterTransition(() => updateAllDisplays());
         } catch (error) {
             console.error('[EmployeeDetail] Failed to load employee prompts:', error);

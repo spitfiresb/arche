@@ -1,14 +1,15 @@
-/* Type, following paco.me's own stack:
+/* Type:
    --font-sans   Söhne (a licensed Klim face). It isn't hosted here, so when
                  it isn't installed we fall to Helvetica Neue — the neo-
                  grotesque Söhne descends from and reads almost identically —
                  then to Inter as a hosted web-font backstop for other OSes.
-   --font-serif  Newsreader italic — the serif paco uses for emphasized
-                 lead-ins (loaded from Google Fonts). */
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap');
+   --font-serif  Newsreader italic, for emphasized lead-ins.
+   Both web fonts load from Google Fonts via <link> tags in each page's
+   head (with preconnect), so the fetch starts alongside this stylesheet
+   instead of being serialized behind it. */
 
 :root {
-  /* Paco's dark theme + greys */
+  /* Dark theme + greys */
   --bg: #1a1a1a;
   --fg: #f2f2f2;
   --muted: #a0a0a0;         /* gray11 — descriptions and intro body */
@@ -51,7 +52,7 @@ a {
   color: inherit;
 }
 
-/* Home: paco.me layout — a greeting, the links, then work laid out
+/* Home: a greeting, the links, then work laid out
    across three labelled columns. Left-aligned in a fixed 640px column
    centered on the page. The greeting block is anchored near the top and
    the work grid floats in the space left below it, so the columns sit
@@ -63,7 +64,7 @@ body.home main {
   min-height: 100vh;
   margin: 0 auto;
   padding: 20vh 1.5rem 4rem;
-  font-size: 1.0625rem;   /* paco's 17px body */
+  font-size: 1.0625rem;   /* 17px body */
   line-height: 1.5;
   display: flex;
   flex-direction: column;
@@ -243,7 +244,7 @@ body.home main {
 
 /* The outline is two SVG halves rather than a border, so it can be drawn
    instead of switched on: both start at the bottom centre and travel up
-   the opposite sides to meet at the top. browser.js sizes the paths to
+   the opposite sides to meet at the top. landing.js sizes the paths to
    their link, since the geometry depends on its rendered box. Shared by
    About me and the three column labels — anything that wraps one of these
    only has to be position:relative with the padding to hold the outline. */
@@ -290,9 +291,9 @@ a:focus-visible > .pill-border path {
 
 /* Click: the outline unwinds back down both sides on an accelerating
    curve — slow to let go, quick at the end — while the label drops out
-   ahead of it. Navigation waits for it to finish (browser.js).
+   ahead of it. Navigation waits for it to finish (landing.js).
 
-   .open is the starting frame, stamped on by browser.js and held for one
+   .open is the starting frame, stamped on by landing.js and held for one
    reflow before .collapsing lands. Without it the retraction has nothing
    to travel from on any pointer that never hovers — a touch tap would set
    the offset back to 100 on a stroke that was already at 100, animating
@@ -453,7 +454,7 @@ li.li-hover:focus-within .li-logo {
    empty page margin rather than over the work columns. Pinning the
    reveal's right edge to the mark makes the box grow leftward, and the
    mark lands inside the card's top-right corner, which sits right where
-   the mark already is. browser.js only adds .opens-left when there's
+   the mark already is. landing.js only adds .opens-left when there's
    actually room to the left; otherwise the card opens right as usual. */
 li.li-hover.opens-left .li-hover-reveal {
   left: auto;
@@ -489,7 +490,7 @@ li.li-hover.opens-left:focus-within .li-logo {
     box-shadow 0.5s ease;
 }
 
-/* Content is laid out at the card's final width (set by browser.js as
+/* Content is laid out at the card's final width (set by landing.js as
    --liw) and pinned top-left, so the growing box uncovers it rather than
    squishing it */
 .li-card-inner {
@@ -1454,7 +1455,7 @@ ul.links li.li-hover.gh:focus-within .li-hover-reveal {
     "Noto Sans", Helvetica, Arial, sans-serif;
   /* GitHub's own dark theme, to match the page: #0d1117 canvas, #30363d
      hairlines, #e6edf3 ink — the green calendar still carries the color,
-     on the darker ramp browser.js draws */
+     on the darker ramp landing.js draws */
   background: #0d1117;
   color: #e6edf3;
   border-color: #30363d;
@@ -1544,7 +1545,7 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 .gh-tip::after {
   content: "";
   position: absolute;
-  /* browser.js sets --ax so the arrow tracks the hovered cell even
+  /* landing.js sets --ax so the arrow tracks the hovered cell even
      when the bubble itself is clamped at the graph's edge */
   left: var(--ax, 50%);
   bottom: -4px;

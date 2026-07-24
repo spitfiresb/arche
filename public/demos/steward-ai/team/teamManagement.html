@@ -224,7 +224,6 @@
 
             // Listen for invite tokens from deep links
             window.electronAPI.onInviteTokenReceived?.((data) => {
-                console.log('Received invite token from deep link');
                 handleIncomingInvite(data.token);
             });
 
@@ -238,7 +237,6 @@
 
             const token = await window.electronAPI.getPendingInvite();
             if (token) {
-                console.log('Found pending invite token');
                 handleIncomingInvite(token);
             }
         }
@@ -551,7 +549,6 @@
 
         function openMemberMenu(memberId) {
             // Placeholder for member actions menu
-            console.log('Open menu for member:', memberId);
         }
 
         // Utility functions

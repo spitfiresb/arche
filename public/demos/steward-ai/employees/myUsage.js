@@ -67,7 +67,6 @@ const chartColors = Utils.CHART_COLORS || [
     '#4d6159', '#c2a894', '#7d8c82', '#5e503f', '#9ea39a', '#a7877f', '#6b705c', '#1a1a2e'
 ];
 
-
 document.addEventListener('DOMContentLoaded', () => {
     // Track load time for transition synchronization
     window.pageLoadTime = window.performance.now();
@@ -102,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize event listeners from main process
 function initEventListeners() {
     if (!window.electronAPI) {
-        console.log('Electron API not available - running in browser mode');
         // Load demo data for browser preview
         loadDemoData();
         return;
@@ -910,7 +908,6 @@ function removeSubcategoryOverlayWithAnimation(overlay) {
     }, 200);
 }
 
-
 // Update the activity trend chart
 function updateActivityChart(animate) {
     const canvas = document.getElementById('activityChart');
@@ -1639,5 +1636,4 @@ function navigateToIndex() {
 
 // Global Exports
 window.navigateToIndex = navigateToIndex;
-
 

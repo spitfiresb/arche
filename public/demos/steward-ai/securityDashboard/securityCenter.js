@@ -273,8 +273,6 @@ async function loadSecurityFlags(preloadedEmployees) {
             ]);
         }
 
-        console.log('[Security Overview] Raw flags:', flags);
-
         const employeeMap = {};
         const employeeMapByEmail = {};
         (employees || []).forEach(emp => {
@@ -324,8 +322,6 @@ async function loadSecurityFlags(preloadedEmployees) {
                 };
             })
             .filter(Boolean);
-
-        console.log('[Security Overview] Mapped incidents:', state.incidents);
 
         renderAfterTransition(() => { updateStats(); renderIncidents(); });
     } catch (error) {
@@ -1043,7 +1039,6 @@ function stripFlagIdSuffix(flagId) {
     return flagId.replace(/_(file|\d+)$/, '');
 }
 
-
 // Decode a base64 string to a Uint8Array (binary bytes)
 function base64ToUint8Array(base64Str) {
     const byteChars = atob(base64Str);
@@ -1083,7 +1078,6 @@ async function detectActualFileType(cleanBase64) {
 
 async function handleFilePreview(fileId, initialFilename) {
     const promptId = stripFlagIdSuffix(fileId);
-    console.log('[Security] handleFilePreview called — fileId:', fileId, 'promptId:', promptId);
 
     // Create modal overlay immediately to show loading state
     const overlay = document.createElement('div');
@@ -2180,8 +2174,6 @@ function getFilteredIncidents() {
 
     return filtered;
 }
-
-
 
 // Global exports
 window.navigateBack = navigateBack;
