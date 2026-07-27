@@ -1187,6 +1187,34 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   transform: translate(1px, -1px);
 }
 
+/* Same link, staying on the site: it carries a `< >` mark instead of the
+   outbound arrow, and opens outward from the centre rather than nudging
+   up-and-right, which is the gesture that means "leaving". */
+.repo-link.is-internal svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.repo-link.is-internal:hover svg,
+.repo-link.is-internal:focus-visible svg {
+  transform: none;
+}
+
+.repo-link.is-internal svg path {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+.repo-link.is-internal:hover svg path:first-child,
+.repo-link.is-internal:focus-visible svg path:first-child {
+  transform: translateX(-1px);
+}
+
+.repo-link.is-internal:hover svg path:last-child,
+.repo-link.is-internal:focus-visible svg path:last-child {
+  transform: translateX(1px);
+}
+
 /* Live preview sits flush in the band, framed by a hairline */
 .band-artifact .ld-thumb {
   margin: 0;
