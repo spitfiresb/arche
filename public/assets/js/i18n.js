@@ -266,28 +266,36 @@
 
   /* ---- The swap -------------------------------------------------------
 
-     Text doesn't cut from one language to the next, it rolls: each line
-     blurs out and lifts, swaps while it can't be read, then settles back
-     in from below. The delay is keyed to how far down the viewport a line
-     sits, so the change reads as a wave running down the page rather than
-     forty elements blinking at once. */
+     The page dips out together and comes back a row at a time, so the new
+     language arrives as a cascade down the page rather than all at once.
 
-  const SWAP_MS = 520; // one pass: fade down, turn over, come back up
-  const STEP = 16;     // per-line delay down the page
-  const MAX_LAG = 520; // cap, so a long page still finishes promptly
+     Two things keep it smooth. Only opacity and transform move, which the
+     compositor can run on its own without re-rendering the text, so the
+     cascade holds frame rate on a page with forty lines on it. And every
+     line changes its words at the same instant, while the whole page is
+     faded down: text of a different length re-lays the page out, and doing
+     that once behind a fade is invisible, where doing it per line, spread
+     over half a second, is the page twitching under the reader.
+
+     Lines share a row whenever they sit at the same height, so the three
+     work columns come back as three rows rather than as nine separately
+     timed pieces. */
+
+  const FADE_OUT = 150;  // the whole page dipping down together
+  const FADE_IN = 330;   // one row coming back up
+  const ROW_STEP = 34;   // between one row and the next
+  const MAX_LAG = 340;   // cap, so a long page still finishes promptly
+  const RISE = 7;        // how far a row sinks before it comes back
 
   let swapToken = 0;
-  // The animation and the pending text write for each line currently in the
-  // wave, so a new wave can take an element back cleanly instead of layering
-  // a second animation on top of the first.
-  const running = new WeakMap();
+  // Everything the running wave owns, so the next one can take it all back
+  // in a single call rather than tracking elements individually.
+  let wave = { anims: [], timers: [] };
 
-  function stopSwap(el) {
-    const r = running.get(el);
-    if (!r) return;
-    running.delete(el);
-    clearTimeout(r.timer);
-    try { r.anim.cancel(); } catch (e) { /* already gone */ }
+  function stopWave() {
+    wave.timers.forEach(clearTimeout);
+    wave.anims.forEach((a) => { try { a.cancel(); } catch (e) { /* gone */ } });
+    wave = { anims: [], timers: [] };
   }
 
   function swap(dict, code, animate) {
@@ -295,60 +303,77 @@
       year: 'numeric', month: 'long', timeZone: 'UTC',
     });
     const nodes = [...document.querySelectorAll(SEL)];
+    const writeAll = () => nodes.forEach((el) => updateNode(el, dict, fmt));
 
     if (!animate || reduced || !document.body.animate) {
-      nodes.forEach((el) => { stopSwap(el); updateNode(el, dict, fmt); });
+      stopWave();
+      writeAll();
       updateChrome(dict, code);
       return;
     }
 
+    // Where each line stands this instant, read before the running wave is
+    // cancelled. A switch arriving mid-cascade then carries on from what is
+    // on screen instead of snapping back to full and dipping a second time.
+    const from = nodes.map((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        opacity: cs.opacity,
+        transform: cs.transform === 'none' ? 'translateY(0px)' : cs.transform,
+      };
+    });
+
+    // Cancelling hands every line straight back to the stylesheet, so an
+    // interrupted wave leaves the page readable rather than mid-fade.
+    stopWave();
+
     const mine = ++swapToken;
     updateChrome(dict, code);
 
-    // Order by where each line sits, so the wave runs top to bottom.
-    const tops = nodes.map((el) => el.getBoundingClientRect().top);
-    const min = Math.min(...tops);
-    const span = Math.max(...tops) - min || 1;
-    let lastLag = 0;
+    // Group lines into rows by where they sit, then give each row its turn.
+    // Ranking rows rather than scaling by pixel offset keeps the gap between
+    // them even, whatever the spacing of the page happens to be.
+    const tops = nodes.map((el) => Math.round(el.getBoundingClientRect().top / 8));
+    const rows = [...new Set(tops)].sort((a, b) => a - b);
+    const lagOf = tops.map((t) => Math.min(rows.indexOf(t) * ROW_STEP, MAX_LAG));
+    const lastLag = Math.max(...lagOf);
+    const total = FADE_OUT + lastLag + FADE_IN;
 
     nodes.forEach((el, i) => {
-      stopSwap(el); // hand the line back before starting it over
-      const lag = Math.min(((tops[i] - min) / span) * (nodes.length * STEP), MAX_LAG);
-      lastLag = Math.max(lastLag, lag);
+      const lag = lagOf[i];
+      // Fractions of one timeline rather than a delay, so the dip stays
+      // together and only the return is staggered.
+      const gone = FADE_OUT / total;
+      const back = (FADE_OUT + lag) / total;
+      const home = (FADE_OUT + lag + FADE_IN) / total;
 
-      /* One animation per line, and it ends exactly where it began: fully
-         visible. Nothing here fills forwards, so the moment it ends — or is
-         cancelled part way by the next switch — the line goes back to being
-         styled by the stylesheet. An interrupted wave can leave text from
-         the wrong language on screen for a moment, which the next wave
-         corrects; it can never leave the page blank. */
-      const anim = el.animate(
+      /* One animation per line, ending exactly where it began: fully
+         visible, and filling neither way. The moment it ends, or is
+         cancelled part way by the next switch, the line is back under the
+         stylesheet. It cannot leave the page blank. */
+      wave.anims.push(el.animate(
         [
-          { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)', offset: 0 },
-          { opacity: 0, filter: 'blur(3px)', transform: 'translateY(-5px)', offset: 0.42 },
-          { opacity: 0, filter: 'blur(3px)', transform: 'translateY(6px)', offset: 0.58 },
-          { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)', offset: 1 },
+          { opacity: from[i].opacity, transform: from[i].transform, offset: 0, easing: 'cubic-bezier(0.4, 0, 0.7, 1)' },
+          { opacity: 0, transform: 'translateY(0px)', offset: gone, easing: 'linear' },
+          { opacity: 0, transform: `translateY(${RISE}px)`, offset: back, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+          { opacity: 1, transform: 'translateY(0px)', offset: home },
+          { opacity: 1, transform: 'translateY(0px)', offset: 1 },
         ],
-        { duration: SWAP_MS, delay: lag, easing: 'cubic-bezier(0.33, 0, 0.2, 1)' },
-      );
-
-      // The words turn over while the line is at its most faded.
-      const timer = setTimeout(() => {
-        if (mine === swapToken) updateNode(el, dict, fmt);
-      }, lag + SWAP_MS * 0.5);
-
-      running.set(el, { anim, timer });
-      anim.finished
-        .then(() => { if (running.get(el) && running.get(el).anim === anim) running.delete(el); })
-        .catch(() => {});
+        { duration: total },
+      ));
     });
 
-    // Whatever became of the individual lines, the page is settled and in
-    // one language by the time the wave should have passed.
-    setTimeout(() => {
+    // Every line turns over on this one tick, so the page re-lays out once,
+    // at the bottom of the fade, where the change of length cannot be seen.
+    wave.timers.push(setTimeout(() => { if (mine === swapToken) writeAll(); }, FADE_OUT));
+
+    // And whatever became of the animations, the page is settled and in one
+    // language by the time the cascade should have passed.
+    wave.timers.push(setTimeout(() => {
       if (mine !== swapToken) return;
-      nodes.forEach((el) => { stopSwap(el); updateNode(el, dict, fmt); });
-    }, lastLag + SWAP_MS + 160);
+      stopWave();
+      writeAll();
+    }, total + 140));
   }
 
   /* ---- Wiring ---------------------------------------------------------- */
