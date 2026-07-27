@@ -167,7 +167,7 @@ Crawling stays open precisely so the header lands. Three of the demos are
 vendored copies of sites that exist elsewhere, and the Unpak one would
 otherwise compete with the real marketing site.
 
-**`sitemap.xml` lists the five real pages.** Add a page, add it there.
+**`sitemap.xml` lists the real pages.** Add a page, add it there.
 
 ## Secrets
 
