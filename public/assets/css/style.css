@@ -1717,14 +1717,17 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   background: none;
   cursor: pointer;
   line-height: 0;
-  border-radius: 5px;
+  border-radius: 4px;
+  /* the flag turns over on a language change; without depth the flip reads
+     as a horizontal squash instead of a rotation */
+  perspective: 240px;
 }
 
 .lang-btn svg {
-  width: 36px;
-  height: 24px;
+  width: 27px;
+  height: 18px;
   display: block;
-  border-radius: 5px;
+  border-radius: 4px;
   /* dark gray and black at rest, in line with the page */
   filter: grayscale(1) brightness(0.55) contrast(1.05);
   opacity: 0.85;
@@ -1754,7 +1757,7 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   margin: 0;
   padding: 0.4rem;
   list-style: none;
-  width: 16rem;
+  width: 17.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2px;
@@ -1775,15 +1778,48 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   font-family: var(--font-sans);
   font-size: 0.8125rem;
   line-height: 1.25;
-  padding: 0.45rem 0.6rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 7px;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .lang-menu button:hover { background: rgba(242, 242, 242, 0.07); }
+
+/* Each row carries its own flag. They stay muted in the list so the menu
+   reads as one grey panel, and the row you are on brings its flag up to
+   full colour: the same rest-to-colour move the button makes on hover. */
+.lang-menu .ln-flag {
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.lang-menu .ln-flag svg {
+  width: 20px;
+  height: 13.5px;
+  display: block;
+  border-radius: 2.5px;
+  filter: grayscale(1) brightness(0.62);
+  opacity: 0.9;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.lang-menu button:hover .ln-flag svg,
+.lang-menu button:focus-visible .ln-flag svg,
+.lang-menu button[aria-selected="true"] .ln-flag svg {
+  filter: none;
+  opacity: 1;
+}
+
+.lang-menu .ln-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
 
 .lang-menu button .ln-en {
   color: var(--faint);
@@ -1799,6 +1835,6 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 @media (max-width: 40rem) {
   .lang-switch { top: 0.85rem; right: 0.9rem; }
-  .lang-btn svg { width: 32px; height: 21px; }
-  .lang-menu { width: 14.5rem; }
+  .lang-btn svg { width: 24px; height: 16px; }
+  .lang-menu { width: 15rem; }
 }
