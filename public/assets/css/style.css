@@ -685,7 +685,7 @@ li.li-hover:focus-within .li-hover-card {
   color: var(--faint);
   text-decoration: none;
   transition: color 0.2s ease,
-              padding-left 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+              padding-inline-start 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Pointing at an entry lifts its title toward white and scoots it aside,
@@ -695,7 +695,7 @@ li.li-hover:focus-within .li-hover-card {
 .toc-link:focus-visible,
 .toc-item.active .toc-link {
   color: var(--fg);
-  padding-left: 0.9rem;
+  padding-inline-start: 0.9rem;
 }
 
 /* A single white dot marks the active section. It's the only one on the
@@ -730,7 +730,7 @@ li.li-hover:focus-within .li-hover-card {
   display: inline-block;
   width: 1.5px;
   height: 1.1em;
-  margin-left: 2px;
+  margin-inline-start: 2px;
   vertical-align: -0.18em;
   background: currentColor;
   animation: caret-blink 1s steps(1) infinite;
@@ -1062,7 +1062,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
    faint so it reads as a footnote to the name, not part of it; nowrap keeps the
    month and year together when a long title pushes it onto its own line. */
 .band-date {
-  margin-left: 0.7em;
+  margin-inline-start: 0.7em;
   font-size: 0.8125rem;
   color: var(--faint);
   font-style: normal;
@@ -1073,7 +1073,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
    part label from the date, echoing the one between name and part. */
 .band-part + .band-date::before {
   content: "\00b7";
-  margin-right: 0.7em;
+  margin-inline-end: 0.7em;
   font-size: 0.85em;
 }
 
@@ -1082,7 +1082,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
    the glyphs) so it glints without shouting. A leading dot separates it from
    the date the way the date is separated from a part label. */
 .band-award {
-  margin-left: 0.7em;
+  margin-inline-start: 0.7em;
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
@@ -1090,7 +1090,7 @@ ul.bands > li.solo:nth-child(even) .band-prose {
 
 .band-award::before {
   content: "\00b7";
-  margin-right: 0.7em;
+  margin-inline-end: 0.7em;
   font-size: 0.85em;
   color: var(--faint);
   font-weight: 400;
@@ -1698,4 +1698,148 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   html.page-enter-back .bands > li {
     animation: none;
   }
+}
+
+/* Language switcher: a fixed flag button in the top-right corner. The flag
+   SVG carries its real colors; a grayscale filter holds it down to the
+   site's dark grays until hover, where it grows slightly and colors in. */
+.lang-switch {
+  position: fixed;
+  top: 1.15rem;
+  right: 1.25rem;
+  z-index: 60;
+  /* The switcher is chrome, not content: it keeps the same corner and the
+     same reading order whatever direction the page it sits on runs in.
+     Without this, choosing Arabic would flip the menu and send English
+     from the top left of the list to the top right. Each language's own
+     name still shapes correctly, since that is the text's own direction. */
+  direction: ltr;
+}
+
+.lang-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 4px;
+  /* the flag turns over on a language change; without depth the flip reads
+     as a horizontal squash instead of a rotation */
+  perspective: 240px;
+}
+
+.lang-btn svg {
+  width: 27px;
+  height: 18px;
+  display: block;
+  border-radius: 4px;
+  /* dark gray and black at rest, in line with the page */
+  filter: grayscale(1) brightness(0.55) contrast(1.05);
+  opacity: 0.85;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.lang-btn:hover svg,
+.lang-btn:focus-visible svg,
+.lang-switch.open .lang-btn svg {
+  filter: none;
+  opacity: 1;
+  transform: scale(1.12);
+  box-shadow: 0 0 0 1px rgba(242, 242, 242, 0.25), 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.lang-btn:focus-visible {
+  outline: 1px solid var(--muted);
+  outline-offset: 3px;
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  width: 17.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: #202020;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  /* it opens out of the button, which sits off its top-right corner */
+  transform-origin: top right;
+}
+
+.lang-menu[hidden] { display: none; }
+
+.lang-menu button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  padding: 0.4rem 0.5rem;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-menu button:hover { background: rgba(242, 242, 242, 0.07); }
+
+/* Each row carries its own flag. They stay muted in the list so the menu
+   reads as one grey panel, and the row you are on brings its flag up to
+   full colour: the same rest-to-colour move the button makes on hover. */
+.lang-menu .ln-flag {
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.lang-menu .ln-flag svg {
+  width: 20px;
+  height: 13.5px;
+  display: block;
+  border-radius: 2.5px;
+  filter: grayscale(1) brightness(0.62);
+  opacity: 0.9;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.lang-menu button:hover .ln-flag svg,
+.lang-menu button:focus-visible .ln-flag svg,
+.lang-menu button[aria-selected="true"] .ln-flag svg {
+  filter: none;
+  opacity: 1;
+}
+
+.lang-menu .ln-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lang-menu button .ln-en {
+  color: var(--faint);
+  font-size: 0.6875rem;
+}
+
+.lang-menu button[aria-selected="true"] {
+  background: rgba(242, 242, 242, 0.1);
+}
+
+@media (max-width: 40rem) {
+  .lang-switch { top: 0.85rem; right: 0.9rem; }
+  .lang-btn svg { width: 24px; height: 16px; }
+  .lang-menu { width: 15rem; }
 }

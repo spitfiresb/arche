@@ -35,8 +35,9 @@
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/live-demo.css">
 <script src="/assets/js/transition.js"></script>
+<script src="/assets/js/i18n.js" defer></script>
 </head>
-<body class="page work">
+<body class="page work" data-i18n-page="extra">
   <a class="back" href="/" aria-label="Back">
     <svg class="back-mark" viewBox="0 0 40 40" width="36" height="36" fill="none" stroke="currentColor" aria-hidden="true">
       <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
@@ -46,8 +47,8 @@
   <main>
     <header class="page-head">
       <div class="page-line">
-        <h1 class="page-title">Extra</h1>
-        <p class="page-sub">personal favorites</p>
+        <h1 class="page-title" data-i18n="nav.extra">Extra</h1>
+        <p class="page-sub" data-i18n="work.extra.sub">personal favorites</p>
       </div>
     </header>
 
@@ -67,7 +68,7 @@
             <h2 class="band-title">Notch<time class="band-date" datetime="2026-05">May 2026</time></h2>
             <a class="repo-link" href="https://github.com/spitfiresb/notch"
             target="_blank" rel="noopener">
-              View repo
+              <span data-i18n="common.viewrepo">View repo</span>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
               aria-hidden="true">
@@ -76,27 +77,27 @@
               </svg>
             </a>
           </div>
-          <p>A macOS utility that creates its own notch at the top of the
+          <p data-i18n="work.notch.p1">A macOS utility that creates its own notch at the top of the
           display. Hover the black pill and it expands into Now Playing
           controls, a screenshot shelf, and clipboard history</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>How it works</dt>
-                <dd>An NSPanel pinned to the top of every Space, a notch that
+                <dt data-i18n="spec.how">How it works</dt>
+                <dd data-i18n="work.notch.how">An NSPanel pinned to the top of every Space, a notch that
                 expands on hover. Now Playing over the private MediaRemote API,
                 screenshots via FSEvents, the level meter off an AVAudioEngine
                 tap</dd>
               </div>
               <div>
-                <dt>Built on</dt>
-                <dd>Swift, SwiftUI and AppKit</dd>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.notch.builton">Swift, SwiftUI and AppKit</dd>
               </div>
               <div>
-                <dt>Why</dt>
-                <dd>I was unsatisfied with the open source alternatives, so I
+                <dt data-i18n="spec.why">Why</dt>
+                <dd data-i18n="work.notch.why">I was unsatisfied with the open source alternatives, so I
                 decided to make my own</dd>
               </div>
             </dl>
@@ -113,7 +114,7 @@
           <div class="band-head">
             <h2 class="band-title">Liquid Glass<time class="band-date" datetime="2026-07">July 2026</time></h2>
             <a class="repo-link is-internal" href="/work/liquid-glass-code">
-              View code
+              <span data-i18n="common.viewcode">View code</span>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
               aria-hidden="true">
@@ -122,22 +123,22 @@
               </svg>
             </a>
           </div>
-          <p>My implementation of Apple's Liquid Glass. A pill of glass slides
+          <p data-i18n="work.lg.p1">My implementation of Apple's Liquid Glass. A pill of glass slides
           between the tabs, bending the background as it goes and stretching
           before it settles. One of my personal favorites</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>How it works</dt>
-                <dd>A refractive lens over a tab row: SDF pill, Snell-law edge
+                <dt data-i18n="spec.how">How it works</dt>
+                <dd data-i18n="work.lg.how">A refractive lens over a tab row: SDF pill, Snell-law edge
                 refraction with per-channel dispersion, LCH fresnel and glare,
                 spring-driven motion</dd>
               </div>
               <div>
-                <dt>Built on</dt>
-                <dd>WebGL and vanilla JavaScript, no libraries</dd>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.lg.builton">WebGL and vanilla JavaScript, no libraries</dd>
               </div>
             </dl>
           </div>

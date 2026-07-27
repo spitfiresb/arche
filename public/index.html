@@ -68,13 +68,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="stylesheet" href="/assets/css/style.css">
 <script src="/assets/js/transition.js"></script>
+<script src="/assets/js/i18n.js" defer></script>
 </head>
-<body class="home">
+<body class="home" data-i18n-page="home">
   <main>
-    <h1 class="greeting">Hi, my name is Zain Saeed, welcome to my website!</h1>
+    <h1 class="greeting" data-i18n="home.greeting">Hi, my name is Zain Saeed, welcome to my website!</h1>
 
     <div class="intro">
-      <p>Some of the things I love: traveling somewhere new, meeting
+      <p data-i18n-html="home.intro">Some of the things I love: traveling somewhere new, meeting
       interesting people, eating great food, working on my (often) broken car,
       writing code, camping in concerningly remote locations, building amazing
       things, and most importantly, <span class="stress">solving hard
@@ -83,7 +84,7 @@
 
     <section class="elsewhere">
       <ul class="links">
-        <li class="about"><a href="/about"><span class="lbl">About me</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></li>
+        <li class="about"><a href="/about"><span class="lbl" data-i18n="home.about">About me</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></li>
         <li class="socials">
           <ul class="social-row">
             <li class="li-hover">
@@ -132,47 +133,47 @@
 
     <div class="work-grid">
       <section class="col">
-        <h2><a href="/work/personal">Personal<svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
+        <h2><a href="/work/personal"><span data-i18n="nav.personal">Personal</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
         <ul class="stack">
           <li>
             <a class="item-title" href="/work/personal#unpak-system">Unpak</a>
-            <span class="item-desc">Co-founded a startup that helps enterprises with their AI transformation.</span>
+            <span class="item-desc" data-i18n="home.unpak.desc">Co-founded a startup that helps enterprises with their AI transformation.</span>
           </li>
           <li>
             <a class="item-title" href="/work/personal#steward-ai">Steward AI</a>
-            <span class="item-desc">Lets businesses understand their employees' AI usage.</span>
+            <span class="item-desc" data-i18n="home.steward.desc">Lets businesses understand their employees' AI usage.</span>
           </li>
           <li>
             <a class="item-title" href="/work/personal#floorsense">FloorSense</a>
-            <span class="item-desc">Computer vision that reads architectural floorplans.</span>
+            <span class="item-desc" data-i18n="home.floorsense.desc">Computer vision that reads architectural floorplans.</span>
           </li>
         </ul>
       </section>
 
       <section class="col">
-        <h2><a href="/work/contract">Contract<svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
+        <h2><a href="/work/contract"><span data-i18n="nav.contract">Contract</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
         <ul class="stack">
           <li>
-            <a class="item-title" href="/work/contract">AI Sales Agent</a>
-            <span class="item-desc">Chat agent that lets a company query their ERP using natural language.</span>
+            <a class="item-title" href="/work/contract" data-i18n="work.salesagent.title">AI Sales Agent</a>
+            <span class="item-desc" data-i18n="home.salesagent.desc">Chat agent that lets a company query their ERP using natural language.</span>
           </li>
           <li>
-            <a class="item-title" href="/work/contract">Agricultural Analytics Platform</a>
-            <span class="item-desc">Geospatial analytics for a 1,500-person equipment dealer.</span>
+            <a class="item-title" href="/work/contract" data-i18n="work.agdash.title">Agricultural Analytics Platform</a>
+            <span class="item-desc" data-i18n="home.agdash.desc">Geospatial analytics for a 1,500-person equipment dealer.</span>
           </li>
         </ul>
       </section>
 
       <section class="col">
-        <h2><a href="/work/cool">Extra<svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
+        <h2><a href="/work/cool"><span data-i18n="nav.extra">Extra</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
         <ul class="stack">
           <li>
             <a class="item-title" href="/work/cool#notch">Notch</a>
-            <span class="item-desc">A macOS utility that lives in the display notch.</span>
+            <span class="item-desc" data-i18n="home.notch.desc">A macOS utility that lives in the display notch.</span>
           </li>
           <li>
             <a class="item-title" href="/work/cool#liquid-glass">Liquid Glass</a>
-            <span class="item-desc">My attempt at Apple's liquid glass.</span>
+            <span class="item-desc" data-i18n="home.liquidglass.desc">My attempt at Apple's liquid glass.</span>
           </li>
         </ul>
       </section>
