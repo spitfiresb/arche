@@ -35,8 +35,9 @@
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/live-demo.css">
 <script src="/assets/js/transition.js"></script>
+<script src="/assets/js/i18n.js" defer></script>
 </head>
-<body class="page work">
+<body class="page work" data-i18n-page="personal">
   <a class="back" href="/" aria-label="Back">
     <svg class="back-mark" viewBox="0 0 40 40" width="36" height="36" fill="none" stroke="currentColor" aria-hidden="true">
       <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
@@ -46,8 +47,8 @@
   <main>
     <header class="page-head">
       <div class="page-line">
-        <h1 class="page-title">Personal</h1>
-        <p class="page-sub">projects that I built for myself</p>
+        <h1 class="page-title" data-i18n="nav.personal">Personal</h1>
+        <p class="page-sub" data-i18n="work.personal.sub">projects that I built for myself</p>
       </div>
     </header>
 
@@ -62,8 +63,8 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">System</span><time class="band-date" datetime="2026-04">April 2026</time></h2>
-          <p>The capture and processing core of Unpak. A Rust agent on each
+          <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.system">System</span><time class="band-date" datetime="2026-04">April 2026</time></h2>
+          <p data-i18n="work.unpaksys.p1">The capture and processing core of Unpak. A Rust agent on each
           machine reads the focused window through AX Tree and OCR capture, and
           scrubs PII's on device. After
           storage, a pipeline then distills that raw activity down in stages:
@@ -73,7 +74,7 @@
           workflows across the workforce into families, so variations of the
           same workflow can still be deterministically grouped together</p>
 
-          <p>The idea: a worker's day is made up of various workflows, each a
+          <p data-i18n="work.unpaksys.p2">The idea: a worker's day is made up of various workflows, each a
           generally set list of tasks. If you can map those workflows and
           build a picture of how a company actually does its work, down to the
           smallest step, then you can pinpoint where an AI solution plugs in
@@ -81,16 +82,16 @@
           would save</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>Built on</dt>
-                <dd>Rust for the agent, Swift for the macOS client, Python for
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.unpaksys.builton">Rust for the agent, Swift for the macOS client, Python for
                 the pipeline. SQLite on the device, Neon Postgres upstream</dd>
               </div>
               <div>
-                <dt>Hosting</dt>
-                <dd>Modal for the pipeline, Cloudflare R2 for storage</dd>
+                <dt data-i18n="spec.hosting">Hosting</dt>
+                <dd data-i18n="work.unpaksys.hosting">Modal for the pipeline, Cloudflare R2 for storage</dd>
               </div>
             </dl>
           </div>
@@ -108,8 +109,8 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Steward AI<time class="band-date" datetime="2026-01">January 2026</time><span class="band-award" aria-label="Hackathon winner"><i style="--i:0">H</i><i style="--i:1">a</i><i style="--i:2">c</i><i style="--i:3">k</i><i style="--i:4">a</i><i style="--i:5">t</i><i style="--i:6">h</i><i style="--i:7">o</i><i style="--i:8">n</i> <i style="--i:9">w</i><i style="--i:10">i</i><i style="--i:11">n</i><i style="--i:12">n</i><i style="--i:13">e</i><i style="--i:14">r</i></span></h2>
-          <p>A desktop application that lets businesses understand their
+          <h2 class="band-title">Steward AI<time class="band-date" datetime="2026-01">January 2026</time><span class="band-award" aria-label="Hackathon winner" data-i18n-letters="work.steward.award"><i style="--i:0">H</i><i style="--i:1">a</i><i style="--i:2">c</i><i style="--i:3">k</i><i style="--i:4">a</i><i style="--i:5">t</i><i style="--i:6">h</i><i style="--i:7">o</i><i style="--i:8">n</i> <i style="--i:9">w</i><i style="--i:10">i</i><i style="--i:11">n</i><i style="--i:12">n</i><i style="--i:13">e</i><i style="--i:14">r</i></span></h2>
+          <p data-i18n="work.steward.p1">A desktop application that lets businesses understand their
           employees' AI usage. An Electron app and a browser extension read the
           accessibility-tree text of AI tools as people use them and a Haiku
           4.5 model categorizes each conversation. The platform also
@@ -117,17 +118,17 @@
           displays inside the dashboard</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>How it works</dt>
-                <dd>Use-case analytics, per-employee drill-downs, a
+                <dt data-i18n="spec.how">How it works</dt>
+                <dd data-i18n="work.steward.how">Use-case analytics, per-employee drill-downs, a
                 prompt-flow breakdown, and a security log where flagged
                 uploads open in a file viewer</dd>
               </div>
               <div>
-                <dt>Built on</dt>
-                <dd>An Electron app built on HTML and JavaScript displays
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.steward.builton">An Electron app built on HTML and JavaScript displays
                 data, and uses Swift to grab data from macOS desktop
                 applications, paired with a browser extension to grab DOM
                 text from Chrome. Data is stored in Supabase</dd>
@@ -152,7 +153,7 @@
             <h2 class="band-title">FloorSense<time class="band-date" datetime="2025-11">November 2025</time></h2>
             <a class="repo-link" href="https://github.com/spitfiresb/FloorSense"
             target="_blank" rel="noopener">
-              View repo
+              <span data-i18n="common.viewrepo">View repo</span>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
               aria-hidden="true">
@@ -161,31 +162,31 @@
               </svg>
             </a>
           </div>
-          <p>A computer vision web app that identifies architectural elements in
+          <p data-i18n="work.floorsense.p1">A computer vision web app that identifies architectural elements in
           floorplan images using YOLO-based object detection, with real-time
           detection visualization and correction tools</p>
 
-          <p>The idea: floor plans are notoriously difficult to digitize,
+          <p data-i18n="work.floorsense.p2">The idea: floor plans are notoriously difficult to digitize,
           since there are so many different variations of objects in them, and
           no standardized system to create them. A model that can visually
           classify what's on the page gets around that</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>Built on</dt>
+                <dt data-i18n="spec.builton">Built on</dt>
                 <dd>Next.js, React, TypeScript, Tailwind</dd>
               </div>
               <div>
-                <dt>Why I built it</dt>
-                <dd>I was attempting to impress a group of founders at a
+                <dt data-i18n="spec.whybuilt">Why I built it</dt>
+                <dd data-i18n="work.floorsense.whybuilt">I was attempting to impress a group of founders at a
                 company I wanted to work at, so I built the product they
                 showed me in a demo</dd>
               </div>
               <div>
-                <dt>Hosting</dt>
-                <dd>Website hosted on Vercel, YOLO model hosted on
+                <dt data-i18n="spec.hosting">Hosting</dt>
+                <dd data-i18n="work.floorsense.hosting">Website hosted on Vercel, YOLO model hosted on
                 Roboflow</dd>
               </div>
             </dl>
@@ -205,20 +206,20 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">Website</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
-          <p>The main website for Unpak. One of my most polished pieces of
+          <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.website">Website</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
+          <p data-i18n="work.unpaksite.p1">The main website for Unpak. One of my most polished pieces of
           work</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>Built on</dt>
-                <dd>Astro with Tailwind, the diagrams and the WebGL ripple
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.unpaksite.builton">Astro with Tailwind, the diagrams and the WebGL ripple
                 shader hand-written in vanilla JavaScript, HTML and CSS</dd>
               </div>
               <div>
-                <dt>Hosting</dt>
+                <dt data-i18n="spec.hosting">Hosting</dt>
                 <dd>Cloudflare Pages</dd>
               </div>
             </dl>
@@ -237,21 +238,21 @@
           </figure>
         </div>
         <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part">Dashboard</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
-          <p>Unpak's dashboard. It shows the customer the workflows their
+          <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.dashboard">Dashboard</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
+          <p data-i18n="work.unpakdash.p1">Unpak's dashboard. It shows the customer the workflows their
           workforce repeats, where the hours go, and where AI has already
           shown up in the work</p>
 
           <div class="band-spec">
-            <h3>Technical specifications</h3>
+            <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
-                <dt>Built on</dt>
-                <dd>Astro, with every chart hand-written in SVG. Data served
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.unpakdash.builton">Astro, with every chart hand-written in SVG. Data served
                 from Postgres (Neon)</dd>
               </div>
               <div>
-                <dt>Hosting</dt>
+                <dt data-i18n="spec.hosting">Hosting</dt>
                 <dd>Cloudflare Pages</dd>
               </div>
             </dl>
