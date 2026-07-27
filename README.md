@@ -54,15 +54,19 @@ public/                   the deployed site
     personal.html           projects built for myself
     contract.html           projects built under contract
     cool.html               a running collection
+    liquid-glass-code.html  the liquid-glass source, laid out to be taken
 
   assets/
     css/style.css           every page links this
     css/live-demo.css
+    css/code.css            source pages only
     js/landing.js           landing-page behaviour only (hover cards, GitHub
                             calendar, pill outlines, the About transition)
     js/about.js             about-page behaviour only
     js/car-art.js           SVG path data for the car illustration
     js/live-demo.js         the thumbnail-to-fullscreen live demo component
+    js/code-view.js         syntax highlighting and copy buttons for the
+                            source pages; no library, a hand-rolled tokenizer
     img/                    images the pages use, one folder per project
 
   demos/                  the live demos, one self-contained app each
@@ -127,9 +131,11 @@ Notes that used to live as HTML comments in `<head>`. They are here instead:
 anything in a served file is one Inspect Element away from a reader, and none
 of this is for them.
 
-**No comments in `public/**/*.html`.** The five pages and `404.html` ship
-without a single one. Explain things here, or in the CSS and JS, not in the
-markup that goes over the wire.
+**No comments in `public/**/*.html`.** Every page and `404.html` ship without
+a single one. Explain things here, or in the CSS and JS, not in the markup
+that goes over the wire. Where a page has to explain itself to a *reader*
+with JavaScript off (`liquid-glass-code.html`'s empty source panel is the one
+case), it says so in visible copy that `code-view.js` then replaces.
 
 **One Person, referenced everywhere.** `index.html` declares a `Person` with
 `@id` `https://zsaeed.com/#person`, alongside a `WebSite` and a `WebPage` in

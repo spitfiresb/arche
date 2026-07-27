@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- The five real pages. The demos under /demos/ are deliberately absent:
+<!-- The real pages. The demos under /demos/ are deliberately absent:
      they are noindex'd in public/_headers. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -28,8 +28,14 @@
   </url>
   <url>
     <loc>https://zsaeed.com/work/cool</loc>
-    <lastmod>2026-07-24</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://zsaeed.com/work/liquid-glass-code</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

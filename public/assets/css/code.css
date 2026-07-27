@@ -1,0 +1,208 @@
+/* Source pages: a project's code laid out to be read and copied.
+   Loaded on top of style.css by the pages that show source.
+
+   The syntax colours stay near the site's greys. Numbers take a warm tint,
+   strings a cool one, comments drop to faint italic, and everything else
+   is left grey. Nothing saturated enough to compete with the prose. */
+
+:root {
+  --code-bg: #151515;          /* a shade under --bg, so panels sit back */
+  --code-gutter: #4a4a4a;      /* line numbers: present, never read */
+  --code-warm: #d8b49f;        /* numbers */
+  --code-cool: #a3bad2;        /* strings */
+  --font-mono: "SF Mono", "Berkeley Mono", ui-monospace, SFMono-Regular,
+    Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* Wider than a prose page, narrower than the work grid: enough for ~100
+   columns of mono at 13px, which is where glass.js's shader lines land. */
+body.page.source main {
+  max-width: 58rem;
+}
+
+/* Three blocks in paste order: markup, then styles, then the script last,
+   because it reads the row's layout the moment it runs. The number sits in
+   the panel header next to the filename, so the order costs no extra row. */
+.code-file {
+  margin-bottom: 2.75rem;
+}
+
+.code-file:last-child {
+  margin-bottom: 0;
+}
+
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1.1rem;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+}
+
+.code-name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--fg);
+}
+
+.code-name b {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+
+.code-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  flex: none;
+}
+
+.code-meta {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* Copy and Raw read as one row of quiet actions: same size and colour as
+   the meta beside them, brightening only on approach. */
+.code-copy,
+.code-raw {
+  font: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.code-copy:hover,
+.code-copy:focus-visible,
+.code-raw:hover,
+.code-raw:focus-visible {
+  color: var(--fg);
+}
+
+/* Held after a successful copy, then released. The label does the
+   confirming, so there's no toast and nothing to dismiss. */
+.code-copy[data-state="done"] {
+  color: var(--fg);
+}
+
+/* The two snippets sit open. They're short, and they're the ones you read
+   straight through, so a scroll pane would charge an interaction for
+   nothing. */
+.code-pane {
+  overflow: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 0 0 10px 10px;
+  /* the scrollbar reads as part of the panel rather than the page */
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a var(--code-bg);
+}
+
+/* The script is the exception: 650 lines would bury everything above it,
+   so it gets a window instead of the whole page. */
+.code-file[data-tall] .code-pane {
+  max-height: 75vh;
+}
+
+.code-pane pre {
+  margin: 0;
+  padding: 1.1rem 1.25rem 1.1rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  /* no wrapping: a shader line broken mid-expression is harder to read
+     than one you scroll to the end of */
+  white-space: pre;
+  tab-size: 2;
+  color: var(--muted);
+}
+
+/* One block per source line, numbered by counter so the digits live in
+   ::before and never land in a selection or a copy. */
+.code-pane code {
+  display: block;
+  counter-reset: ln;
+  font: inherit;
+}
+
+.cl {
+  display: block;
+}
+
+.cl::before {
+  counter-increment: ln;
+  content: counter(ln);
+  display: inline-block;
+  position: sticky;
+  left: 0;
+  width: 3.5em;
+  padding-right: 1em;
+  margin-right: 1.25em;
+  text-align: right;
+  color: var(--code-gutter);
+  background: var(--code-bg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Tokens. Identifiers are left unwrapped and inherit the pre's grey, so the
+   colours below only mark what differs from ordinary code. */
+.t-c { color: var(--faint); font-style: italic; }   /* comment */
+.t-s { color: var(--code-cool); }                    /* string, regex */
+.t-n { color: var(--code-warm); }                    /* number */
+.t-k { color: var(--fg); }                           /* keyword */
+.t-f { color: var(--fg); }                           /* call, tag, selector */
+.t-a { color: var(--muted); }                        /* attribute, property */
+.t-p { color: #6a6a6a; }                             /* punctuation */
+
+/* Before the fetch lands, if it never does, and if there's no JavaScript to
+   make it in the first place. */
+.code-status {
+  margin: 0;
+  padding: 1.5rem 1.4rem;
+  max-width: 34rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--faint);
+}
+
+.code-status a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.code-status a:hover,
+.code-status a:focus-visible {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+}
+
+@media (max-width: 40rem) {
+  .code-pane pre {
+    font-size: 0.75rem;
+  }
+  .cl::before {
+    width: 2.75em;
+    padding-right: 0.75em;
+    margin-right: 0.85em;
+  }
+}

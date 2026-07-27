@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Glass code - Zain Saeed</title>
+<meta name="description" content="The code behind Liquid Glass, a WebGL lens that slides between nav tabs. No dependencies, no build step.">
+<meta property="og:title" content="Liquid Glass code - Zain Saeed">
+<meta property="og:description" content="The code behind Liquid Glass, a WebGL lens that slides between nav tabs. No dependencies, no build step.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zsaeed.com/work/liquid-glass-code">
+<meta property="og:site_name" content="Zain Saeed">
+<meta property="og:locale" content="en_US">
+<meta name="author" content="Zain Saeed">
+<link rel="canonical" href="https://zsaeed.com/work/liquid-glass-code">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "@id": "https://zsaeed.com/work/liquid-glass-code#webpage",
+  "url": "https://zsaeed.com/work/liquid-glass-code",
+  "name": "Liquid Glass code - Zain Saeed",
+  "programmingLanguage": "JavaScript",
+  "isPartOf": { "@id": "https://zsaeed.com/#website" },
+  "author": { "@id": "https://zsaeed.com/#person" },
+  "about": { "@id": "https://zsaeed.com/#person" }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/code.css">
+<script src="/assets/js/transition.js"></script>
+</head>
+<body class="page source">
+  <a class="back" href="/work/cool#liquid-glass" aria-label="Back to Liquid Glass">
+    <svg class="back-mark" viewBox="0 0 40 40" width="36" height="36" fill="none" stroke="currentColor" aria-hidden="true">
+      <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
+      <path class="back-chevron" d="M24 14 L16 20 L24 26" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <main>
+    <header class="page-head">
+      <div class="page-line">
+        <h1 class="page-title">Liquid Glass</h1>
+      </div>
+    </header>
+
+    <section class="code-file" data-lang="html">
+      <div class="code-head">
+        <span class="code-name"><b>1</b>index.html</span>
+        <span class="code-actions">
+          <span class="code-meta">14 lines</span>
+          <button type="button" class="code-copy">Copy</button>
+        </span>
+      </div>
+      <div class="code-pane">
+        <pre><code>
+&lt;nav aria-label="Primary" data-glass-scale="2.5"&gt;
+  &lt;div class="tabs"&gt;
+    &lt;!-- Fallback pill for browsers without WebGL2. glass.js removes
+         it the moment the canvas comes up. --&gt;
+    &lt;span class="tab-bubble" aria-hidden="true"&gt;&lt;/span&gt;
+
+    &lt;a href="/overview" class="tab-active" aria-current="page"&gt;Overview&lt;/a&gt;
+    &lt;a href="/pricing"&gt;Pricing&lt;/a&gt;
+    &lt;a href="/company"&gt;Company&lt;/a&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;
+
+&lt;!-- Last in the body: the script reads the row's layout on load. --&gt;
+&lt;script src="glass.js"&gt;&lt;/script&gt;
+</code></pre>
+      </div>
+    </section>
+
+    <section class="code-file" data-lang="css">
+      <div class="code-head">
+        <span class="code-name"><b>2</b>style.css</span>
+        <span class="code-actions">
+          <span class="code-meta">43 lines</span>
+          <button type="button" class="code-copy">Copy</button>
+        </span>
+      </div>
+      <div class="code-pane">
+        <pre><code>
+/* The canvas is appended here, so the row is its positioning context. */
+.tabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(40px, 6vw, 96px);
+}
+
+/* Labels sit above the background snapshot and below the lens. */
+.tabs a {
+  position: relative;
+  z-index: 1;
+  padding: 16px 24px;
+  font-size: 34px;
+  color: #5b6472;
+  text-decoration: none;
+  transition: color .2s;
+}
+.tabs a:hover,
+.tabs a.tab-active { color: #10131a; }
+
+/* The canvas glass.js injects. */
+.tab-lens {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* The no-WebGL2 fallback, hidden until it's needed. */
+.tab-bubble {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(#fff, #f6f7f6);
+  border: 1px solid rgba(23, 56, 105, 0.16);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(15, 42, 74, 0.16), 0 0 2px rgba(15, 42, 74, 0.10);
+}
+</code></pre>
+      </div>
+    </section>
+
+    <section class="code-file" data-lang="js"
+    data-src="/demos/liquid-glass/glass.js" data-tall>
+      <div class="code-head">
+        <span class="code-name"><b>3</b>glass.js</span>
+        <span class="code-actions">
+          <span class="code-meta">653 lines · 25 KB</span>
+          <a class="code-raw" href="/demos/liquid-glass/glass.js">Raw</a>
+          <button type="button" class="code-copy">Copy</button>
+        </span>
+      </div>
+      <div class="code-pane">
+        <p class="code-status">This one needs JavaScript to load. The
+        <a href="/demos/liquid-glass/glass.js">raw file</a> is the same 653
+        lines.</p>
+        <pre><code></code></pre>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/js/code-view.js"></script>
+</body>
+</html>
