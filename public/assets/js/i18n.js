@@ -272,12 +272,23 @@
      sits, so the change reads as a wave running down the page rather than
      forty elements blinking at once. */
 
-  const OUT_MS = 190;
-  const IN_MS = 300;
+  const SWAP_MS = 520; // one pass: fade down, turn over, come back up
   const STEP = 16;     // per-line delay down the page
   const MAX_LAG = 520; // cap, so a long page still finishes promptly
 
   let swapToken = 0;
+  // The animation and the pending text write for each line currently in the
+  // wave, so a new wave can take an element back cleanly instead of layering
+  // a second animation on top of the first.
+  const running = new WeakMap();
+
+  function stopSwap(el) {
+    const r = running.get(el);
+    if (!r) return;
+    running.delete(el);
+    clearTimeout(r.timer);
+    try { r.anim.cancel(); } catch (e) { /* already gone */ }
+  }
 
   function swap(dict, code, animate) {
     const fmt = new Intl.DateTimeFormat(TAG[code] || code, {
@@ -286,55 +297,69 @@
     const nodes = [...document.querySelectorAll(SEL)];
 
     if (!animate || reduced || !document.body.animate) {
-      nodes.forEach((el) => updateNode(el, dict, fmt));
+      nodes.forEach((el) => { stopSwap(el); updateNode(el, dict, fmt); });
       updateChrome(dict, code);
       return;
     }
 
     const mine = ++swapToken;
-    // Order by where each line sits, so the wave runs top to bottom.
-    const tops = new Map(nodes.map((el) => [el, el.getBoundingClientRect().top]));
-    const min = Math.min(...tops.values());
-    const span = Math.max(...tops.values()) - min || 1;
-
     updateChrome(dict, code);
 
-    nodes.forEach((el) => {
-      const lag = Math.min(((tops.get(el) - min) / span) * (nodes.length * STEP), MAX_LAG);
+    // Order by where each line sits, so the wave runs top to bottom.
+    const tops = nodes.map((el) => el.getBoundingClientRect().top);
+    const min = Math.min(...tops);
+    const span = Math.max(...tops) - min || 1;
+    let lastLag = 0;
 
-      const out = el.animate(
+    nodes.forEach((el, i) => {
+      stopSwap(el); // hand the line back before starting it over
+      const lag = Math.min(((tops[i] - min) / span) * (nodes.length * STEP), MAX_LAG);
+      lastLag = Math.max(lastLag, lag);
+
+      /* One animation per line, and it ends exactly where it began: fully
+         visible. Nothing here fills forwards, so the moment it ends — or is
+         cancelled part way by the next switch — the line goes back to being
+         styled by the stylesheet. An interrupted wave can leave text from
+         the wrong language on screen for a moment, which the next wave
+         corrects; it can never leave the page blank. */
+      const anim = el.animate(
         [
-          { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' },
-          { opacity: 0, filter: 'blur(3px)', transform: 'translateY(-5px)' },
+          { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)', offset: 0 },
+          { opacity: 0, filter: 'blur(3px)', transform: 'translateY(-5px)', offset: 0.42 },
+          { opacity: 0, filter: 'blur(3px)', transform: 'translateY(6px)', offset: 0.58 },
+          { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)', offset: 1 },
         ],
-        { duration: OUT_MS, delay: lag, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'both' },
+        { duration: SWAP_MS, delay: lag, easing: 'cubic-bezier(0.33, 0, 0.2, 1)' },
       );
 
-      out.finished.then(() => {
-        // A newer switch started while this one was mid-flight: drop it and
-        // let the newer wave own the element.
-        if (mine !== swapToken) return;
-        updateNode(el, dict, fmt);
-        el.animate(
-          [
-            { opacity: 0, filter: 'blur(3px)', transform: 'translateY(6px)' },
-            { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)' },
-          ],
-          { duration: IN_MS, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' },
-        ).finished.then(() => {
-          if (mine !== swapToken) return;
-          // Hand styling back to the stylesheet once the wave has passed.
-          el.getAnimations().forEach((a) => a.cancel());
-        }).catch(() => {});
-      }).catch(() => {});
+      // The words turn over while the line is at its most faded.
+      const timer = setTimeout(() => {
+        if (mine === swapToken) updateNode(el, dict, fmt);
+      }, lag + SWAP_MS * 0.5);
+
+      running.set(el, { anim, timer });
+      anim.finished
+        .then(() => { if (running.get(el) && running.get(el).anim === anim) running.delete(el); })
+        .catch(() => {});
     });
+
+    // Whatever became of the individual lines, the page is settled and in
+    // one language by the time the wave should have passed.
+    setTimeout(() => {
+      if (mine !== swapToken) return;
+      nodes.forEach((el) => { stopSwap(el); updateNode(el, dict, fmt); });
+    }, lastLag + SWAP_MS + 160);
   }
 
   /* ---- Wiring ---------------------------------------------------------- */
 
+  let flagTimer = 0;
   function paintFlag(code, animate) {
     const btn = document.querySelector('.lang-btn');
     if (!btn) return;
+    // A pending flip from an earlier pick would otherwise land after this
+    // one and leave the button showing the wrong country.
+    clearTimeout(flagTimer);
     if (!animate || reduced || !btn.animate) { btn.innerHTML = flagMarkup(code); return; }
     // Turn the button over and change the flag on the back of the flip.
     btn.animate(
@@ -345,7 +370,7 @@
       ],
       { duration: 420, easing: 'cubic-bezier(0.45, 0, 0.55, 1)' },
     );
-    setTimeout(() => { btn.innerHTML = flagMarkup(code); }, 210);
+    flagTimer = setTimeout(() => { btn.innerHTML = flagMarkup(code); }, 210);
   }
 
   async function setLang(code, animate) {
@@ -419,22 +444,80 @@
       menu.append(li);
     }
 
+    /* The panel doesn't appear, it opens: it grows out of the button it
+       hangs from while its rows come up the list a beat apart. Closing is
+       the same move run faster, since a menu you are done with shouldn't
+       keep you waiting. */
+    let menuAnim = null;
+    // Whether the menu is meant to be open, which is not the same as
+    // whether it is still on screen: during the closing animation it is
+    // both visible and already closed, and a click then should reopen it
+    // rather than close it a second time.
+    let isOpen = false;
+    const rows = [...menu.children];
+
     function open() {
+      if (isOpen) return;
+      isOpen = true;
+      if (menuAnim) { menuAnim.cancel(); menuAnim = null; }
       menu.hidden = false;
       wrap.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
+      if (reduced || !menu.animate) return;
+
+      menu.animate(
+        [
+          { opacity: 0, transform: 'translateY(-6px) scale(0.94)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ],
+        { duration: 210, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+      );
+      rows.forEach((row, i) => {
+        row.animate(
+          [
+            { opacity: 0, transform: 'translateY(-5px)' },
+            { opacity: 1, transform: 'translateY(0)' },
+          ],
+          // backwards fill only: it holds the row down until its turn and
+          // lets go of it entirely once the row has arrived.
+          { duration: 200, delay: 45 + i * 22, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' },
+        );
+      });
     }
+
     function close() {
-      menu.hidden = true;
+      if (!isOpen) return;
+      isOpen = false;
       wrap.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
+      if (reduced || !menu.animate) { menu.hidden = true; return; }
+
+      if (menuAnim) menuAnim.cancel();
+      menuAnim = menu.animate(
+        [
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+          { opacity: 0, transform: 'translateY(-5px) scale(0.96)' },
+        ],
+        { duration: 130, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+      );
+      const done = menuAnim;
+      done.finished
+        .then(() => {
+          // Only the close that is still current gets to hide the panel;
+          // reopening mid-close cancels this and rejects the promise.
+          if (menuAnim !== done) return;
+          menu.hidden = true;
+          menuAnim.cancel();
+          menuAnim = null;
+        })
+        .catch(() => {});
     }
-    btn.addEventListener('click', () => (menu.hidden ? open() : close()));
+    btn.addEventListener('click', () => (isOpen ? close() : open()));
     document.addEventListener('click', (e) => {
       if (!wrap.contains(e.target)) close();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); }
+      if (e.key === 'Escape' && isOpen) { close(); btn.focus(); }
     });
 
     wrap.append(btn, menu);

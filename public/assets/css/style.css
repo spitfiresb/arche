@@ -1708,6 +1708,12 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   top: 1.15rem;
   right: 1.25rem;
   z-index: 60;
+  /* The switcher is chrome, not content: it keeps the same corner and the
+     same reading order whatever direction the page it sits on runs in.
+     Without this, choosing Arabic would flip the menu and send English
+     from the top left of the list to the top right. Each language's own
+     name still shapes correctly, since that is the text's own direction. */
+  direction: ltr;
 }
 
 .lang-btn {
@@ -1765,6 +1771,8 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  /* it opens out of the button, which sits off its top-right corner */
+  transform-origin: top right;
 }
 
 .lang-menu[hidden] { display: none; }
@@ -1829,9 +1837,6 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 .lang-menu button[aria-selected="true"] {
   background: rgba(242, 242, 242, 0.1);
 }
-
-/* RTL languages keep the switcher pinned to the same physical corner */
-[dir="rtl"] .lang-menu button { text-align: right; }
 
 @media (max-width: 40rem) {
   .lang-switch { top: 0.85rem; right: 0.9rem; }
