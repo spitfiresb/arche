@@ -162,39 +162,31 @@ body.home main {
    draws one under the title so pointing at one still registers as a
    target. */
 .col .item-title {
-  position: relative;
-  display: inline-block;
+  display: inline;
   color: var(--fg);
   text-decoration: none;
+  /* The rule is a background gradient rather than a pseudo-element so a
+     wrapped title draws one per line: box-decoration-break clones the
+     background onto each line fragment, where an absolutely-positioned
+     pseudo could only span the whole box. Growing background-size wipes
+     it out of the left edge on hover; the anchor sits at the right edge
+     at rest, so on the way out it retracts to the right instead of
+     rewinding the same stroke backwards (the anchor swap happens while
+     the rule is invisible or full-width, so it never shows). */
+  padding-bottom: 0.18em;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: 0 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* The rule is a pseudo-element rather than a text-decoration so it can be
-   driven by transform: it wipes out of the left edge on hover, and the
-   origin flip means it retracts to the right on the way out instead of
-   rewinding the same stroke backwards. */
-.col .item-title::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.18em;
-  height: 1px;
-  background: currentColor;
-  /* keep the rule on its own compositing layer even at rest; without
-     this, the layer the transform animation creates is dropped when the
-     transition ends, and the re-rasterized 1px line can land on a
-     subpixel boundary and antialias to grey (visible in Safari on the
-     top row, whose baseline sits on a fraction) */
-  will-change: transform;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.col .item-title:hover::after,
-.col .item-title:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: left;
+.col .item-title:hover,
+.col .item-title:focus-visible {
+  background-position: left bottom;
+  background-size: 100% 1px;
 }
 
 .item-desc {
