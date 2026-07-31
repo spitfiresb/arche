@@ -426,6 +426,13 @@
         mode = 'frame';
         park();                                      // ensure start state
         void fw.offsetWidth;                         // commit it
+        // Arm the transition BEFORE .open retargets the radius to 0, the way
+        // the close path arms SHRINK before dropping .open. park() leaves
+        // `transition: none` on the frame, and frameGeom() below reads
+        // overlay.clientWidth, which flushes style: with .open already applied
+        // and no transition yet armed, that flush settles the square corner
+        // instantly and the grow has nothing left to animate.
+        fw.style.transition = GROW + ', ' + GROW_R;  // round corner -> square
         overlay.classList.remove('parked');
         overlay.classList.add('open');
         // Undo the parked aspect compensation on the grow's own clock: the
@@ -433,7 +440,6 @@
         // the frame while it's still small) and the inner y-scale rides
         // the same curve as the wrapper's transform.
         setFrameGeom(frameGeom(false), GROW);
-        fw.style.transition = GROW + ', ' + GROW_R;  // round corner -> square
         fw.style.transform = expanded();
         var doneG = function (e) {
           if (e.propertyName !== 'transform') return;
