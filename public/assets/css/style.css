@@ -1074,15 +1074,15 @@ ul.bands > li.solo:nth-child(even) .band-prose {
    the glyphs) so it glints without shouting. A leading dot separates it from
    the date the way the date is separated from a part label. */
 .band-award {
-  margin-inline-start: 0.45em;
-  font-size: 0.625rem;
+  margin-inline-start: 0.7em;
+  font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .band-award::before {
   content: "\00b7";
-  margin-inline-end: 0.45em;
+  margin-inline-end: 0.7em;
   font-size: 0.85em;
   color: var(--faint);
   font-weight: 400;
@@ -1147,23 +1147,37 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   gap: 1rem;
 }
 
-/* An award row carries a name, a date, an accolade and a link, which together
-   overrun the ~428px prose column where a plain title has room to spare. So it
-   runs its separators tighter than the roomier default, and it is allowed to
-   wrap: past the point tightening can buy back — the narrower column widths,
-   and the languages whose award reads longer than English — the link drops
-   below the title rather than breaking the title across two lines mid-phrase,
-   which also keeps the accolade beside the name it belongs to. Where
-   everything fits, nothing moves; :has scopes all of it to award rows, so
-   every other title keeps the spacing it has. */
-.band-head:has(.band-award) {
-  gap: 0.7rem;
-  flex-wrap: wrap;
-  row-gap: 0.15rem;
+/* More than one way into the same project. They travel as a single block so a
+   wrap moves the pair together, and so space-between can't fling one to each
+   end of the row; the gap is wider than the one inside a link, so the two read
+   as two destinations rather than one long string of words. */
+.band-links {
+  display: flex;
+  align-items: baseline;
+  flex: none;
+  gap: 1.15rem;
 }
 
-.band-head:has(.band-award) .band-date {
-  margin-inline-start: 0.5em;
+/* A title plus a PAIR of links doesn't fit the ~428px prose column at any
+   size, so this row wraps and the links ride underneath, left-aligned below
+   the name, the way a single link already does on a phone. Breaking the title
+   across two lines instead would split the name from the date and accolade
+   that qualify it. :has keeps this to the two-link rows: the single-link
+   titles elsewhere still hold one line, and ag-analytics keeps the title wrap
+   its own comment calls for. */
+.band-head:has(.band-links) {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+  /* Once the row wraps, the title's own bottom margin falls BETWEEN the two
+     lines instead of under them, which leaves the links sitting on top of the
+     summary. Move that spacing to the whole head, so the gap above the links
+     stays smaller than the gap below and they read as part of the title rather
+     than as the first line of the paragraph. */
+  margin-bottom: 0.95rem;
+}
+
+.band-head:has(.band-links) .band-title {
+  margin-bottom: 0;
 }
 
 /* A quiet way to the source, riding alongside the title. Muted at rest like
