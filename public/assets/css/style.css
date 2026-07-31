@@ -1074,15 +1074,15 @@ ul.bands > li.solo:nth-child(even) .band-prose {
    the glyphs) so it glints without shouting. A leading dot separates it from
    the date the way the date is separated from a part label. */
 .band-award {
-  margin-inline-start: 0.7em;
-  font-size: 0.75rem;
+  margin-inline-start: 0.45em;
+  font-size: 0.625rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .band-award::before {
   content: "\00b7";
-  margin-inline-end: 0.7em;
+  margin-inline-end: 0.45em;
   font-size: 0.85em;
   color: var(--faint);
   font-weight: 400;
@@ -1145,6 +1145,25 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
+}
+
+/* An award row carries a name, a date, an accolade and a link, which together
+   overrun the ~428px prose column where a plain title has room to spare. So it
+   runs its separators tighter than the roomier default, and it is allowed to
+   wrap: past the point tightening can buy back — the narrower column widths,
+   and the languages whose award reads longer than English — the link drops
+   below the title rather than breaking the title across two lines mid-phrase,
+   which also keeps the accolade beside the name it belongs to. Where
+   everything fits, nothing moves; :has scopes all of it to award rows, so
+   every other title keeps the spacing it has. */
+.band-head:has(.band-award) {
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  row-gap: 0.15rem;
+}
+
+.band-head:has(.band-award) .band-date {
+  margin-inline-start: 0.5em;
 }
 
 /* A quiet way to the source, riding alongside the title. Muted at rest like
