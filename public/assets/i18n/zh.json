@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "网站托管在 Vercel，YOLO 模型托管在 Roboflow",
 
   "work.unpaksite.p1": "Unpak 的官网。我最精雕细琢的作品之一",
-  "work.unpaksite.builton": "Astro 加 Tailwind，图示和 WebGL 涟漪着色器全部用原生 JavaScript、HTML 和 CSS 手写",
+  "work.unpaksite.builton": "Astro、Tailwind，以及用于图示和 WebGL 波纹着色器的 JavaScript",
 
   "work.unpakdash.p1": "Unpak 的仪表盘。它向客户展示其员工反复执行的工作流、时间都花在了哪里，以及 AI 已经出现在工作中的哪些环节",
-  "work.unpakdash.builton": "Astro，所有图表均用 SVG 手写。数据由 Postgres（Neon）提供",
+  "work.unpakdash.builton": "Astro，数据连接到 Neon Postgres 数据库",
 
   "work.salesagent.title": "AI 销售助手",
   "work.salesagent.p1": "为湾区一家分销公司打造的聊天代理。接入他们的 ERP 系统，帮员工省下查数据的时间。目前约有 70 名员工在使用",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "我对 Apple Liquid Glass 的实现。一枚玻璃胶囊在标签之间滑动，一路折射着背景，落定前还会拉伸变形。我个人的最爱之一",
   "work.lg.how": "覆在标签栏上的一块折射透镜：SDF 胶囊形状、基于斯涅尔定律的边缘折射与逐通道色散、LCH 菲涅耳与眩光，弹簧驱动的动效",
-  "work.lg.builton": "WebGL 加原生 JavaScript，零依赖库"
+  "work.lg.builton": "WebGL 和 JavaScript"
 }

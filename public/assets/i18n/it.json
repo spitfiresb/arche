@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "Sito ospitato su Vercel, modello YOLO ospitato su Roboflow",
 
   "work.unpaksite.p1": "Il sito principale di Unpak. Uno dei miei lavori più curati",
-  "work.unpaksite.builton": "Astro con Tailwind; i diagrammi e lo shader WebGL dell'increspatura scritti a mano in JavaScript puro, HTML e CSS",
+  "work.unpaksite.builton": "Astro, Tailwind e JavaScript per i diagrammi e lo shader ripple WebGL",
 
   "work.unpakdash.p1": "La dashboard di Unpak. Mostra al cliente i flussi di lavoro che la sua forza lavoro ripete, dove finiscono le ore e dove l'IA è già entrata nel lavoro",
-  "work.unpakdash.builton": "Astro, con ogni grafico scritto a mano in SVG. Dati serviti da Postgres (Neon)",
+  "work.unpakdash.builton": "Astro, con i dati collegati a un database Neon Postgres",
 
   "work.salesagent.title": "Agente di vendita IA",
   "work.salesagent.p1": "Un agente conversazionale costruito per un'azienda di distribuzione della Bay Area. Si collega al loro sistema ERP e permette ai dipendenti di risparmiare tempo nelle ricerche di dati. Attualmente al servizio di circa 70 dipendenti",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "La mia implementazione del Liquid Glass di Apple. Una pillola di vetro scivola tra le schede, deformando lo sfondo lungo il percorso e allungandosi prima di assestarsi. Uno dei miei preferiti in assoluto",
   "work.lg.how": "Una lente rifrattiva sopra una riga di schede: pillola SDF, rifrazione dei bordi secondo la legge di Snell con dispersione per canale, fresnel e riflessi in LCH, movimento guidato da molle",
-  "work.lg.builton": "WebGL e JavaScript puro, senza librerie"
+  "work.lg.builton": "WebGL e JavaScript"
 }

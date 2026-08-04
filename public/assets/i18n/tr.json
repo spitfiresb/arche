@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "Web sitesi Vercel'de, YOLO modeli Roboflow'da barındırılıyor",
 
   "work.unpaksite.p1": "Unpak'ın ana web sitesi. En özenli işlerimden biri",
-  "work.unpaksite.builton": "Tailwind ile Astro; diyagramlar ve WebGL dalga (ripple) shader'ı saf JavaScript, HTML ve CSS ile elle yazıldı",
+  "work.unpaksite.builton": "Astro, Tailwind ve diyagramlar ile WebGL dalga gölgelendiricisi için JavaScript",
 
   "work.unpakdash.p1": "Unpak'ın paneli. Müşteriye, iş gücünün tekrarladığı iş akışlarını, saatlerin nereye gittiğini ve yapay zekanın işin neresinde çoktan devreye girdiğini gösterir",
-  "work.unpakdash.builton": "Astro; her grafik SVG ile elle yazıldı. Veriler Postgres'ten (Neon) sunuluyor",
+  "work.unpakdash.builton": "Astro; veriler bir Neon Postgres veritabanına bağlı",
 
   "work.salesagent.title": "Yapay Zeka Satış Ajanı",
   "work.salesagent.p1": "Bay Area'daki bir dağıtım şirketi için geliştirilen bir sohbet ajanı. Şirketin ERP sistemine bağlanır ve çalışanların veri sorgularında zaman kazanmasını sağlar. Şu anda yaklaşık 70 çalışana hizmet veriyor",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "Apple'ın Liquid Glass'ının kendi yaptığım uygulaması. Bir cam hap sekmeler arasında kayar, geçerken arka planı büker ve yerine oturmadan önce esner. Kişisel favorilerimden biri",
   "work.lg.how": "Sekme sırasının üzerinde kırıcı bir mercek: SDF hap, kanal başına dispersiyonla Snell yasası kenar kırılması, LCH fresnel ve parlama, yay tabanlı hareket",
-  "work.lg.builton": "WebGL ve saf JavaScript, kütüphane yok"
+  "work.lg.builton": "WebGL ve JavaScript"
 }

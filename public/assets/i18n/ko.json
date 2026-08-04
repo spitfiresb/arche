@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "웹사이트는 Vercel, YOLO 모델은 Roboflow에서 호스팅",
 
   "work.unpaksite.p1": "Unpak의 메인 웹사이트입니다. 제 작업 중 가장 공들여 다듬은 것 중 하나입니다",
-  "work.unpaksite.builton": "Astro와 Tailwind. 다이어그램과 WebGL 물결 셰이더는 순수 JavaScript, HTML, CSS로 직접 작성했습니다",
+  "work.unpaksite.builton": "Astro, Tailwind, 그리고 다이어그램과 WebGL 리플 셰이더용 JavaScript",
 
   "work.unpakdash.p1": "Unpak의 대시보드입니다. 고객에게 직원들이 반복하는 워크플로, 시간이 어디로 흘러가는지, 그리고 업무 속에 AI가 이미 어디에 자리 잡았는지를 보여줍니다",
-  "work.unpakdash.builton": "Astro 기반, 모든 차트는 SVG로 직접 작성. 데이터는 Postgres(Neon)에서 제공",
+  "work.unpakdash.builton": "Astro 기반, 데이터는 Neon Postgres 데이터베이스에 연결",
 
   "work.salesagent.title": "AI 세일즈 에이전트",
   "work.salesagent.p1": "베이 에어리어의 한 유통 회사를 위해 만든 챗 에이전트입니다. 회사의 ERP 시스템에 연결되어 직원들이 데이터 조회에 드는 시간을 아낄 수 있게 해줍니다. 현재 약 70명의 직원이 사용 중입니다",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "Apple의 Liquid Glass를 직접 구현한 것입니다. 유리 알약이 탭 사이를 미끄러지며 지나가는 동안 배경을 굴절시키고, 자리를 잡기 전에 살짝 늘어납니다. 개인적으로 가장 아끼는 작업 중 하나입니다",
   "work.lg.how": "탭 행 위에 얹힌 굴절 렌즈: SDF 알약 형태, 채널별 분산을 적용한 스넬 법칙 가장자리 굴절, LCH 프레넬과 글레어, 스프링 기반 모션",
-  "work.lg.builton": "WebGL과 순수 JavaScript, 라이브러리 없이"
+  "work.lg.builton": "WebGL과 JavaScript"
 }

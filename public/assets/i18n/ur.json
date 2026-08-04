@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "ویب سائٹ Vercel پر ہوسٹڈ، YOLO ماڈل Roboflow پر",
 
   "work.unpaksite.p1": "Unpak کی مرکزی ویب سائٹ۔ میرے سب سے نفیس کاموں میں سے ایک",
-  "work.unpaksite.builton": "Astro کے ساتھ Tailwind، ڈایاگرامز اور WebGL ripple شیڈر خالص JavaScript، HTML اور CSS میں ہاتھ سے لکھے گئے",
+  "work.unpaksite.builton": "Astro، Tailwind، اور diagrams اور WebGL ripple shader کے لیے JavaScript",
 
   "work.unpakdash.p1": "Unpak کا ڈیش بورڈ۔ یہ کسٹمر کو دکھاتا ہے کہ ان کی ورک فورس کون سے ورک فلوز دہراتی ہے، گھنٹے کہاں خرچ ہوتے ہیں، اور AI کام میں کہاں پہلے سے موجود ہے",
-  "work.unpakdash.builton": "Astro، ہر چارٹ SVG میں ہاتھ سے لکھا گیا۔ ڈیٹا Postgres (Neon) سے فراہم کیا جاتا ہے",
+  "work.unpakdash.builton": "Astro، ڈیٹا ایک Neon Postgres ڈیٹابیس سے منسلک ہے",
 
   "work.salesagent.title": "AI سیلز ایجنٹ",
   "work.salesagent.p1": "Bay Area کی ایک ڈسٹری بیوشن کمپنی کے لیے بنایا گیا چیٹ ایجنٹ۔ ان کے ERP سسٹم سے جڑتا ہے اور ملازمین کا ڈیٹا تلاش کرنے میں وقت بچاتا ہے۔ اس وقت تقریباً 70 ملازمین اسے استعمال کر رہے ہیں",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "Apple کے Liquid Glass کا میرا اپنا نفاذ۔ شیشے کی ایک pill ٹیبز کے درمیان پھسلتی ہے، چلتے ہوئے پس منظر کو موڑتی ہے اور ٹھہرنے سے پہلے کھنچتی ہے۔ میرے ذاتی پسندیدہ کاموں میں سے ایک",
   "work.lg.how": "ٹیب رو پر ایک refractive لینز: SDF pill، فی چینل dispersion کے ساتھ Snell-law ایج ریفریکشن، LCH fresnel اور glare، اسپرنگ سے چلنے والی حرکت",
-  "work.lg.builton": "WebGL اور خالص JavaScript، کوئی لائبریری نہیں"
+  "work.lg.builton": "WebGL اور JavaScript"
 }

@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "Website hosted on Vercel, YOLO model hosted on Roboflow",
 
   "work.unpaksite.p1": "The main website for Unpak. One of my most polished pieces of work",
-  "work.unpaksite.builton": "Astro with Tailwind, the diagrams and the WebGL ripple shader hand-written in vanilla JavaScript, HTML and CSS",
+  "work.unpaksite.builton": "Astro, Tailwind, and JavaScript for the diagrams and the WebGL ripple shader",
 
   "work.unpakdash.p1": "Unpak's dashboard. It shows the customer the workflows their workforce repeats, where the hours go, and where AI has already shown up in the work",
-  "work.unpakdash.builton": "Astro, with every chart hand-written in SVG. Data served from Postgres (Neon)",
+  "work.unpakdash.builton": "Astro, with the data connected to a Neon Postgres database",
 
   "work.salesagent.title": "AI Sales Agent",
   "work.salesagent.p1": "A chat agent built for a distribution company in the Bay Area. Connects to their ERP system and allows their employees to save time doing data lookups. Currently serving around 70 employees",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "My implementation of Apple's Liquid Glass. A pill of glass slides between the tabs, bending the background as it goes and stretching before it settles. One of my personal favorites",
   "work.lg.how": "A refractive lens over a tab row: SDF pill, Snell-law edge refraction with per-channel dispersion, LCH fresnel and glare, spring-driven motion",
-  "work.lg.builton": "WebGL and vanilla JavaScript, no libraries"
+  "work.lg.builton": "WebGL and JavaScript"
 }

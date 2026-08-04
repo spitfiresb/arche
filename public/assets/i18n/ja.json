@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "ウェブサイトはVercel、YOLOモデルはRoboflowでホスティング",
 
   "work.unpaksite.p1": "Unpakのメインサイトです。私の作品の中でも特に磨き込んだもののひとつです",
-  "work.unpaksite.builton": "AstroとTailwind。ダイアグラムとWebGLの波紋シェーダーは、素のJavaScript・HTML・CSSで手書きしています",
+  "work.unpaksite.builton": "Astro、Tailwind、図とWebGLリップルシェーダーにJavaScript",
 
   "work.unpakdash.p1": "Unpakのダッシュボードです。従業員が繰り返しているワークフロー、時間がどこに費やされているか、そしてAIがすでに業務のどこに入り込んでいるかを顧客に示します",
-  "work.unpakdash.builton": "Astro製で、チャートはすべてSVGで手書きしています。データはPostgres(Neon)から配信",
+  "work.unpakdash.builton": "Astro製で、データはNeon Postgresデータベースに接続",
 
   "work.salesagent.title": "AIセールスエージェント",
   "work.salesagent.p1": "ベイエリアの流通企業向けに作ったチャットエージェントです。同社のERPシステムに接続し、従業員のデータ検索の手間を削減します。現在約70名の従業員が利用しています",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "AppleのLiquid Glassを自分で実装したものです。ガラスのピルがタブの間をスライドし、背景を屈折させながら移動して、伸びてから収まります。個人的なお気に入りのひとつです",
   "work.lg.how": "タブ列の上に置いた屈折レンズです。SDFピル、チャネルごとの分散を伴うスネルの法則によるエッジ屈折、LCHのフレネルとグレア、スプリング駆動のモーション",
-  "work.lg.builton": "WebGLと素のJavaScript、ライブラリなし"
+  "work.lg.builton": "WebGLとJavaScript"
 }

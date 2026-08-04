@@ -80,10 +80,10 @@
   "work.floorsense.hosting": "الموقع مستضاف على Vercel، ونموذج YOLO مستضاف على Roboflow",
 
   "work.unpaksite.p1": "الموقع الرئيسي لـ Unpak. أحد أكثر أعمالي إتقانًا",
-  "work.unpaksite.builton": "Astro مع Tailwind، والرسوم التوضيحية ومُظلِّل التموّج بتقنية WebGL مكتوبة يدويًا بلغة JavaScript الأصلية وHTML وCSS",
+  "work.unpaksite.builton": "Astro وTailwind، وJavaScript للرسوم البيانية ومظلل التموج بـ WebGL",
 
   "work.unpakdash.p1": "لوحة تحكم Unpak. تعرض للعميل مسارات العمل التي تكررها قواه العاملة، وأين تذهب الساعات، وأين ظهر الذكاء الاصطناعي بالفعل في العمل",
-  "work.unpakdash.builton": "Astro، مع كل رسم بياني مكتوب يدويًا بـ SVG. البيانات تُقدَّم من Postgres (Neon)",
+  "work.unpakdash.builton": "Astro، مع بيانات متصلة بقاعدة بيانات Neon Postgres",
 
   "work.salesagent.title": "وكيل مبيعات بالذكاء الاصطناعي",
   "work.salesagent.p1": "وكيل محادثة بُني لشركة توزيع في منطقة خليج سان فرانسيسكو. يتصل بنظام ERP الخاص بها ويوفّر على موظفيها وقت عمليات البحث عن البيانات. يخدم حاليًا نحو 70 موظفًا",
@@ -101,5 +101,5 @@
 
   "work.lg.p1": "تنفيذي لتقنية Liquid Glass من Apple. كبسولة من الزجاج تنزلق بين التبويبات، محنيًا الخلفية أثناء حركته ومتمددًا قبل أن يستقر. أحد أعمالي المفضلة",
   "work.lg.how": "عدسة انكسارية فوق صف من التبويبات: كبسولة SDF، وانكسار عند الحواف وفق قانون سنيل مع تشتّت لكل قناة لونية، وتأثير فرينل ووهج بفضاء LCH، وحركة مدفوعة بنوابض",
-  "work.lg.builton": "WebGL وJavaScript الأصلية، دون أي مكتبات"
+  "work.lg.builton": "WebGL وJavaScript"
 }
