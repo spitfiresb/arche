@@ -1990,7 +1990,17 @@
     requestAnimationFrame(tick);
   }
 
-  // Type out the kicker, then cue the drop
+  // Type out the kicker, then cue the drop.
+  //
+  // Peek mode (?peek): the home page renders this document inside the
+  // iframe behind its corner peel, so the fold reveals the REAL page.
+  // Everything above — wall, rig, floor — draws as normal, but the
+  // opening holds still at its first frame (kicker cleared, caret
+  // blinking, climber waiting above the ceiling). When the peel finishes,
+  // the parent doesn't navigate at all — this same document is promoted
+  // to be the page (no reload, nothing redraws) and a 'peel:wake' message
+  // starts the opening from here.
+  const peek = /(?:\?|&)peek(?:&|=|$)/.test(location.search);
   const label = kicker.textContent.trim();
   kicker.textContent = '';
   const typed = document.createElement('span');
@@ -1998,7 +2008,8 @@
   caret.className = 'caret';
   kicker.append(typed, caret);
   let i = 0;
-  (function type() {
+  let opened = false;
+  const openStory = () => { if (opened) return; opened = true; (function type() {
     if (i < label.length) {
       typed.textContent = label.slice(0, ++i);
       setTimeout(type, 65 + Math.random() * 55);
@@ -2024,7 +2035,28 @@
         man.classList.add('on');
       }, 450);
     }
-  })();
+  })(); };
+
+  if (!peek) {
+    openStory();
+  } else {
+    // Held shut inside the home page's peel until the parent says go.
+    addEventListener('message', (e) => {
+      if (e.origin === location.origin && e.data === 'peel:wake') openStory();
+    });
+    // The back mark can't navigate this inner document (that would swap
+    // the page inside the frame); it hands control back to the parent,
+    // which folds the corner back up. Capture phase so transition.js's
+    // own click handler stands down (it checks defaultPrevented).
+    document.addEventListener('click', (e) => {
+      const back = e.target.closest('a.back');
+      if (!back) return;
+      e.preventDefault();
+      e.stopPropagation();
+      parent.postMessage('peel:back', location.origin);
+    }, true);
+  }
 
   requestAnimationFrame(tick);
 })();
+

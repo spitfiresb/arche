@@ -197,7 +197,7 @@ body.home main {
   line-height: 1.45;
 }
 
-/* About / LinkedIn / GitHub sit between the intro and the work columns.
+/* LinkedIn / GitHub sit between the intro and the work columns.
    Keep the list narrow so the hover preview cards stay a sensible size
    within the wide layout */
 /* Left-aligned, but floating in the gap: margin-top:auto takes an equal
@@ -211,8 +211,7 @@ body.home main {
   padding-top: 1.9rem;
 }
 
-/* The block is centered in the column: the About link centered over the
-   two marks, which center under it as a pair */
+/* The block is centered in the column: the two marks center as a pair */
 .elsewhere ul.links {
   max-width: 22rem;
   margin: 0 auto;
@@ -223,23 +222,12 @@ body.home main {
   justify-content: center;
 }
 
-/* Body size and body grey at rest. The padding is always there, so the
-   outline that arrives on hover doesn't resize the row and shove the marks
-   below it down a few pixels mid-gesture. */
-.elsewhere .about a {
-  position: relative;
-  display: inline-block;
-  padding: 0.5em 1.15em;
-  color: var(--muted);
-  transition: color 0.2s ease;
-}
-
 /* The outline is two SVG halves rather than a border, so it can be drawn
    instead of switched on: both start at the bottom centre and travel up
    the opposite sides to meet at the top. landing.js sizes the paths to
-   their link, since the geometry depends on its rendered box. Shared by
-   About me and the three column labels; anything that wraps one of these
-   only has to be position:relative with the padding to hold the outline. */
+   their link, since the geometry depends on its rendered box. Used by the
+   three column labels; anything that wraps one of these only has to be
+   position:relative with the padding to hold the outline. */
 .pill-border {
   position: absolute;
   inset: 0;
@@ -266,47 +254,6 @@ body.home main {
 a:hover > .pill-border path,
 a:focus-visible > .pill-border path {
   stroke-dashoffset: 0;
-}
-
-/* the label rides above the outline and brightens as it closes */
-.elsewhere .about a .lbl {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  transition: opacity 0.14s ease;
-}
-
-.elsewhere .about a:hover,
-.elsewhere .about a:focus-visible {
-  color: var(--fg);
-}
-
-/* Click: the outline unwinds back down both sides on an accelerating
-   curve (slow to let go, quick at the end) while the label drops out
-   ahead of it. Navigation waits for it to finish (landing.js).
-
-   .open is the starting frame, stamped on by landing.js and held for one
-   reflow before .collapsing lands. Without it the retraction has nothing
-   to travel from on any pointer that never hovers; a touch tap would set
-   the offset back to 100 on a stroke that was already at 100, animating
-   nothing. */
-.elsewhere .about a.open .pill-border path {
-  stroke-dashoffset: 0;
-  transition: none;
-}
-
-.elsewhere .about a.collapsing {
-  color: var(--fg);
-}
-
-.elsewhere .about a.collapsing .pill-border path {
-  stroke-dashoffset: 100;
-  transition: stroke-dashoffset 0.3s cubic-bezier(0.55, 0, 0.85, 0.2);
-}
-
-.elsewhere .about a.collapsing .lbl {
-  opacity: 0;
-  transition: opacity 0.12s ease;
 }
 
 /* Collapse the three columns to one on narrow screens */
@@ -1741,6 +1688,21 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   direction: ltr;
 }
 
+/* Home: the peel owns the top-right corner, so the switcher crosses to the
+   top-left (which home leaves empty; interior pages keep it on the right,
+   since their top-left belongs to the back mark). The menu re-anchors and
+   re-origins with it so it still opens out of the button. */
+body.home .lang-switch {
+  left: 1.25rem;
+  right: auto;
+}
+
+body.home .lang-menu {
+  left: 0;
+  right: auto;
+  transform-origin: top left;
+}
+
 .lang-btn {
   display: block;
   padding: 0;
@@ -1865,6 +1827,240 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 @media (max-width: 40rem) {
   .lang-switch { top: 0.85rem; right: 0.9rem; }
+  body.home .lang-switch { left: 0.9rem; right: auto; }
   .lang-btn svg { width: 24px; height: 16px; }
   .lang-menu { width: 15rem; }
+}
+
+/* ── About-me corner peel ─────────────────────────────────────────────
+   The home page's top-right corner is folded over like a dog-ear, and the
+   About page sits "behind" it: the revealed triangle is the plain dark
+   page beneath (the About page IS this same black, which is what makes
+   the final handoff seamless), the flap is the backside of this page's
+   paper.
+
+   Geometry is one knob: the element is a --s square pinned to the corner,
+   the under layer is the top-right half (revealed page) and the flap the
+   bottom-left half (the corner folded exactly along the diagonal, so the
+   page corner lands at the square's far corner). Both are percentage
+   clip-paths, so growing --s is the whole animation: hover teases it,
+   .peek (first click phase) opens the fold properly, and .away runs the
+   crease clean past the viewport's far corner, at which point the screen
+   IS the page behind and landing.js navigates under it. */
+.peel {
+  --s: 3.75rem;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 60;
+  display: block;
+  width: var(--s);
+  height: var(--s);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.peel:hover,
+.peel:focus-visible {
+  --s: 4.5rem;
+}
+
+.peel:focus-visible {
+  outline: none;   /* the fold growing is the focus signal */
+}
+
+/* 200vmax: the crease has to travel past the bottom-left of the screen,
+   which needs --s ≥ vw + vh; two vmax always covers it. One continuous
+   run: the curve leaves slowly (the fold visibly lifting, no staged
+   pause) and accelerates into the sweep. */
+.peel.away {
+  --s: 200vmax;
+  transition: width 1.5s cubic-bezier(0.55, 0, 0.8, 0.55),
+              height 1.5s cubic-bezier(0.55, 0, 0.8, 0.55);
+}
+
+/* The revealed page behind is the About page itself, loaded in ?peek mode
+   (scenery drawn, opening animations held) in a viewport-sized iframe.
+   The iframe is pinned to the square's top-right corner — the same corner
+   the square shares with the viewport — so however far the fold has
+   grown, the revealed sliver aligns pixel-for-pixel with where the real
+   page's content will be when the navigation lands. */
+.peel-under {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  background: var(--bg);
+}
+
+.peel-behind {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  border: 0;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+.peel-under::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(225deg, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, 0.05) 98%);
+}
+
+/* The folded flap: this page's own corner turned over, so its backside is
+   the page grey, lit along the crease and falling darker toward the tip.
+   The clip lives on ::before so the drop-shadow on the element itself
+   isn't cut off by it. */
+.peel-flap {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(3px 3px 7px rgba(0, 0, 0, 0.5));
+}
+
+.peel-flap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+  background: linear-gradient(225deg,
+    #3d3d3d 50%, #2e2e2e 66%, #242424 84%, #202020 100%);
+}
+
+/* The scribbled pointer: a hand-drawn arrow curling up toward the fold,
+   "About me" written under its tail. Chrome, not content: it sits out of
+   the way and never takes the pointer. It rides a step ABOVE the peel in
+   the stack, so the fold growing on hover slides under the scribble
+   instead of covering it. */
+.peel-hint {
+  position: fixed;
+  top: 3.4rem;
+  right: 3.6rem;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* The hint steps back while the fold is opening over it (hover), and drops
+   out entirely once the peel commits */
+.peel:hover + .peel-hint,
+.peel:focus-visible + .peel-hint {
+  opacity: 0.35;
+}
+
+/* the :hover selector above out-specifies a plain descendant rule, and the
+   pointer is always over the grown peel mid-animation, so this carries the
+   same strength to actually win */
+html.peeling .peel-hint,
+html.peeling .peel:hover + .peel-hint {
+  opacity: 0;
+}
+
+/* The home page's own chrome fades out under the sweep: the About page
+   being revealed has no flag in the top-left, so the switcher can't still
+   be standing there once the frame is the page */
+html.peeling .lang-switch {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Once the frame IS the page (landing.js adds .peeled at the sweep's end),
+   the home document beneath it gives up its own scroll: wheel and keyboard
+   belong to the About page in the frame. The peel anchor itself goes
+   pointer-transparent — its flap layer spans the whole square and would
+   otherwise swallow every click and wheel meant for the page (and a click
+   on an a.peel would re-run the peel) — while the iframe re-enables
+   itself via the inline pointer-events landing.js sets on commit. */
+html.peeled {
+  overflow: hidden;
+}
+
+html.peeled .peel {
+  pointer-events: none;
+  cursor: default;
+}
+
+/* The arrow artwork points up-LEFT (drawn for the old left corner); the
+   mirror flips it to point up-right at the fold. */
+.peel-arrow {
+  display: block;
+  width: 2.9rem;
+  height: 2.9rem;
+  overflow: visible;
+  transform: scaleX(-1);
+}
+
+/* The hand-lettered "About me" under the arrow: same drawing technique as
+   the arrow, one pen stroke per path. */
+.peel-script {
+  display: block;
+  width: 6.8rem;
+  height: auto;
+  overflow: visible;
+  margin: 0.3rem 1.1rem 0 0;
+  transform: rotate(6deg);
+}
+
+/* Every stroke — letters and arrow alike — is drawn on by unwinding its
+   dash. The markup stamps each path's own start (--d) and duration
+   (--t), which is what sequences the writing: stroke by stroke in pen
+   order, a beat between letters, a longer lift before the second word,
+   the arrow and its head only after the words are down. */
+.peel-arrow path,
+.peel-script path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* gap longer than the path, same trick as .pill-border: with an equal
+     1/1 pattern the NEXT dash begins exactly at the path's end, and the
+     round cap paints it as a stray dot before the draw even starts */
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  animation: hint-draw var(--t, 0.4s) ease-out var(--d, 0s) forwards;
+}
+
+.peel-script path {
+  stroke-width: 2.6;
+}
+
+@keyframes hint-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peel-arrow path,
+  .peel-script path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Phones: the fold and its note step down so the corner stays a corner,
+   and the note moves into the top strip beside the fold (note first,
+   arrow after, nearest the fold) so it stays clear of the centered
+   greeting below */
+@media (max-width: 40rem) {
+  .peel { --s: 2.75rem; }
+  .peel:hover, .peel:focus-visible { --s: 3.25rem; }
+  .peel-hint {
+    top: 0.6rem;
+    right: 3.2rem;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+  }
+  .peel-arrow { width: 1.8rem; height: 1.8rem; }
+  .peel-script { width: 4.5rem; margin: 0.55rem 0.3rem 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peel { transition: none; }
 }

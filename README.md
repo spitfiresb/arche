@@ -104,7 +104,16 @@ base path set to the repo root, so its output refers to `/unpak-site/…`,
 `/papeagnet/…` and so on: root-absolute, and wrong here, where they are served
 from `/demos/…`. The script rewrites those ~1,100 references and is idempotent.
 The real fix is to set the base path in each source repo's build config, after
-which the script can be deleted.
+which the rebase half of the script can be deleted.
+
+The same script then **prunes the handful of files a build emits that nothing
+here can reach**: the social-preview image every page links absolutely at
+`unpak.ai`, an unlinked blog page, a nested `404.html` that Pages never serves
+in place of the root one, and the dashboard's login page, which sits behind a
+`/api/engagement` call the demo shims to a 200. A copy-in brings them all back,
+which is why the prune list lives in the script rather than in a one-off
+deletion. The marketing pages are deliberately kept: they are reachable from
+the nav, and clicking through them is what the demo is.
 
 ## Adding a live demo
 

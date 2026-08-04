@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Rebase the vendored demos onto /demos/.
+# Rebase the vendored demos onto /demos/, then prune what they don't serve.
 #
 # public/demos/unpak-site, unpak-dashboard and papeagnet are build output copied
 # in from their own repos. Each was built with its base path set to the repo
@@ -43,3 +43,37 @@ for name in "${DEMOS[@]}"; do
 done
 
 [ "$total" -gt 0 ] || echo "nothing to rebase, already on /demos/"
+
+# Files a fresh build emits that nothing here can ever reach. A copy-in brings
+# them back, so this runs on every pass. Each was checked by crawling the demo
+# from its entry point and following every href, src, url() and import:
+#
+#   og-default.png   every page points social crawlers at the absolute
+#                    https://unpak.ai/og-default.png, never at this copy
+#   blog/            "Blog — coming soon" is a <span> in the nav, not a link,
+#                    and this page is the only thing referencing that chunk
+#   404.html         Pages serves the project's root public/404.html; a nested
+#                    one is never reached
+#   login/           the dashboard's index.html shims /api/engagement to a 200,
+#                    and the login redirect is downstream of that call
+#
+# Deliberately NOT pruned: the marketing pages (pricing, careers, trust, help,
+# products, thesis…). They are reachable from the nav, and clicking through
+# them is what the demo is.
+PRUNE=(
+  "unpak-site/og-default.png"
+  "unpak-site/blog"
+  "unpak-site/_astro/index.astro_astro_type_script_index_0_lang.c6Ptpe9j.js"
+  "unpak-site/404.html"
+  "unpak-dashboard/login"
+)
+
+pruned=0
+for p in "${PRUNE[@]}"; do
+  [ -e "$ROOT/$p" ] || continue
+  rm -rf "${ROOT:?}/$p"
+  pruned=$((pruned + 1))
+  echo "pruned $p"
+done
+
+[ "$pruned" -gt 0 ] || echo "nothing to prune, already trimmed"
