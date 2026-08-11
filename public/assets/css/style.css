@@ -63,7 +63,11 @@ body.home main {
   max-width: calc(100vw - 3rem);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 20vh 1.5rem 4rem;
+  /* the bottom is deliberately thin: the work grid's auto margins already
+     hold it off the bottom edge whenever the window has slack, so this
+     padding only shows on a short window - where 4rem of it was enough to
+     push the page past 100vh and make a laptop screen scroll */
+  padding: 20vh 1.5rem 1.5rem;
   font-size: 1.0625rem;   /* 17px body */
   line-height: 1.5;
   display: flex;
