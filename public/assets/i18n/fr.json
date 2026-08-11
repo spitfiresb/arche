@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Mon implémentation du Liquid Glass d'Apple. Une pilule de verre glisse entre les onglets, déformant l'arrière-plan sur son passage et s'étirant avant de se poser. L'un de mes préférés",
   "work.lg.how": "Une lentille réfractive au-dessus d'une rangée d'onglets : pilule en SDF, réfraction des bords selon la loi de Snell avec dispersion par canal, fresnel et reflets en LCH, animation par ressorts",
-  "work.lg.builton": "WebGL et JavaScript"
+  "work.lg.builton": "WebGL et JavaScript",
+
+  "pulse.load": "temps de chargement",
+  "pulse.visits": "visites (30 j)",
+  "pulse.online": "en ligne"
 }

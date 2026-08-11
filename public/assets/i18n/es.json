@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Mi implementación del Liquid Glass de Apple. Una píldora de vidrio se desliza entre las pestañas, curvando el fondo a su paso y estirándose antes de asentarse. Uno de mis favoritos personales",
   "work.lg.how": "Una lente refractiva sobre una fila de pestañas: píldora SDF, refracción en los bordes según la ley de Snell con dispersión por canal, fresnel y destellos en LCH, y movimiento animado con resortes",
-  "work.lg.builton": "WebGL y JavaScript"
+  "work.lg.builton": "WebGL y JavaScript",
+
+  "pulse.load": "tiempo de carga",
+  "pulse.visits": "visitas (30 d)",
+  "pulse.online": "en línea"
 }

@@ -101,5 +101,9 @@
 
   "work.lg.p1": "我对 Apple Liquid Glass 的实现。一枚玻璃胶囊在标签之间滑动，一路折射着背景，落定前还会拉伸变形。我个人的最爱之一",
   "work.lg.how": "覆在标签栏上的一块折射透镜：SDF 胶囊形状、基于斯涅尔定律的边缘折射与逐通道色散、LCH 菲涅耳与眩光，弹簧驱动的动效",
-  "work.lg.builton": "WebGL 和 JavaScript"
+  "work.lg.builton": "WebGL 和 JavaScript",
+
+  "pulse.load": "加载时间",
+  "pulse.visits": "访问 (30 天)",
+  "pulse.online": "在线"
 }

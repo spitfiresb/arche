@@ -101,5 +101,9 @@
 
   "work.lg.p1": "AppleのLiquid Glassを自分で実装したものです。ガラスのピルがタブの間をスライドし、背景を屈折させながら移動して、伸びてから収まります。個人的なお気に入りのひとつです",
   "work.lg.how": "タブ列の上に置いた屈折レンズです。SDFピル、チャネルごとの分散を伴うスネルの法則によるエッジ屈折、LCHのフレネルとグレア、スプリング駆動のモーション",
-  "work.lg.builton": "WebGLとJavaScript"
+  "work.lg.builton": "WebGLとJavaScript",
+
+  "pulse.load": "読み込み時間",
+  "pulse.visits": "訪問 (30日)",
+  "pulse.online": "オンライン"
 }

@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Apple의 Liquid Glass를 직접 구현한 것입니다. 유리 알약이 탭 사이를 미끄러지며 지나가는 동안 배경을 굴절시키고, 자리를 잡기 전에 살짝 늘어납니다. 개인적으로 가장 아끼는 작업 중 하나입니다",
   "work.lg.how": "탭 행 위에 얹힌 굴절 렌즈: SDF 알약 형태, 채널별 분산을 적용한 스넬 법칙 가장자리 굴절, LCH 프레넬과 글레어, 스프링 기반 모션",
-  "work.lg.builton": "WebGL과 JavaScript"
+  "work.lg.builton": "WebGL과 JavaScript",
+
+  "pulse.load": "로딩 시간",
+  "pulse.visits": "방문 (30일)",
+  "pulse.online": "접속 중"
 }

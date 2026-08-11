@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Apple کے Liquid Glass کا میرا اپنا نفاذ۔ شیشے کی ایک pill ٹیبز کے درمیان پھسلتی ہے، چلتے ہوئے پس منظر کو موڑتی ہے اور ٹھہرنے سے پہلے کھنچتی ہے۔ میرے ذاتی پسندیدہ کاموں میں سے ایک",
   "work.lg.how": "ٹیب رو پر ایک refractive لینز: SDF pill، فی چینل dispersion کے ساتھ Snell-law ایج ریفریکشن، LCH fresnel اور glare، اسپرنگ سے چلنے والی حرکت",
-  "work.lg.builton": "WebGL اور JavaScript"
+  "work.lg.builton": "WebGL اور JavaScript",
+
+  "pulse.load": "لوڈ کا وقت",
+  "pulse.visits": "وزٹ (30 دن)",
+  "pulse.online": "آن لائن"
 }

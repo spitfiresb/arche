@@ -101,5 +101,9 @@
 
   "work.lg.p1": "La mia implementazione del Liquid Glass di Apple. Una pillola di vetro scivola tra le schede, deformando lo sfondo lungo il percorso e allungandosi prima di assestarsi. Uno dei miei preferiti in assoluto",
   "work.lg.how": "Una lente rifrattiva sopra una riga di schede: pillola SDF, rifrazione dei bordi secondo la legge di Snell con dispersione per canale, fresnel e riflessi in LCH, movimento guidato da molle",
-  "work.lg.builton": "WebGL e JavaScript"
+  "work.lg.builton": "WebGL e JavaScript",
+
+  "pulse.load": "tempo di caricamento",
+  "pulse.visits": "visite (30 g)",
+  "pulse.online": "online"
 }
