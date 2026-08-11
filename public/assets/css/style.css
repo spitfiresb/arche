@@ -2068,3 +2068,201 @@ html.peeled .peel {
 @media (prefers-reduced-motion: reduce) {
   .peel { transition: none; }
 }
+
+/* ---- Stats strip ------------------------------------------------------
+
+   Three live numbers in the bottom-right corner of the home page: how long
+   the page took to load, how many people came in the last 30 days, and how
+   many are here now. The first is measured in the browser, the other two
+   come from /api/pulse. All of it is wired up in pulse.js.
+
+   The corner is the last empty one on the page — the fold owns top-right and
+   the language switcher crosses to top-left on home. */
+
+/* The strip is out of the flow either way, so it costs the column no height:
+   the home page is tuned to fit a single screen, with the work grid's auto
+   margins doing that arithmetic, and anything added to the flow down here
+   would push a laptop window past 100vh and bring the scrollbar back.
+
+   This anchors the narrow-screen case at the foot of the page; on wider ones
+   the strip is fixed to the window and ignores it. */
+body.home main {
+  position: relative;
+}
+
+.pulse {
+  /* Fixed to the window, not to the 48rem text column: this is corner chrome,
+     like the fold and the language switcher, and it belongs on the edge of
+     the screen rather than lined up with the last work column. The home page
+     is a single screen, so there is nothing for it to scroll over. (Phones
+     are the exception — see the narrow-screen block below.) */
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.25rem;
+  z-index: 60;   /* the layer the other fixed corner pieces sit on */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1.25;
+  /* every digit on the same advance width: a number changing under you
+     shouldn't shuffle the ones beside it */
+  font-variant-numeric: tabular-nums;
+  /* it arrives when the first response does, rather than sitting there as a
+     row of zeros while the request is in flight */
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.pulse.is-live {
+  opacity: 1;
+}
+
+/* Each row sets on one line and the whole stack right-aligns, so the rows end
+   together and the numbers inside them fall where their own digit counts put
+   them. The left padding is hit area rather than spacing — each stat is its
+   own hover target, and three digits is a mean thing to ask anyone to hit. */
+.pulse-stat {
+  padding: 0.1rem 0 0.1rem 2.5rem;
+}
+
+.pulse-label {
+  display: block;
+  font-size: 0.6875rem;     /* 11px */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The numbers carry the page's own text colour; everything attached to them —
+   the unit that names them, the label that explains them — stays grey, so the
+   figure is what the eye lands on and the words are there when wanted. */
+.pulse-num {
+  font-size: 1rem;          /* 16px */
+  color: var(--fg);
+}
+
+.pulse-unit {
+  margin-left: 0.35em;
+  font-size: 0.75rem;       /* 12px */
+  color: var(--faint);
+}
+
+/* The one number on the strip that is true only at this second. Green because
+   that is what a live indicator is everywhere else; it's five pixels of the
+   only colour on an otherwise monochrome page, which is about the weight the
+   distinction deserves. */
+/* Flag glyphs for the platforms that don't draw them.
+   Twemoji, by Twitter, CC-BY 4.0 — https://github.com/twitter/twemoji
+   Packaged as a flags-only woff2 by country-flag-emoji-polyfill (MIT).
+
+   Windows ships no flag glyphs at all: a country's two regional-indicator
+   letters come out as two boxed capitals instead of ligating into a flag.
+   That is a policy decision at Microsoft rather than a gap in the font, so
+   there is nothing to fix in CSS — the glyphs have to be brought along.
+
+   unicode-range keeps this to the regional-indicator block, so it is the
+   only thing the file is ever consulted for, and the browser only fetches
+   it once a flag is actually on the page. */
+@font-face {
+  font-family: "Twemoji Country Flags";
+  src: url("/assets/fonts/TwemojiCountryFlags.woff2") format("woff2");
+  unicode-range: U+1F1E6-1F1FF;
+  font-display: swap;
+}
+
+/* One flag per country currently reading, deduplicated server-side. Sits
+   where the other two stats keep their label, so the whole strip opens the
+   same way wherever the cursor lands.
+
+   The stack is doing something specific, and the omission is the point.
+   "Apple Color Emoji" exists only on Apple platforms and does carry flags,
+   so naming it first gets a Mac its own native ones and never fetches the
+   webfont at all. Every other platform falls straight through to Twemoji.
+
+   Segoe UI Emoji is deliberately NOT named: it *does* have glyphs for these
+   codepoints — the boxed letters — so naming it would satisfy the lookup on
+   Windows and stop the fallback dead, which is the one outcome this whole
+   arrangement exists to avoid. */
+.pulse-flags {
+  display: block;
+  font-family: "Apple Color Emoji", "Twemoji Country Flags", sans-serif;
+  font-size: 0.8125rem;     /* 13px */
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: #5ec27e;
+  /* an empty inline-block sits its bottom edge on the baseline, so it needs
+     lifting to centre against the x-height of the digits beside it */
+  vertical-align: 0.06em;
+}
+
+/* Where there's a pointer, the strip is three bare numbers and nothing else.
+   Each one answers for itself: hovering a number brings up its own label and
+   leaves the other two alone, so the corner is only ever as busy as the one
+   thing being asked about.
+
+   The labels collapse rather than fade, so they reserve no empty band above
+   each number — and since the strip is anchored by its bottom edge, opening
+   one pushes the stack upward into the margin instead of shifting the
+   numbers under the cursor.
+
+   Touch screens have no hover to give, so there the labels are always on. */
+@media (hover: hover) {
+  .pulse-label,
+  .pulse-flags {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .pulse-stat:hover .pulse-label,
+  .pulse-stat:focus-within .pulse-label {
+    max-height: 1.2rem;
+    opacity: 1;
+  }
+
+  /* emoji set taller than their point size, so the flags need more room to
+     open into than a line of 11px capitals does */
+  .pulse-stat:hover .pulse-flags,
+  .pulse-stat:focus-within .pulse-flags {
+    max-height: 1.6rem;
+    opacity: 1;
+  }
+}
+
+/* Phones are the one place the home page genuinely scrolls — the three work
+   columns stack into a long single column. A fixed strip would ride along on
+   top of that the whole way down, so here it goes back into the page and
+   comes to rest at the bottom of it, inside the 4rem of padding the narrow
+   layout already carries. */
+@media (max-width: 40rem) {
+  .pulse {
+    position: absolute;
+    bottom: 1.5rem;
+    z-index: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse,
+  .pulse-label {
+    transition: none;
+  }
+}
+
+/* .pulse sets its own display, which outranks the UA rule that [hidden]
+   relies on, so the pre-response state has to be spelled out */
+.pulse[hidden] {
+  display: none;
+}

@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Meine Umsetzung von Apples Liquid Glass. Eine Glaspille gleitet zwischen den Tabs, verbiegt dabei den Hintergrund und dehnt sich, bevor sie einrastet. Einer meiner persönlichen Favoriten",
   "work.lg.how": "Eine brechende Linse über einer Tab-Leiste: SDF-Pille, Kantenbrechung nach dem Snellius-Gesetz mit Dispersion pro Farbkanal, LCH-Fresnel und Glanzlichter, federgetriebene Bewegung",
-  "work.lg.builton": "WebGL und JavaScript"
+  "work.lg.builton": "WebGL und JavaScript",
+
+  "pulse.load": "Ladezeit",
+  "pulse.visits": "Besuche (30 T)",
+  "pulse.online": "online"
 }

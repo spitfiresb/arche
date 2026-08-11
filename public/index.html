@@ -214,7 +214,33 @@
         </ul>
       </section>
     </div>
+
+    <!-- Live numbers in the last empty corner: how long this page took to
+         load, how many people came in the last 30 days, and how many are
+         here right now. Hidden until the first response lands, so a counter
+         that's down shows nothing rather than a row of zeros. The labels are
+         held back until hover; the zeros are placeholders that also fix the
+         width, so no number can shuffle the layout as it grows. -->
+    <footer class="pulse" hidden>
+      <div class="pulse-stat">
+        <span class="pulse-label" data-i18n="pulse.load">load time</span>
+        <span class="pulse-num" data-pulse="load">0000</span><span class="pulse-unit">ms</span>
+      </div>
+      <div class="pulse-stat">
+        <span class="pulse-label" data-i18n="pulse.visits">visits (30d)</span>
+        <span class="pulse-num" data-pulse="visits">000000</span>
+      </div>
+      <!-- The live one already says what it is, so instead of a label it
+           opens a flag per country currently reading, filled in by pulse.js.
+           Decorative: the count beside it is what carries the meaning, so
+           screen readers are spared a row of unlabelled emoji. -->
+      <div class="pulse-stat">
+        <span class="pulse-flags" aria-hidden="true"></span>
+        <span class="pulse-dot" aria-hidden="true"></span><span class="pulse-num" data-pulse="online">000</span><span class="pulse-unit" data-i18n="pulse.online">online</span>
+      </div>
+    </footer>
   </main>
   <script src="/assets/js/landing.js"></script>
+  <script src="/assets/js/pulse.js" defer></script>
 </body>
 </html>

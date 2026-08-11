@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Minha implementação do Liquid Glass da Apple. Uma pílula de vidro desliza entre as abas, curvando o fundo pelo caminho e se esticando antes de assentar. Um dos meus favoritos pessoais",
   "work.lg.how": "Uma lente refrativa sobre uma fileira de abas: pílula em SDF, refração de bordas pela lei de Snell com dispersão por canal, fresnel e brilho em LCH, movimento guiado por molas",
-  "work.lg.builton": "WebGL e JavaScript"
+  "work.lg.builton": "WebGL e JavaScript",
+
+  "pulse.load": "tempo de carregamento",
+  "pulse.visits": "visitas (30 d)",
+  "pulse.online": "online"
 }

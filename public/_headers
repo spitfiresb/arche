@@ -12,3 +12,8 @@
 # Crawling stays allowed so this header is actually seen; see robots.txt.
 /demos/*
   X-Robots-Tag: noindex
+
+# The flag font never changes under this URL, and only visitors whose OS ships
+# no flag glyphs ever fetch it — so when it is paid for, it is paid for once.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

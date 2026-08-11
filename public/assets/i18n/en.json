@@ -101,5 +101,9 @@
 
   "work.lg.p1": "My implementation of Apple's Liquid Glass. A pill of glass slides between the tabs, bending the background as it goes and stretching before it settles. One of my personal favorites",
   "work.lg.how": "A refractive lens over a tab row: SDF pill, Snell-law edge refraction with per-channel dispersion, LCH fresnel and glare, spring-driven motion",
-  "work.lg.builton": "WebGL and JavaScript"
+  "work.lg.builton": "WebGL and JavaScript",
+
+  "pulse.load": "load time",
+  "pulse.visits": "visits (30d)",
+  "pulse.online": "online"
 }

@@ -101,5 +101,9 @@
 
   "work.lg.p1": "Apple'ın Liquid Glass'ının kendi yaptığım uygulaması. Bir cam hap sekmeler arasında kayar, geçerken arka planı büker ve yerine oturmadan önce esner. Kişisel favorilerimden biri",
   "work.lg.how": "Sekme sırasının üzerinde kırıcı bir mercek: SDF hap, kanal başına dispersiyonla Snell yasası kenar kırılması, LCH fresnel ve parlama, yay tabanlı hareket",
-  "work.lg.builton": "WebGL ve JavaScript"
+  "work.lg.builton": "WebGL ve JavaScript",
+
+  "pulse.load": "yüklenme süresi",
+  "pulse.visits": "ziyaret (30 g)",
+  "pulse.online": "çevrimiçi"
 }

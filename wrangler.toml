@@ -1,0 +1,27 @@
+# Cloudflare Pages config for the zsaeed.com project.
+#
+# This file exists for one reason: the D1 binding below. Pages Functions can
+# only reach a database that's bound by name, and the binding has to be
+# declared somewhere — either here or by hand in the dashboard. Here means it
+# is in git with everything else.
+#
+# Because this file declares pages_build_output_dir, the deploy command no
+# longer takes arguments — `npx wrangler pages deploy` reads both the output
+# directory and the project name from here.
+#
+# Secrets are NOT declared here. ROBOFLOW_API_KEY and PULSE_SALT live in the
+# Pages dashboard (Settings > Environment variables) and in .dev.vars locally.
+# Adding a [vars] block would shadow the dashboard values, so there isn't one.
+
+name = "zainsaeed"
+pages_build_output_dir = "public"
+compatibility_date = "2025-08-11"
+
+# The visit/presence counters behind the stats strip on the home page.
+# Create it once with:
+#   npx wrangler d1 create zainsaeed-pulse
+# then paste the id it prints into database_id below.
+[[d1_databases]]
+binding = "PULSE_DB"
+database_name = "zainsaeed-pulse"
+database_id = "PASTE_ID_FROM_wrangler_d1_create"
