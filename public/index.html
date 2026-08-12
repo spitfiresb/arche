@@ -221,6 +221,27 @@
          that's down shows nothing rather than a row of zeros. The labels are
          held back until hover; the zeros are placeholders that also fix the
          width, so no number can shuffle the layout as it grows. -->
+    <!-- The opposite corner: the last public place I was seen at, written by
+         a launchd job on my Mac and filtered down to somewhere worth saying
+         out loud before it ever reaches the database (functions/api/where.js).
+         It arrives on the same beat as the numbers on the right, so this
+         costs no extra request. Absent entirely when there's nothing to say,
+         which is most evenings. -->
+    <!-- One sentence over exactly two lines: "Last seen [2 hours ago] at" /
+         "<venue> [in <city>]". The bracketed parts come and go — the time
+         only appears once the reading is older than the live window, and
+         the city only when the venue name doesn't already contain it.
+         pulse.js fills the gaps. -->
+    <aside class="whereat" hidden>
+      <span class="whereat-intro">
+        <span class="whereat-lede" data-i18n="where.lede">Last seen</span><span class="whereat-when"></span>
+        <span class="whereat-lede" data-i18n="where.at">at</span>
+      </span>
+      <span class="whereat-line">
+        <span class="whereat-place"></span><span class="whereat-city"></span>
+      </span>
+    </aside>
+
     <footer class="pulse" hidden>
       <div class="pulse-stat">
         <span class="pulse-label" data-i18n="pulse.load">load time</span>

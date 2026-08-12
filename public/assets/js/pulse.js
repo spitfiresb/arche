@@ -1,8 +1,10 @@
-/* The live numbers in the corner of the home page.
+/* The live bits in the bottom corners of the home page.
 
-   Two of them come from the site itself, over /api/pulse: how many distinct
-   people have visited in the last 30 days, and how many are reading right
-   now. The third, load time, is measured here and never leaves the browser.
+   Two of the numbers come from the site itself, over /api/pulse: how many
+   distinct people have visited in the last 30 days, and how many are reading
+   right now. The third, load time, is measured here and never leaves the
+   browser. The same response also carries the last public place I was seen
+   at, drawn in the opposite corner — one request feeds both.
 
    This script runs on every page but only draws on the one that has the
    strip in it, so the counts cover the whole site while the corner stays
@@ -106,6 +108,22 @@
 
   const flagRow = strip && strip.querySelector('.pulse-flags');
 
+  /* The other corner. It comes down the same response, so it is drawn here
+     rather than in a file of its own — a second script would mean a second
+     request for one line of text. Independent of the strip above: either
+     corner can be present, absent, or down without the other noticing. */
+  const whereat = document.querySelector('.whereat');
+  const placeEl = whereat && whereat.querySelector('.whereat-place');
+  const cityEl = whereat && whereat.querySelector('.whereat-city');
+  const whenEl = whereat && whereat.querySelector('.whereat-when');
+
+  /* Matches the reasoning behind the server's online window: the Mac reports
+     every 3 minutes, so 6 tolerates exactly one missed beat before the age
+     line appears. A closed lid shouldn't read as "left" for one dropped
+     ping. Inside this window the sentence stands alone in the present
+     tense; past it, "x hours ago" starts counting underneath. */
+  const LIVE_S = 360;
+
   /* A country's flag emoji is just its two letters moved into the regional
      indicator block at U+1F1E6 — "US" becomes the pair the font draws as one
      glyph. No lookup table and no images; the server sends "US" and this
@@ -127,6 +145,69 @@
     if (key === flagsShown) return;
     flagsShown = key;
     flagRow.textContent = (list || []).map(flagOf).join(' ');
+  }
+
+  /* "4 minutes ago", in whatever language the page is currently in.
+     Intl.RelativeTimeFormat already knows how to say this in all fourteen,
+     so the widget follows the language switcher without a single string in
+     the dictionaries — only the lede above it needs translating. */
+  function relative(seconds) {
+    const lang = document.documentElement.lang || 'en';
+    const [n, unit] = seconds < 3600
+      ? [Math.round(seconds / 60), 'minute']
+      : seconds < 86400
+        ? [Math.round(seconds / 3600), 'hour']
+        : [Math.round(seconds / 86400), 'day'];
+    try {
+      return new Intl.RelativeTimeFormat(lang, { numeric: 'auto' }).format(-n, unit);
+    } catch (e) {
+      return `${n} ${unit}${n === 1 ? '' : 's'} ago`;
+    }
+  }
+
+  /* Absent is a real state here, and the common one: no venue means the
+     corner is empty rather than showing a placeholder. The server has
+     already dropped anything past its window, so "nothing to say" arrives
+     as a null and this hides the whole thing.
+
+     While I'm actually somewhere the age is left off entirely — a bare
+     sentence in the present tense is the liveness, and "0 minutes ago"
+     would be a worse way of writing "now". It only starts counting once
+     the reading stops being current. */
+  let placeShown = null;
+  function paintPlace(place) {
+    if (!whereat) return;
+
+    if (!place || !place.label) {
+      whereat.hidden = true;
+      whereat.classList.remove('is-live');
+      placeShown = null;
+      return;
+    }
+
+    // The time slots into the middle of the sentence — "Last seen 2 hours
+    // ago at ..." — but only once the reading is genuinely old. While it's
+    // current the words close up around the gap and the sentence sits in
+    // the present tense, which says "now" better than any timestamp could.
+    const stale = place.ago >= LIVE_S;
+    const when = stale ? ` ${relative(place.ago)}` : '';
+    // "in Eugene" — the part that orients a reader who has never been within
+    // a thousand miles of the venue. Proper nouns need no dictionary entry.
+    const city = place.city ? ` in ${place.city}` : '';
+    // Rewriting identical text every 30s would restart the fade for nothing,
+    // and the rendered strings are exactly what "changed" means here.
+    const key = `${place.label}|${city}|${when}`;
+    if (key === placeShown) return;
+    placeShown = key;
+
+    placeEl.textContent = place.label;
+    if (cityEl) cityEl.textContent = city;
+    if (whenEl) whenEl.textContent = when;
+
+    if (whereat.hidden) {
+      whereat.hidden = false;
+      requestAnimationFrame(() => whereat.classList.add('is-live'));
+    }
   }
 
   // Digits are held at a fixed width so the strip never re-lays out under a
@@ -174,6 +255,10 @@
       });
       if (!res.ok) throw new Error(`pulse: ${res.status}`);
       const data = await res.json();
+
+      // Before the early return below: the two corners are independent, and
+      // a page carrying one but not the other still gets what it has.
+      paintPlace(data.place);
 
       if (!strip) return;
       tick('visits', data.visits);

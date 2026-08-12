@@ -2266,3 +2266,84 @@ body.home main {
 .pulse[hidden] {
   display: none;
 }
+
+/* ---- Last seen at -----------------------------------------------------
+
+   The bottom-left corner, opposite the stats strip: the last public place I
+   was at. It rides in on the same /api/pulse response the numbers do, so it
+   costs no extra request, and it's drawn by the same script.
+
+   The two corners are deliberately not symmetrical in kind. The right-hand
+   one counts other people and is always true; this one is about me and is
+   often simply absent — there is no venue most evenings, and the corner is
+   empty rather than padded with a fallback. */
+.whereat {
+  position: fixed;
+  left: 1.5rem;
+  bottom: 1.25rem;
+  z-index: 60;              /* the layer the other fixed corner pieces sit on */
+  /* Venue names are arbitrary text from OpenStreetMap, and the place line
+     never wraps, so the guard against a pathological one is an ellipsis at
+     the viewport's edge rather than a second line. */
+  max-width: calc(100vw - 3rem);
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.whereat.is-live {
+  opacity: 1;
+}
+
+/* One sentence, one size, two fixed lines: "Last seen [time] at" above,
+   "<venue> [in <city>]" below — neither ever wraps into the other. Colour
+   carries the little structure there is: the connecting words and the time
+   in grey, the venue in the page's text colour, the city a shade fainter. */
+.whereat-intro,
+.whereat-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.whereat-lede,
+.whereat-when {
+  font-size: 0.875rem;      /* 14px, everything in this corner */
+  color: var(--muted);
+}
+
+.whereat-place {
+  font-size: 0.875rem;
+  color: var(--fg);
+}
+
+/* "in Eugene" — context for readers far away, subordinate by colour alone. */
+.whereat-city {
+  font-size: 0.875rem;
+  color: var(--faint);
+}
+
+/* Phones: the home page genuinely scrolls, so this comes out of the fixed
+   layer and rests at the foot of the page like .pulse does. The two corners
+   share that line — this one is capped at half the width so a long venue
+   name wraps upward into the margin instead of running under the numbers. */
+@media (max-width: 40rem) {
+  .whereat {
+    position: absolute;
+    left: 0;
+    bottom: 1.5rem;
+    z-index: auto;
+    max-width: 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whereat {
+    transition: none;
+  }
+}
+
+.whereat[hidden] {
+  display: none;
+}

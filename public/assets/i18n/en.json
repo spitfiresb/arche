@@ -105,5 +105,8 @@
 
   "pulse.load": "load time",
   "pulse.visits": "visits (30d)",
-  "pulse.online": "online"
+  "pulse.online": "online",
+
+  "where.lede": "Last seen",
+  "where.at": "at"
 }
