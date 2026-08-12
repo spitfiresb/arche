@@ -17,6 +17,7 @@ const RETAIN_DAYS = 60;      // how long day-rows are kept before being swept
 const ONLINE_SECONDS = 70;   // a tab counts as online this long after a beat
 const PRESENCE_TTL = 600;    // and its row is deleted this long after one
 const MAX_FLAGS = 10;        // distinct countries returned; see countryOf below
+const PLACE_TTL = 259200;    // 3 days; after that the corner says nothing at all
 
 // The client beats every 30s, so 70 tolerates exactly one dropped beat before
 // someone blinks out — a laptop lid closing shouldn't take two minutes to
@@ -105,6 +106,21 @@ export async function onRequestPost({ request, env }) {
           LIMIT ?2`,
       ).bind(ONLINE_SECONDS, MAX_FLAGS),
     ) - 1;
+    // The place in the other corner, written by /api/where. It rides along on
+    // this batch rather than getting an endpoint of its own: every page is
+    // already beating here every 30s, so the widget costs one statement on a
+    // query that was happening anyway instead of a second request per tab.
+    //
+    // The cutoff is enforced here rather than in the browser so a stale row
+    // never leaves the database at all. Three days lets "2 days ago" ride
+    // out a quiet weekend; past that the corner goes silent rather than
+    // becoming a monument to the last time I left the house.
+    at.place = stmts.push(
+      db.prepare(
+        `SELECT label, city, unixepoch() - seen AS ago FROM place
+          WHERE id = 1 AND seen > unixepoch() - ?1`,
+      ).bind(PLACE_TTL),
+    ) - 1;
 
     const results = await db.batch(stmts);
     const visits = count(results[at.visits]);
@@ -114,8 +130,15 @@ export async function onRequestPost({ request, env }) {
     const countries = (results[at.countries]?.results || [])
       .map((row) => row.country)
       .filter(Boolean);
+    const row = results[at.place]?.results?.[0];
+    // Age in seconds rather than a timestamp, so the browser has nothing to
+    // reconcile against its own clock and no date to mis-parse — and so the
+    // wording around it stays a rendering decision.
+    const place = row
+      ? { label: row.label, city: row.city || null, ago: Math.max(row.ago, 0) }
+      : null;
 
-    return json({ visits, online, countries }, 200);
+    return json({ visits, online, countries, place }, 200);
   } catch (error) {
     console.error("Pulse Error:", error);
     return json({ error: "Internal Server Error" }, 500);
