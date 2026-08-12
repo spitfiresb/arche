@@ -1,2 +1,8 @@
 ROBOFLOW_API_KEY=
 PULSE_SALT=
+WHERE_TOKEN=
+
+# Optional. Semicolon-separated "lat,lon,radius" circles that are always
+# silent, whatever OpenStreetMap says is there. For the cases tagging cannot
+# express - living above a cafe being the obvious one.
+WHERE_MUTE=
