@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The launchd job behind the bottom-left corner of zsaeed.com.
+
+     A LaunchAgent rather than a LaunchDaemon on purpose: agents run as me,
+     in my login session, and only while I am actually logged in. That makes
+     "am I logged into my Mac" the on/off switch for the whole feature, which
+     is both the behaviour I want and the reason a daemon would be wrong —
+     a daemon would keep reporting from a machine I had walked away from.
+
+     Installed to ~/Library/LaunchAgents by install.sh, which rewrites
+     __REPORT__ to the real path.
+
+     StartInterval, not a calendar schedule: launchd skips missed intervals
+     while the machine is asleep and fires once on wake, so a closed lid
+     costs nothing and reopening it catches up immediately. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.zsaeed.where</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__REPORT__</string>
+  </array>
+
+  <!-- Three minutes. The site treats a reading as current for six, so this
+       tolerates exactly one missed beat before the corner's dot goes grey. -->
+  <key>StartInterval</key>
+  <integer>180</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Deprioritised against anything I'm actually doing: this is a Wi-Fi
+       scan and one small HTTPS request, and it should never be the reason
+       the fans come on. -->
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>Nice</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__LOG__</string>
+  <key>StandardErrorPath</key>
+  <string>__LOG__</string>
+</dict>
+</plist>

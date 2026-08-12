@@ -9,6 +9,12 @@
 # Wrangler's local dev cache
 .wrangler/
 
+# The compiled CoreLocation helper, assembled by tools/where/install.sh from
+# locate.swift and Locate-Info.plist. A platform binary, and macOS keys its
+# location grant to the signed bundle, so it belongs on the machine that
+# granted it rather than in git.
+tools/where/Locate.app/
+
 # Python bytecode from public/demos/unpak-dashboard/make-data.py
 __pycache__/
 *.pyc
