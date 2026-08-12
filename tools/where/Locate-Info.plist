@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The reason locate ships as an .app rather than a bare binary.
+     install.sh assembles Locate.app around the compiled executable.
+
+     NSLocationWhenInUseUsageDescription is the load-bearing key. Without it
+     requestWhenInUseAuthorization() is silently a no-op: no dialog appears,
+     nothing is written to the location database, and the program never shows
+     up in System Settings > Privacy & Security > Location Services — because
+     as far as macOS is concerned it never asked. A plain command-line binary
+     has no Info.plist and therefore no way to carry this string, which is
+     the whole reason for the bundle.
+
+     LSUIElement keeps it off the Dock and out of the app switcher. It still
+     counts as a foreground-capable app, which is what lets it raise the
+     permission dialog; LSBackgroundOnly would take that ability away. -->
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>com.zsaeed.where.locate</string>
+  <key>CFBundleName</key>
+  <string>zsaeed-locate</string>
+  <key>CFBundleDisplayName</key>
+  <string>zsaeed.com location</string>
+  <key>CFBundleExecutable</key>
+  <string>locate</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>CFBundleVersion</key>
+  <string>1</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>12.0</string>
+  <key>LSUIElement</key>
+  <true/>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Shows the neighbourhood you're in on zsaeed.com. Only public places like cafés are ever published, and coordinates are never stored.</string>
+</dict>
+</plist>

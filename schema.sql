@@ -40,3 +40,31 @@ CREATE TABLE IF NOT EXISTS presence (
 
 -- Both the online count and the sweep filter on seen alone.
 CREATE INDEX IF NOT EXISTS presence_seen ON presence (seen);
+
+-- One row, forever, holding the last place worth saying out loud: the widget
+-- in the bottom-left corner of the home page. Written only by /api/where,
+-- which a launchd job on my Mac beats while I'm logged in.
+--
+-- What is NOT here is the point. There is no latitude, no longitude, no
+-- accuracy radius, no history — one label and one timestamp. Coordinates
+-- exist for a few milliseconds inside the Function while it asks
+-- OpenStreetMap what building they fall in, and are never written down. Even
+-- a full dump of this database is a single line of text saying where I was
+-- once, which is the most it should ever be able to say.
+--
+-- label is a venue name that already survived the allowlist in where.js, so
+-- by construction it is somewhere public — a cafe, a restaurant, a library.
+-- Anywhere private simply never reaches this table, and "at home" is not a
+-- state that gets stored: it's the absence of a write, so the row keeps
+-- whatever public place came last and quietly ages instead.
+--
+-- seen is refreshed by every beat while I'm still there, so it means "last
+-- confirmed at this place" rather than "arrived at". The moment I leave it
+-- stops moving and the corner starts counting up.
+CREATE TABLE IF NOT EXISTS place (
+  id    INTEGER PRIMARY KEY CHECK (id = 1),  -- exactly one row, enforced
+  label TEXT NOT NULL,                       -- 'Farmers Union Coffee Roasters'
+  city  TEXT,                                -- 'Eugene', for readers far away;
+                                             -- NULL when it'd repeat the label
+  seen  INTEGER NOT NULL                     -- unix seconds
+);

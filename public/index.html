@@ -73,48 +73,12 @@
 <script src="/assets/js/i18n.js" defer></script>
 </head>
 <body class="home" data-i18n-page="home">
-  <!-- The About page lives "behind" this one: the top-right corner is folded
-       over like a dog-ear, showing a sliver of the dark page beneath.
-       Clicking grows the fold into a peek, then peels the whole page away
-       (landing.js). -->
-  <a class="peel" href="/about" aria-label="About me">
-    <span class="peel-under" aria-hidden="true">
-      <!-- The real About page, held at its opening frame (?peek): the fold
-           reveals the actual cliff face, so the navigation swap under the
-           finished peel is invisible -->
-      <iframe class="peel-behind" src="/about?peek" title="" tabindex="-1" aria-hidden="true"></iframe>
-    </span>
-    <span class="peel-flap" aria-hidden="true"></span>
-  </a>
-  <!-- The note is hand-lettered: every path is one pen stroke, normalized
-       to pathLength 1 and drawn on by unwinding its dash, in writing order
-       - A's legs, its crossbar, b, o, u, t's stem, t's crossbar, then m
-       and e after a pen lift - and only then the arrow and its head.
-       Each stroke carries its own start (--d) and duration (--t). -->
-  <div class="peel-hint" aria-hidden="true">
-    <svg class="peel-arrow" viewBox="0 0 100 100">
-      <path d="M88 93 C60 90, 42 70, 27 34" pathLength="1" style="--d:2.47s;--t:0.32s" />
-      <path d="M13 48 L27 34 L46 40" pathLength="1" style="--d:2.85s;--t:0.16s" />
-    </svg>
-    <svg class="peel-script" viewBox="0 0 152 44">
-      <path d="M4 32 C8 22, 12 12, 15.5 5.5 C19 12, 22.5 23, 25 32" pathLength="1" style="--d:0.23s;--t:0.23s" />
-      <path d="M9.5 22.5 C13.5 21.5, 17.5 21.3, 21.5 21.8" pathLength="1" style="--d:0.48s;--t:0.1s" />
-      <path d="M30 6 C29.6 14, 29.4 23, 29.8 32 C30.4 27.4, 32.2 22.8, 35.4 22.3 C38.8 21.8, 40.8 24.6, 40.4 27.6 C40 30.8, 36.8 33, 33.8 32.2 C32 31.7, 30.8 30.4, 30.2 28.8" pathLength="1" style="--d:0.62s;--t:0.26s" />
-      <path d="M49 23.5 C45.8 22.6, 43 24.8, 43 28 C43 31.2, 45.8 33.4, 48.8 32.4 C51.8 31.4, 53 27.8, 51.4 25.2 C50.4 23.7, 48.8 23.2, 47.6 23.8" pathLength="1" style="--d:0.92s;--t:0.17s" />
-      <path d="M57 22.5 C56.4 25.6, 56.2 28.8, 57.4 31 C58.6 33.2, 61.4 32.8, 63 30.2 C64.4 28, 65.2 25.2, 65.6 22.5 C65.3 25.8, 65 29, 66 32.2" pathLength="1" style="--d:1.12s;--t:0.2s" />
-      <path d="M72.5 7 C72 15, 71.8 24, 72.8 30 C73.3 32.6, 75.4 33.4, 77.6 32" pathLength="1" style="--d:1.36s;--t:0.17s" />
-      <path d="M68 17.5 C71.4 16.6, 75.8 16.4, 79 17" pathLength="1" style="--d:1.54s;--t:0.09s" />
-      <path d="M94 32 C94.3 28.6, 94.6 25.2, 94.8 22.4 C96.4 21, 98 21.6, 98.5 23.8 C98.9 26.4, 98.9 29.2, 98.8 32 C99.4 28.4, 100.4 24.2, 102.6 22.4 C104.6 20.8, 106.4 22, 106.6 24.6 C106.8 27.4, 106.6 29.8, 106.8 32" pathLength="1" style="--d:1.8s;--t:0.26s" />
-      <path d="M114 27.5 C116.8 27, 119.6 25.8, 120.4 23.8 C121 22.2, 119.6 21, 117.8 21.6 C115.2 22.5, 113.4 25.2, 113.5 28.2 C113.6 31.2, 115.8 33.2, 118.8 32.6 C121 32.1, 122.6 30.9, 123.8 29.5" pathLength="1" style="--d:2.09s;--t:0.2s" />
-    </svg>
-  </div>
   <main>
     <h1 class="greeting" data-i18n="home.greeting">Hi, my name is Zain Saeed, welcome to my website!</h1>
 
     <div class="intro">
       <p data-i18n-html="home.intro">Some of the things I love: traveling somewhere new, meeting
-      interesting people, eating great food, working on my (often) broken car,
-      writing code, camping in concerningly remote locations, building amazing
+      interesting people, eating great food, working on my car, camping in remote locations, building amazing
       things, and most importantly, <span class="stress">solving hard
       problems.</span></p>
     </div>
@@ -165,6 +129,11 @@
           </ul>
         </li>
       </ul>
+      <!-- The way into the About page. The brackets are CSS (see
+           .about-more), so translations swap the words without eating
+           them. A real navigation — the fixed corners on this page must
+           die with it (see the .pulse notes below). -->
+      <a class="about-more" href="/about" data-i18n="nav.about">more about me</a>
     </section>
 
     <div class="work-grid">
@@ -221,6 +190,23 @@
          that's down shows nothing rather than a row of zeros. The labels are
          held back until hover; the zeros are placeholders that also fix the
          width, so no number can shuffle the layout as it grows. -->
+    <!-- The opposite corner: the last public place I was seen at, written by
+         a launchd job on my Mac and filtered down to somewhere worth saying
+         out loud before it ever reaches the database (functions/api/where.js).
+         It arrives on the same beat as the numbers on the right, so this
+         costs no extra request. Absent entirely when there's nothing to say,
+         which is most evenings. -->
+    <!-- One line, top-left: "Last seen at <venue> [in <city>]". No
+         timestamp — the sentence holds whatever the last public place
+         was, and the city appears only when the venue name doesn't
+         already contain it. pulse.js fills the gaps. -->
+    <aside class="whereat" hidden>
+      <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span class="whereat-lede" data-i18n="where.lede">Last seen</span>
+      <span class="whereat-lede" data-i18n="where.at">at</span>
+      <span class="whereat-place"></span><span class="whereat-city"></span>
+    </aside>
+
     <footer class="pulse" hidden>
       <div class="pulse-stat">
         <span class="pulse-label" data-i18n="pulse.load">load time</span>

@@ -1,8 +1,10 @@
-/* The live numbers in the corner of the home page.
+/* The live bits in the bottom corners of the home page.
 
-   Two of them come from the site itself, over /api/pulse: how many distinct
-   people have visited in the last 30 days, and how many are reading right
-   now. The third, load time, is measured here and never leaves the browser.
+   Two of the numbers come from the site itself, over /api/pulse: how many
+   distinct people have visited in the last 30 days, and how many are reading
+   right now. The third, load time, is measured here and never leaves the
+   browser. The same response also carries the last public place I was seen
+   at, drawn in the opposite corner — one request feeds both.
 
    This script runs on every page but only draws on the one that has the
    strip in it, so the counts cover the whole site while the corner stays
@@ -17,10 +19,9 @@
   const TAB_KEY = 'pulse-tab';
   const SEEN_KEY = 'pulse-counted';
 
-  /* The home page holds the About page open in an iframe behind the folded
-     corner (see the .peel markup in index.html). That iframe is a real load
-     of a real page, so without this every home visit would beat twice and
-     show up as two people. */
+  /* Nothing on the site frames its own pages any more (the old folded-corner
+     About preview did), but the guard stays: any future embed would be a real
+     page load, and every framed copy would silently double the online count. */
   if (window.top !== window.self) return;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -106,6 +107,14 @@
 
   const flagRow = strip && strip.querySelector('.pulse-flags');
 
+  /* The other corner. It comes down the same response, so it is drawn here
+     rather than in a file of its own — a second script would mean a second
+     request for one line of text. Independent of the strip above: either
+     corner can be present, absent, or down without the other noticing. */
+  const whereat = document.querySelector('.whereat');
+  const placeEl = whereat && whereat.querySelector('.whereat-place');
+  const cityEl = whereat && whereat.querySelector('.whereat-city');
+
   /* A country's flag emoji is just its two letters moved into the regional
      indicator block at U+1F1E6 — "US" becomes the pair the font draws as one
      glyph. No lookup table and no images; the server sends "US" and this
@@ -127,6 +136,41 @@
     if (key === flagsShown) return;
     flagsShown = key;
     flagRow.textContent = (list || []).map(flagOf).join(' ');
+  }
+
+  /* Absent is a real state here, and the common one: no venue means the
+     corner is empty rather than showing a placeholder. The server has
+     already dropped anything past its window, so "nothing to say" arrives
+     as a null and this hides the whole thing. No timestamp on purpose —
+     "Last seen at" holds whether the reading is a minute or a day old,
+     and the server's cutoff is what keeps it from getting ancient. */
+  let placeShown = null;
+  function paintPlace(place) {
+    if (!whereat) return;
+
+    if (!place || !place.label) {
+      whereat.hidden = true;
+      whereat.classList.remove('is-live');
+      placeShown = null;
+      return;
+    }
+
+    // "in Eugene" — the part that orients a reader who has never been within
+    // a thousand miles of the venue. Proper nouns need no dictionary entry.
+    const city = place.city ? ` in ${place.city}` : '';
+    // Rewriting identical text every 30s would restart the fade for nothing,
+    // and the rendered strings are exactly what "changed" means here.
+    const key = `${place.label}|${city}`;
+    if (key === placeShown) return;
+    placeShown = key;
+
+    placeEl.textContent = place.label;
+    if (cityEl) cityEl.textContent = city;
+
+    if (whereat.hidden) {
+      whereat.hidden = false;
+      requestAnimationFrame(() => whereat.classList.add('is-live'));
+    }
   }
 
   // Digits are held at a fixed width so the strip never re-lays out under a
@@ -174,6 +218,10 @@
       });
       if (!res.ok) throw new Error(`pulse: ${res.status}`);
       const data = await res.json();
+
+      // Before the early return below: the two corners are independent, and
+      // a page carrying one but not the other still gets what it has.
+      paintPlace(data.place);
 
       if (!strip) return;
       tick('visits', data.visits);

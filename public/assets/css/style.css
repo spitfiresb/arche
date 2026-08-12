@@ -110,11 +110,12 @@ body.home main {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  /* auto top/bottom absorbs the leftover height, centering the columns in
-     the space under the links; the 3rem floor keeps them clear of the
-     greeting when the window is too short to have any slack */
-  margin: auto 0;
-  padding-top: 3rem;
+  /* The gap above the logos and the gap above these columns are the same
+     2rem on purpose — the intro, the social row, and the grid read as one
+     evenly-spaced stack. All of the window's leftover height goes below
+     the grid (margin-bottom auto), not into the gaps. */
+  margin: 0 0 auto;
+  padding-top: 2rem;
 }
 
 /* Only the column label is centered: it is the one line that has to sit
@@ -204,15 +205,14 @@ body.home main {
 /* LinkedIn / GitHub sit between the intro and the work columns.
    Keep the list narrow so the hover preview cards stay a sensible size
    within the wide layout */
-/* Left-aligned, but floating in the gap: margin-top:auto takes an equal
-   share of the page's leftover height to the auto margins on the work
-   grid below, so the block settles midway between the intro and the
-   columns instead of hugging the paragraph. The padding is the floor:
-   on a short window there is no slack to share and this is all that
-   keeps it off the text above. */
+/* A fixed 2rem off the intro, matching the 2rem the work grid keeps off
+   this row — the intro, the logos, and the columns are one evenly-spaced
+   stack, and the window's spare height all falls below the grid instead
+   of stretching these gaps. */
 .elsewhere {
-  margin-top: auto;
-  padding-top: 1.9rem;
+  padding-top: 2rem;
+  /* centers the about-me line under the (already centered) social row */
+  text-align: center;
 }
 
 /* The block is centered in the column: the two marks center as a pair */
@@ -1692,21 +1692,6 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   direction: ltr;
 }
 
-/* Home: the peel owns the top-right corner, so the switcher crosses to the
-   top-left (which home leaves empty; interior pages keep it on the right,
-   since their top-left belongs to the back mark). The menu re-anchors and
-   re-origins with it so it still opens out of the button. */
-body.home .lang-switch {
-  left: 1.25rem;
-  right: auto;
-}
-
-body.home .lang-menu {
-  left: 0;
-  right: auto;
-  transform-origin: top left;
-}
-
 .lang-btn {
   display: block;
   padding: 0;
@@ -1831,242 +1816,71 @@ body.home .lang-menu {
 
 @media (max-width: 40rem) {
   .lang-switch { top: 0.85rem; right: 0.9rem; }
-  body.home .lang-switch { left: 0.9rem; right: auto; }
   .lang-btn svg { width: 24px; height: 16px; }
   .lang-menu { width: 15rem; }
 }
 
-/* ── About-me corner peel ─────────────────────────────────────────────
-   The home page's top-right corner is folded over like a dog-ear, and the
-   About page sits "behind" it: the revealed triangle is the plain dark
-   page beneath (the About page IS this same black, which is what makes
-   the final handoff seamless), the flap is the backside of this page's
-   paper.
+/* ── About link ──────────────────────────────────────────────────────
+   "[ more about me ]", under the social logos. The affordance is
+   typographic: the bracketed line is the only one of its kind on the
+   page, and the brackets step outward on hover.
 
-   Geometry is one knob: the element is a --s square pinned to the corner,
-   the under layer is the top-right half (revealed page) and the flap the
-   bottom-left half (the corner folded exactly along the diagonal, so the
-   page corner lands at the square's far corner). Both are percentage
-   clip-paths, so growing --s is the whole animation: hover teases it,
-   .peek (first click phase) opens the fold properly, and .away runs the
-   crease clean past the viewport's far corner, at which point the screen
-   IS the page behind and landing.js navigates under it. */
-.peel {
-  --s: 3.75rem;
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 60;
-  display: block;
-  width: var(--s);
-  height: var(--s);
-  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-              height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+   It replaced a folded-corner animation that never truly navigated (it
+   grew an iframe over the page), which is also why this must be a real
+   link: the fixed corners — the stats strip, the last-seen line — belong
+   to the home page only, and a real navigation is what leaves them
+   behind. */
+.about-more {
+  display: inline-block;
+  margin-top: 1.2rem;
+  font-size: 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
-.peel:hover,
-.peel:focus-visible {
-  --s: 4.5rem;
+/* The brackets are drawn here rather than typed in the markup so the
+   language switcher can swap the words without eating them, and so a
+   screen reader gets "more about me" and not the punctuation.
+
+   The translateY is optical correction: a square bracket is drawn to
+   enclose full-height text — ascender to under the baseline — so against
+   a lowercase phrase it hangs visibly low. Lifting it half that overshoot
+   centers the bracket on the words as drawn, which is what the eye
+   expects even though the font doesn't do it. They also slide outward a
+   step when the link wakes up. */
+.about-more::before,
+.about-more::after {
+  display: inline-block;
+  color: var(--faint);
+  transform: translateY(-0.04em);
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
-.peel:focus-visible {
-  outline: none;   /* the fold growing is the focus signal */
+.about-more::before { content: "[\00a0\00a0"; }
+.about-more::after  { content: "\00a0\00a0]"; }
+
+.about-more:hover,
+.about-more:focus-visible {
+  color: var(--fg);
 }
 
-/* 200vmax: the crease has to travel past the bottom-left of the screen,
-   which needs --s ≥ vw + vh; two vmax always covers it. One continuous
-   run: the curve leaves slowly (the fold visibly lifting, no staged
-   pause) and accelerates into the sweep. */
-.peel.away {
-  --s: 200vmax;
-  transition: width 1.5s cubic-bezier(0.55, 0, 0.8, 0.55),
-              height 1.5s cubic-bezier(0.55, 0, 0.8, 0.55);
+.about-more:hover::before,
+.about-more:focus-visible::before {
+  color: var(--muted);
+  transform: translate(-0.2em, -0.04em);
 }
 
-/* The revealed page behind is the About page itself, loaded in ?peek mode
-   (scenery drawn, opening animations held) in a viewport-sized iframe.
-   The iframe is pinned to the square's top-right corner — the same corner
-   the square shares with the viewport — so however far the fold has
-   grown, the revealed sliver aligns pixel-for-pixel with where the real
-   page's content will be when the navigation lands. */
-.peel-under {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
-  background: var(--bg);
-}
-
-.peel-behind {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100vw;
-  height: 100vh;
-  border: 0;
-  pointer-events: none;
-  background: var(--bg);
-}
-
-.peel-under::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(225deg, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, 0.05) 98%);
-}
-
-/* The folded flap: this page's own corner turned over, so its backside is
-   the page grey, lit along the crease and falling darker toward the tip.
-   The clip lives on ::before so the drop-shadow on the element itself
-   isn't cut off by it. */
-.peel-flap {
-  position: absolute;
-  inset: 0;
-  filter: drop-shadow(3px 3px 7px rgba(0, 0, 0, 0.5));
-}
-
-.peel-flap::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(0 0, 0 100%, 100% 100%);
-  background: linear-gradient(225deg,
-    #3d3d3d 50%, #2e2e2e 66%, #242424 84%, #202020 100%);
-}
-
-/* The scribbled pointer: a hand-drawn arrow curling up toward the fold,
-   "About me" written under its tail. Chrome, not content: it sits out of
-   the way and never takes the pointer. It rides a step ABOVE the peel in
-   the stack, so the fold growing on hover slides under the scribble
-   instead of covering it. */
-.peel-hint {
-  position: fixed;
-  top: 3.4rem;
-  right: 3.6rem;
-  z-index: 61;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-/* The hint steps back while the fold is opening over it (hover), and drops
-   out entirely once the peel commits */
-.peel:hover + .peel-hint,
-.peel:focus-visible + .peel-hint {
-  opacity: 0.35;
-}
-
-/* the :hover selector above out-specifies a plain descendant rule, and the
-   pointer is always over the grown peel mid-animation, so this carries the
-   same strength to actually win */
-html.peeling .peel-hint,
-html.peeling .peel:hover + .peel-hint {
-  opacity: 0;
-}
-
-/* The home page's own chrome fades out under the sweep: the About page
-   being revealed has no flag in the top-left, so the switcher can't still
-   be standing there once the frame is the page */
-html.peeling .lang-switch {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-/* Once the frame IS the page (landing.js adds .peeled at the sweep's end),
-   the home document beneath it gives up its own scroll: wheel and keyboard
-   belong to the About page in the frame. The peel anchor itself goes
-   pointer-transparent — its flap layer spans the whole square and would
-   otherwise swallow every click and wheel meant for the page (and a click
-   on an a.peel would re-run the peel) — while the iframe re-enables
-   itself via the inline pointer-events landing.js sets on commit. */
-html.peeled {
-  overflow: hidden;
-}
-
-html.peeled .peel {
-  pointer-events: none;
-  cursor: default;
-}
-
-/* The arrow artwork points up-LEFT (drawn for the old left corner); the
-   mirror flips it to point up-right at the fold. */
-.peel-arrow {
-  display: block;
-  width: 2.9rem;
-  height: 2.9rem;
-  overflow: visible;
-  transform: scaleX(-1);
-}
-
-/* The hand-lettered "About me" under the arrow: same drawing technique as
-   the arrow, one pen stroke per path. */
-.peel-script {
-  display: block;
-  width: 6.8rem;
-  height: auto;
-  overflow: visible;
-  margin: 0.3rem 1.1rem 0 0;
-  transform: rotate(6deg);
-}
-
-/* Every stroke — letters and arrow alike — is drawn on by unwinding its
-   dash. The markup stamps each path's own start (--d) and duration
-   (--t), which is what sequences the writing: stroke by stroke in pen
-   order, a beat between letters, a longer lift before the second word,
-   the arrow and its head only after the words are down. */
-.peel-arrow path,
-.peel-script path {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  /* gap longer than the path, same trick as .pill-border: with an equal
-     1/1 pattern the NEXT dash begins exactly at the path's end, and the
-     round cap paints it as a stray dot before the draw even starts */
-  stroke-dasharray: 1 2;
-  stroke-dashoffset: 1;
-  animation: hint-draw var(--t, 0.4s) ease-out var(--d, 0s) forwards;
-}
-
-.peel-script path {
-  stroke-width: 2.6;
-}
-
-@keyframes hint-draw {
-  to { stroke-dashoffset: 0; }
+.about-more:hover::after,
+.about-more:focus-visible::after {
+  color: var(--muted);
+  transform: translate(0.2em, -0.04em);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .peel-arrow path,
-  .peel-script path {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Phones: the fold and its note step down so the corner stays a corner,
-   and the note moves into the top strip beside the fold (note first,
-   arrow after, nearest the fold) so it stays clear of the centered
-   greeting below */
-@media (max-width: 40rem) {
-  .peel { --s: 2.75rem; }
-  .peel:hover, .peel:focus-visible { --s: 3.25rem; }
-  .peel-hint {
-    top: 0.6rem;
-    right: 3.2rem;
-    flex-direction: row-reverse;
-    align-items: flex-start;
-  }
-  .peel-arrow { width: 1.8rem; height: 1.8rem; }
-  .peel-script { width: 4.5rem; margin: 0.55rem 0.3rem 0 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .peel { transition: none; }
+  .about-more,
+  .about-more::before,
+  .about-more::after { transition: none; }
 }
 
 /* ---- Stats strip ------------------------------------------------------
@@ -2076,8 +1890,8 @@ html.peeled .peel {
    many are here now. The first is measured in the browser, the other two
    come from /api/pulse. All of it is wired up in pulse.js.
 
-   The corner is the last empty one on the page — the fold owns top-right and
-   the language switcher crosses to top-left on home. */
+   One corner of four: About top-left, language top-right, last-seen
+   bottom-left, and this one bottom-right. */
 
 /* The strip is out of the flow either way, so it costs the column no height:
    the home page is tuned to fit a single screen, with the work grid's auto
@@ -2092,7 +1906,7 @@ body.home main {
 
 .pulse {
   /* Fixed to the window, not to the 48rem text column: this is corner chrome,
-     like the fold and the language switcher, and it belongs on the edge of
+     like the About link and the language switcher, and it belongs on the edge of
      the screen rather than lined up with the last work column. The home page
      is a single screen, so there is nothing for it to scroll over. (Phones
      are the exception — see the narrow-screen block below.) */
@@ -2264,5 +2078,89 @@ body.home main {
 /* .pulse sets its own display, which outranks the UA rule that [hidden]
    relies on, so the pre-response state has to be spelled out */
 .pulse[hidden] {
+  display: none;
+}
+
+/* ---- Last seen at -----------------------------------------------------
+
+   The bottom-left corner, opposite the stats strip: the last public place I
+   was at. It rides in on the same /api/pulse response the numbers do, so it
+   costs no extra request, and it's drawn by the same script.
+
+   The two corners are deliberately not symmetrical in kind. The right-hand
+   one counts other people and is always true; this one is about me and is
+   often simply absent — there is no venue most evenings, and the corner is
+   empty rather than padded with a fallback. */
+.whereat {
+  position: fixed;
+  top: 1.15rem;             /* level with the language switcher opposite */
+  left: 1.25rem;
+  z-index: 60;              /* the layer the other fixed corner pieces sit on */
+  /* One line, always. Venue names are arbitrary text from OpenStreetMap,
+     so the guard against a pathological one is an ellipsis at the
+     viewport's edge rather than a wrap. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100vw - 6rem);   /* stays clear of the flag opposite */
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.whereat.is-live {
+  opacity: 1;
+}
+
+/* One sentence, one size, one line. Colour carries the little structure
+   there is: the connecting words in grey, the venue in the page's text
+   colour, the city a shade fainter. */
+/* The pin rides on currentColor at the lede's grey, sized to the text and
+   dropped a touch below the baseline so its tip sits where a letter's
+   descender would — icons set on the baseline itself look like they're
+   floating. */
+.whereat-pin {
+  width: 1em;
+  height: 1em;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  vertical-align: -0.15em;
+  margin-right: 0.15em;
+}
+
+.whereat-lede {
+  font-size: 0.9375rem;     /* 15px, everything in this corner */
+  color: var(--muted);
+}
+
+.whereat-place {
+  font-size: 0.9375rem;
+  color: var(--fg);
+}
+
+/* "in Eugene" — context for readers far away, subordinate by colour alone. */
+.whereat-city {
+  font-size: 0.9375rem;
+  color: var(--faint);
+}
+
+/* Phones: the line keeps its top-left corner (the language flag keeps
+   top-right), just tucked in with the tighter margins the small screen
+   uses, and capped so it ellipsizes before reaching the flag. */
+@media (max-width: 40rem) {
+  .whereat {
+    top: 0.95rem;
+    left: 0.9rem;
+    max-width: calc(100vw - 5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whereat {
+    transition: none;
+  }
+}
+
+.whereat[hidden] {
   display: none;
 }

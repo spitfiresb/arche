@@ -11,6 +11,7 @@
   "title.contract": "Contract - Zain Saeed",
   "title.extra": "Things I Found Interesting - Zain Saeed",
 
+  "nav.about": "more about me",
   "nav.personal": "Personal",
   "nav.contract": "Contract",
   "nav.extra": "Extra",
@@ -105,5 +106,8 @@
 
   "pulse.load": "load time",
   "pulse.visits": "visits (30d)",
-  "pulse.online": "online"
+  "pulse.online": "online",
+
+  "where.lede": "Last seen",
+  "where.at": "at"
 }

@@ -64,8 +64,9 @@ Every page beats to `/api/pulse`; only the home page draws the answer.
 │   └── demos/        # one self-contained app per folder
 ├── functions/api/    # the Cloudflare Pages Functions
 ├── wrangler.toml     # project name, output dir, D1 binding
-├── schema.sql        # the two tables behind the live numbers
-└── tools/            # dev server, in-place text editing, vendor rebase
+├── schema.sql        # the three tables behind the two live corners
+└── tools/            # dev server, in-place text editing, vendor rebase,
+                      # and where/ — the macOS location reporter
 ```
 
 ## Running it
@@ -76,8 +77,38 @@ npx wrangler d1 execute zainsaeed-pulse --local --file=schema.sql
 npx wrangler pages dev
 ```
 
-`.dev.vars` holds two secrets, neither of which is ever committed:
-`ROBOFLOW_API_KEY` for the FloorSense demo, and `PULSE_SALT`, any long random
-string — `openssl rand -hex 32` produces a good one. Both also have to exist
-in the Pages dashboard under Settings → Environment variables for the live
-site to work.
+`.dev.vars` holds the secrets, none of which are ever committed:
+`ROBOFLOW_API_KEY` for the FloorSense demo, `PULSE_SALT` for the visitor
+hashes, and `WHERE_TOKEN` for the location reporter — the last two are any
+long random string, and `openssl rand -hex 32` produces a good one. All of
+them also have to exist in the Pages dashboard under Settings → Environment
+variables for the live site to work.
+
+## The location corner
+
+The bottom-left of the home page says where I was last seen, when that
+somewhere was public. A LaunchAgent on my Mac takes a coarse CoreLocation fix
+every three minutes and posts it to `/api/where`, which asks OpenStreetMap
+what's there and writes a venue name only if it passes an allowlist of public
+categories — cafés, restaurants, libraries. Everywhere else produces silence,
+including home, which needs no configuration because a house contains no café.
+
+Set it up once:
+
+```sh
+tools/where/install.sh        # builds, prompts for location access, loads the job
+tools/where/install.sh --uninstall
+```
+
+The first run writes `~/.config/zsaeed-where.env` and stops so you can paste
+in the same `WHERE_TOKEN` that's in the Pages dashboard. The second run asks
+macOS for location access and installs the job.
+
+What launchd runs lives in `~/.local/libexec/zsaeed-where/`, not in this
+repo — `~/Desktop` is TCC-protected and a LaunchAgent can't execute anything
+inside it. So edits to `report.sh` here take effect only after re-running
+`install.sh`.
+
+Coordinates never reach the database. They exist for a few milliseconds inside
+the Function while it asks what building they fall in; the `place` table holds
+one venue name and one timestamp, and nothing else.
