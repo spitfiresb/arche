@@ -19,10 +19,9 @@
   const TAB_KEY = 'pulse-tab';
   const SEEN_KEY = 'pulse-counted';
 
-  /* The home page holds the About page open in an iframe behind the folded
-     corner (see the .peel markup in index.html). That iframe is a real load
-     of a real page, so without this every home visit would beat twice and
-     show up as two people. */
+  /* Nothing on the site frames its own pages any more (the old folded-corner
+     About preview did), but the guard stays: any future embed would be a real
+     page load, and every framed copy would silently double the online count. */
   if (window.top !== window.self) return;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -115,14 +114,6 @@
   const whereat = document.querySelector('.whereat');
   const placeEl = whereat && whereat.querySelector('.whereat-place');
   const cityEl = whereat && whereat.querySelector('.whereat-city');
-  const whenEl = whereat && whereat.querySelector('.whereat-when');
-
-  /* Matches the reasoning behind the server's online window: the Mac reports
-     every 3 minutes, so 6 tolerates exactly one missed beat before the age
-     line appears. A closed lid shouldn't read as "left" for one dropped
-     ping. Inside this window the sentence stands alone in the present
-     tense; past it, "x hours ago" starts counting underneath. */
-  const LIVE_S = 360;
 
   /* A country's flag emoji is just its two letters moved into the regional
      indicator block at U+1F1E6 — "US" becomes the pair the font draws as one
@@ -147,33 +138,12 @@
     flagRow.textContent = (list || []).map(flagOf).join(' ');
   }
 
-  /* "4 minutes ago", in whatever language the page is currently in.
-     Intl.RelativeTimeFormat already knows how to say this in all fourteen,
-     so the widget follows the language switcher without a single string in
-     the dictionaries — only the lede above it needs translating. */
-  function relative(seconds) {
-    const lang = document.documentElement.lang || 'en';
-    const [n, unit] = seconds < 3600
-      ? [Math.round(seconds / 60), 'minute']
-      : seconds < 86400
-        ? [Math.round(seconds / 3600), 'hour']
-        : [Math.round(seconds / 86400), 'day'];
-    try {
-      return new Intl.RelativeTimeFormat(lang, { numeric: 'auto' }).format(-n, unit);
-    } catch (e) {
-      return `${n} ${unit}${n === 1 ? '' : 's'} ago`;
-    }
-  }
-
   /* Absent is a real state here, and the common one: no venue means the
      corner is empty rather than showing a placeholder. The server has
      already dropped anything past its window, so "nothing to say" arrives
-     as a null and this hides the whole thing.
-
-     While I'm actually somewhere the age is left off entirely — a bare
-     sentence in the present tense is the liveness, and "0 minutes ago"
-     would be a worse way of writing "now". It only starts counting once
-     the reading stops being current. */
+     as a null and this hides the whole thing. No timestamp on purpose —
+     "Last seen at" holds whether the reading is a minute or a day old,
+     and the server's cutoff is what keeps it from getting ancient. */
   let placeShown = null;
   function paintPlace(place) {
     if (!whereat) return;
@@ -185,24 +155,17 @@
       return;
     }
 
-    // The time slots into the middle of the sentence — "Last seen 2 hours
-    // ago at ..." — but only once the reading is genuinely old. While it's
-    // current the words close up around the gap and the sentence sits in
-    // the present tense, which says "now" better than any timestamp could.
-    const stale = place.ago >= LIVE_S;
-    const when = stale ? ` ${relative(place.ago)}` : '';
     // "in Eugene" — the part that orients a reader who has never been within
     // a thousand miles of the venue. Proper nouns need no dictionary entry.
     const city = place.city ? ` in ${place.city}` : '';
     // Rewriting identical text every 30s would restart the fade for nothing,
     // and the rendered strings are exactly what "changed" means here.
-    const key = `${place.label}|${city}|${when}`;
+    const key = `${place.label}|${city}`;
     if (key === placeShown) return;
     placeShown = key;
 
     placeEl.textContent = place.label;
     if (cityEl) cityEl.textContent = city;
-    if (whenEl) whenEl.textContent = when;
 
     if (whereat.hidden) {
       whereat.hidden = false;

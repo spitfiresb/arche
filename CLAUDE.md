@@ -46,9 +46,10 @@ Three things to remember when touching it:
 - **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
   Without it, the visitor hashes are a plain hash of an IP, which is
   enumerable over the whole IPv4 space and therefore not anonymous at all.
-- **The beacon has to stay out of iframes.** The home page keeps `/about?peek`
-  open in one behind the folded corner, so a missing `window.top` guard in
-  `pulse.js` double-counts every home visit.
+- **The beacon has to stay out of iframes.** Nothing on the site frames its
+  own pages today (the old folded-corner About preview did), but the
+  `window.top` guard in `pulse.js` stays: any future embed is a real page
+  load, and every framed copy silently double-counts its visit.
 - **Country belongs on `presence`, not `hits`.** Presence rows expire minutes
   after a tab closes; putting the country on the visit log instead would
   quietly turn a counter into a 30-day record of where people were.
