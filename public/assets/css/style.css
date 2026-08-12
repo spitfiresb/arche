@@ -27,6 +27,15 @@
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
 }
 
+/* The site was designed at 90% browser zoom; render everything at that
+   scale so 100% zoom looks the same. Desktop only — phone sizes were
+   tuned at 100% (the 40rem breakpoints below). */
+@media (min-width: 40.0625rem) {
+  html {
+    zoom: 0.9;
+  }
+}
+
 html, body {
   height: 100%;
   margin: 0;
