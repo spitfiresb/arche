@@ -97,7 +97,13 @@
     for (var i = 0; i < sections.length; i++) {
       if (sections[i].getBoundingClientRect().top - line <= 0) idx = i;
     }
-    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) {
+    // innerHeight and scrollY are zoomed px under the desktop zoom: 0.9,
+    // scrollHeight is layout px; convert before comparing (see about.js)
+    var b = document.body;
+    var zf = b.offsetWidth
+      ? b.getBoundingClientRect().width / b.offsetWidth : 1;
+    if ((innerHeight + scrollY) / zf
+        >= document.documentElement.scrollHeight - 2) {
       idx = sections.length - 1;
     }
     setActive(idx);

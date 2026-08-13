@@ -24,8 +24,13 @@
 
       if (!cards[i].classList.contains("gh-card")) {
         // room between the viewport edge and the mark's right edge,
-        // exactly the span a leftward-opening card has to live in
-        var room = host.getBoundingClientRect().right - EDGE_GUTTER;
+        // exactly the span a leftward-opening card has to live in.
+        // The rect is zoomed px under the desktop zoom: 0.9; --liw and
+        // the minimum are layout px, so convert (see about.js).
+        var zf = document.body.offsetWidth
+          ? document.body.getBoundingClientRect().width
+            / document.body.offsetWidth : 1;
+        var room = host.getBoundingClientRect().right / zf - EDGE_GUTTER;
         var opensLeft = room >= Math.min(OPEN_LEFT_MIN, width);
         host.classList.toggle("opens-left", opensLeft);
         if (opensLeft) width = Math.min(width, room);

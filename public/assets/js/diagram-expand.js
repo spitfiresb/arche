@@ -79,9 +79,20 @@
 
     var lockY = 0, readyT = null;
 
+    // The desktop zoom: 0.9 splits the units in two — rects and scrollY come
+    // back in zoomed pixels, while the CSS pixels written here (transforms,
+    // body.top) are layout pixels. Divide every rect/scroll read by the
+    // measured zoom, same convention as live-demo.js and about.js.
+    function zoomOf() {
+      var b = document.body;
+      return b.offsetWidth
+        ? b.getBoundingClientRect().width / b.offsetWidth : 1;
+    }
+
     function lock() {
+      var zf = zoomOf();
       lockY = window.scrollY;
-      document.body.style.top = -lockY + 'px';
+      document.body.style.top = -(lockY / zf) + 'px';
       document.body.classList.add('ld-locked');
     }
     function unlock() {
@@ -93,10 +104,14 @@
     // FLIP: transform that maps the fullscreen image back onto the thumb.
     // Both rects share the image's aspect ratio, so the scale is uniform.
     function collapsed() {
+      var zf = zoomOf();
       var from = img.getBoundingClientRect();
       var to = big.getBoundingClientRect();
-      return 'translate(' + (from.left - to.left) + 'px, '
-        + (from.top - to.top) + 'px) scale(' + (from.width / to.width) + ')';
+      // both rects are zoomed, so the scale ratio needs no conversion;
+      // the translate is written in layout px, so the deltas do
+      return 'translate(' + (from.left - to.left) / zf + 'px, '
+        + (from.top - to.top) / zf + 'px) scale('
+        + (from.width / to.width) + ')';
     }
 
     function open() {

@@ -60,6 +60,21 @@
   var EXPAND_MIN_W = 700;
   function canExpand() { return window.innerWidth >= EXPAND_MIN_W; }
 
+  // The desktop stylesheet renders the page at zoom: 0.9, which splits the
+  // units in two: getBoundingClientRect and scrollX/Y come back in zoomed
+  // pixels while clientWidth/Height and every CSS pixel this script writes
+  // (transforms, body.top) are layout pixels. Everything here works in
+  // layout pixels, so every rect- and scroll-based read is divided by the
+  // effective zoom first. Measured (body's rect width over its layout
+  // width) rather than read from the stylesheet, so a browser that doesn't
+  // scale rects measures 1 and divides by nothing. Same convention as
+  // about.js.
+  function zoomOf() {
+    var b = document.body;
+    return b.offsetWidth
+      ? b.getBoundingClientRect().width / b.offsetWidth : 1;
+  }
+
   function init(thumb) {
     var app      = thumb.getAttribute('data-live-demo');
     var thumbImg = thumb.querySelector('img');
@@ -229,11 +244,13 @@
 
     function lockScroll() {
       if (locked) return;
+      var zf = zoomOf();   // before the pin, while the layout is live
       lockX = window.scrollX;
       lockY = window.scrollY;
       locked = true;
-      document.body.style.top = -lockY + 'px';
-      document.body.style.left = -lockX + 'px';
+      // scroll offsets are zoomed px; body.top is written in layout px
+      document.body.style.top = -(lockY / zf) + 'px';
+      document.body.style.left = -(lockX / zf) + 'px';
       document.body.classList.add('ld-locked');
     }
     function unlockScroll() {
@@ -246,16 +263,20 @@
     }
 
     // Transform that maps the viewport-sized overlay onto the thumbnail's rect.
+    // Rect and scroll reads are zoomed px; the transform is layout px.
     function collapsed() {
+      var zf = zoomOf();
       var r = thumb.getBoundingClientRect();
-      return 'translate(' + (r.left + originX()) + 'px, '
-        + (r.top + originY()) + 'px) scale('
-        + (r.width / overlay.clientWidth) + ', '
-        + (r.height / overlay.clientHeight) + ')';
+      return 'translate(' + (r.left + originX()) / zf + 'px, '
+        + (r.top + originY()) / zf + 'px) scale('
+        + (r.width / zf / overlay.clientWidth) + ', '
+        + (r.height / zf / overlay.clientHeight) + ')';
     }
     // Fullscreen = the overlay shifted back over the visible viewport.
     function expanded() {
-      return 'translate(' + originX() + 'px, ' + originY() + 'px)';
+      var zf = zoomOf();
+      return 'translate(' + originX() / zf + 'px, '
+        + originY() / zf + 'px)';
     }
 
     // Parked, the frame is transform-scaled down onto the thumbnail, so a
@@ -269,7 +290,8 @@
       .getPropertyValue('--ld-corner')) || 40;
     function setCorner() {
       var r = thumb.getBoundingClientRect();
-      var sx = overlay.clientWidth ? r.width / overlay.clientWidth : 1;
+      var sx = overlay.clientWidth
+        ? r.width / zoomOf() / overlay.clientWidth : 1;
       // on the overlay, so the frame AND the fallback poster inherit it
       overlay.style.setProperty('--ld-r',
         sx ? (LD_CORNER / sx).toFixed(1) + 'px' : LD_CORNER + 'px');
