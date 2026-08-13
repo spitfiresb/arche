@@ -207,6 +207,23 @@
       <span class="whereat-place"></span><span class="whereat-city"></span>
     </aside>
 
+    <!-- Bottom-left: what's on Spotify, from the same /api/pulse response.
+         Just "<note> <song> by <artist>", plain text — nothing here is a
+         link. Hovering opens the hint above it — "Now Playing", or
+         "Last Song · 3 hours ago" — the same way the stats opposite open
+         their labels. Absent until the first response lands, and stays
+         absent if the Spotify connection is down: no placeholder, same as
+         the corner above it. -->
+    <aside class="listening" hidden>
+      <span class="listening-hint" aria-hidden="true"></span>
+      <span class="listening-line">
+        <svg class="listening-note" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span class="listening-track"></span>
+        <span class="listening-by" data-i18n="music.by">by</span>
+        <span class="listening-artist"></span>
+      </span>
+    </aside>
+
     <footer class="pulse" hidden>
       <div class="pulse-stat">
         <span class="pulse-label" data-i18n="pulse.load">load time</span>

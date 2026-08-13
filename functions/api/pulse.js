@@ -8,11 +8,19 @@
 // One request does the whole job — record, sweep, and read both counts — in a
 // single D1 batch, which runs as one transaction and one round trip.
 //
+// The same response also carries the two personal corners: the last public
+// place I was seen at (written by /api/where) and what I'm listening to on
+// Spotify (cached here, refreshed off the request path — see the Spotify
+// section below).
+//
 // Required bindings (wrangler.toml / Pages dashboard):
 //   PULSE_DB    D1 database, schema in schema.sql at the repo root
 //   PULSE_SALT  random string, secret. See the note on hashing below.
+//   SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET
+//               optional; without them the music corner just stays empty.
 
 const WINDOW_DAYS = 30;      // the "(30d)" in the label
+const TRACK_TTL = 25;        // seconds the cached Spotify track is served as-is
 const RETAIN_DAYS = 60;      // how long day-rows are kept before being swept
 const ONLINE_SECONDS = 70;   // a tab counts as online this long after a beat
 const PRESENCE_TTL = 600;    // and its row is deleted this long after one
@@ -28,7 +36,7 @@ const PLACE_TTL = 259200;    // 3 days; after that the corner says nothing at al
 // free +1 to the online count.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   try {
     // Same-origin only, as with /api/detect: this writes to the database, and
     // there's no reason for anything but this site's own pages to call it.
@@ -121,6 +129,16 @@ export async function onRequestPost({ request, env }) {
           WHERE id = 1 AND seen > unixepoch() - ?1`,
       ).bind(PLACE_TTL),
     ) - 1;
+    // The music line in the third corner. Same deal as place: it rides the
+    // batch that was happening anyway. Only the cache is read here — Spotify
+    // itself is never on this request's critical path (see refreshSpotify).
+    at.spotify = stmts.push(
+      db.prepare(
+        `SELECT refresh_token, access_token, token_expires, track,
+                unixepoch() - COALESCE(fetched, 0) AS age
+           FROM spotify WHERE id = 1`,
+      ),
+    ) - 1;
 
     const results = await db.batch(stmts);
     const visits = count(results[at.visits]);
@@ -138,11 +156,162 @@ export async function onRequestPost({ request, env }) {
       ? { label: row.label, city: row.city || null, ago: Math.max(row.ago, 0) }
       : null;
 
-    return json({ visits, online, countries, place }, 200);
+    // The cached track goes out as-is — even when stale, because a song from
+    // a minute ago beats a corner that flickers empty. If it's older than one
+    // beat, a refresh runs after this response is already on the wire;
+    // whoever asks next gets the new one. Serving stale-while-revalidating
+    // keeps Spotify's latency (and its bad days) off every reader's request.
+    const spot = results[at.spotify]?.results?.[0];
+    let track = null;
+    if (spot) {
+      try {
+        track = JSON.parse(spot.track);
+      } catch (e) {
+        /* an unseeded or corrupt cache is just "no track yet" */
+      }
+      if (track) {
+        // As with place: an age in seconds rather than a timestamp, computed
+        // here so the browser has nothing to reconcile against its own clock.
+        // The cached blob stores when the track finished (`at`, absent while
+        // one is playing); the wire carries only the distance from now.
+        track.ago = track.at ? Math.max(Math.floor(Date.now() / 1000) - track.at, 0) : null;
+        delete track.at;
+      }
+      if (spot.age > TRACK_TTL) waitUntil(refreshSpotify(db, env, spot));
+    }
+
+    return json({ visits, online, countries, place, track }, 200);
   } catch (error) {
     console.error("Pulse Error:", error);
     return json({ error: "Internal Server Error" }, 500);
   }
+}
+
+// ---- Spotify --------------------------------------------------------------
+//
+// Refresh the cached track, off the request path (this runs via waitUntil,
+// after the response has gone out). One Spotify round trip per TTL window
+// regardless of how many tabs are beating — the cache row in D1 is what every
+// request actually reads.
+//
+// Required for this to do anything (dashboard / .dev.vars):
+//   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+// plus a refresh token seeded into the spotify table by tools/spotify/.
+//
+// Access tokens last an hour and are minted here from the refresh token when
+// the cached one is within a minute of expiring. Spotify may rotate the
+// refresh token itself on any mint (this app's tokens expire 180 days after
+// issue), which is why the token lives in D1 and is written back on every
+// change — a rotated token that wasn't persisted would kill the connection
+// the next time this cold-started.
+const SPOTIFY_MS = 6000;   // per-call budget; we're off the request path, but
+                           // waitUntil still shouldn't hang for minutes
+
+async function refreshSpotify(db, env, row) {
+  try {
+    if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) return;
+
+    let { refresh_token, access_token, token_expires } = row;
+    const now = Math.floor(Date.now() / 1000);
+
+    if (!access_token || !token_expires || token_expires - 60 < now) {
+      const res = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          Authorization:
+            "Basic " + btoa(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`),
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token }),
+        signal: AbortSignal.timeout(SPOTIFY_MS),
+      });
+      if (!res.ok) {
+        // 400 invalid_grant here means the refresh token is dead (expired or
+        // revoked) and the fix is re-running the authorize script; anything
+        // else is Spotify having a moment and the next beat retries.
+        console.warn(`spotify token mint failed: ${res.status}`);
+        return;
+      }
+      const t = await res.json();
+      access_token = t.access_token;
+      token_expires = now + (t.expires_in || 3600);
+      if (t.refresh_token) refresh_token = t.refresh_token;
+    }
+
+    // What's playing right now; failing that, the last thing that played.
+    // 204 means nothing is playing. Podcasts count — an episode shows with
+    // its show's name where the artist would go — though only while live:
+    // the recently-played fallback is tracks-only because Spotify's history
+    // endpoint simply doesn't record episodes.
+    const track = await nowPlaying(access_token) || await lastPlayed(access_token);
+
+    // COALESCE keeps the previous track when this pass produced nothing (a
+    // flaked API call, or a brand-new account with no history) — the corner
+    // holds its last answer rather than blinking out. fetched advances either
+    // way, so a bad Spotify afternoon costs one background call per TTL, not
+    // one per heartbeat.
+    await db
+      .prepare(
+        `UPDATE spotify
+            SET refresh_token = ?1, access_token = ?2, token_expires = ?3,
+                track = COALESCE(?4, track), fetched = unixepoch()
+          WHERE id = 1`,
+      )
+      .bind(refresh_token, access_token, token_expires,
+            track ? JSON.stringify(track) : null)
+      .run();
+  } catch (error) {
+    // Never let the music corner take the counters down with it.
+    console.warn("spotify refresh failed:", error);
+  }
+}
+
+async function nowPlaying(token) {
+  // Without additional_types the endpoint answers a playing podcast with
+  // currently_playing_type: "episode" and item: null — it looks exactly like
+  // a parse failure and cost a real debugging session. Asking for episodes
+  // is what makes them exist at all.
+  const res = await fetch(
+    "https://api.spotify.com/v1/me/player/currently-playing?additional_types=episode",
+    { headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(SPOTIFY_MS) },
+  ).catch(() => null);
+  if (!res || res.status !== 200) return null;
+  const data = await res.json().catch(() => null);
+  if (!data?.item) return null;
+  return shape(data.item, data.is_playing === true);
+}
+
+async function lastPlayed(token) {
+  const res = await fetch(
+    "https://api.spotify.com/v1/me/player/recently-played?limit=1",
+    { headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(SPOTIFY_MS) },
+  ).catch(() => null);
+  if (!res || !res.ok) return null;
+  const data = await res.json().catch(() => null);
+  const entry = data?.items?.[0];
+  if (!entry?.track) return null;
+  const at = Math.floor(Date.parse(entry.played_at) / 1000);
+  return shape(entry.track, false, Number.isFinite(at) ? at : null);
+}
+
+// The cached blob: a title, who made it, whether it's live right now, and —
+// for a finished track — when it finished, which the response handler above
+// converts to a coarse age for the hover hint. No link, no album art, no
+// progress bar: the corner is one line of plain text. For a podcast episode
+// the show's name stands where the artists would — that's the name a reader
+// recognizes.
+function shape(item, playing, at = null) {
+  const artist = item.artists?.length
+    ? item.artists.map((a) => a.name).join(", ")
+    : item.show?.name || "";
+  return {
+    title: item.name,
+    artist,
+    playing,
+    ...(at ? { at } : {}),
+  };
 }
 
 // The stable-per-day identity behind the unique-visitor count.

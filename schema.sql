@@ -61,6 +61,30 @@ CREATE INDEX IF NOT EXISTS presence_seen ON presence (seen);
 -- seen is refreshed by every beat while I'm still there, so it means "last
 -- confirmed at this place" rather than "arrived at". The moment I leave it
 -- stops moving and the corner starts counting up.
+-- One row, forever: the Spotify connection and the last track worth showing,
+-- the line in the bottom-left corner of the home page. Nothing per-visitor
+-- ever touches this table — it is entirely about my own listening.
+--
+-- The refresh token lives here rather than in an environment variable on
+-- purpose: this app's tokens expire 180 days after issue, and Spotify may
+-- hand back a replacement on any refresh. A token in the dashboard would be
+-- a token nobody rotates; a token here is rewritten by the Function the
+-- moment Spotify rotates it, so the connection never silently dies.
+--
+-- track is a small JSON blob ({title, artist, url, playing}) cached by
+-- functions/api/pulse.js so a burst of visitors is served from here instead
+-- of fanning out into a Spotify call per heartbeat. fetched is when that
+-- cache was last written; the Function refreshes it in the background when
+-- it's older than one beat.
+CREATE TABLE IF NOT EXISTS spotify (
+  id            INTEGER PRIMARY KEY CHECK (id = 1),  -- exactly one row
+  refresh_token TEXT NOT NULL,
+  access_token  TEXT,               -- short-lived, minted from refresh_token
+  token_expires INTEGER,            -- unix seconds
+  track         TEXT,               -- JSON, see above
+  fetched       INTEGER             -- unix seconds
+);
+
 CREATE TABLE IF NOT EXISTS place (
   id    INTEGER PRIMARY KEY CHECK (id = 1),  -- exactly one row, enforced
   label TEXT NOT NULL,                       -- 'Farmers Union Coffee Roasters'

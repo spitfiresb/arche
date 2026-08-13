@@ -1931,6 +1931,12 @@ body.home main {
   /* every digit on the same advance width: a number changing under you
      shouldn't shuffle the ones beside it */
   font-variant-numeric: tabular-nums;
+  /* Chrome, not content: hovering is how the labels open, and an I-beam
+     there advertises text to select in a strip that's a readout. The
+     arrow stays, and the numbers won't highlight. */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
   /* it arrives when the first response does, rather than sitting there as a
      row of zeros while the request is in flight */
   opacity: 0;
@@ -2113,6 +2119,11 @@ body.home main {
   text-overflow: ellipsis;
   max-width: calc(100vw - 6rem);   /* stays clear of the flag opposite */
   line-height: 1.4;
+  /* Chrome, not content, like the corners below: arrow cursor, nothing to
+     select. */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
@@ -2171,5 +2182,127 @@ body.home main {
 }
 
 .whereat[hidden] {
+  display: none;
+}
+
+/* ---- Listening to ------------------------------------------------------
+
+   The bottom-left corner, opposite the stats strip: what's on Spotify.
+   Same family as "Last seen at" above — one line, same sizes, same fade —
+   and like it, absent is a real state: no Spotify connection means no
+   corner, not a placeholder. */
+.listening {
+  position: fixed;
+  bottom: 1.25rem;          /* level with the stats strip opposite */
+  left: 1.25rem;
+  z-index: 60;
+  max-width: calc(100vw - 16rem);   /* stays clear of the numbers opposite */
+  line-height: 1.4;
+  /* Chrome, not content: hovering is how the hint opens, and an I-beam
+     there advertises text to select in a corner that's a readout. The
+     arrow stays, and the text won't highlight. */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* The song line gets the ellipsis, not the corner itself: the hint above is
+   a block of its own, and text-overflow only clips a box's inline content —
+   set on the parent it would quietly stop applying the moment the hint
+   moved in. Track titles are arbitrary text from Spotify; clip at the
+   edge rather than wrap. */
+.listening-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listening.is-live {
+  opacity: 1;
+}
+
+.listening-note {
+  width: 1em;
+  height: 1em;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  vertical-align: -0.15em;
+  margin-right: 0.15em;
+}
+
+/* "by" — the one connecting word, subordinate by colour like "at" above,
+   and a step smaller with the artist it introduces. */
+.listening-by {
+  font-size: 0.8125rem;     /* 13px, the "by <artist>" pair together */
+  color: var(--muted);
+}
+
+/* The hover hint, dressed exactly like the labels the stats strip opens:
+   11px tracked capitals in grey, on its own line above the song. It
+   collapses rather than fades so it reserves no empty band, and since the
+   corner is anchored by its bottom edge, opening pushes the line upward
+   into the margin instead of shifting the text under the cursor. */
+.listening-hint {
+  display: block;
+  font-size: 0.6875rem;     /* 11px */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Touch screens have no hover to give, so there the hint is always on —
+   the same trade the stats strip makes. */
+@media (hover: hover) {
+  .listening-hint {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .listening:hover .listening-hint {
+    max-height: 1.2rem;
+    opacity: 1;
+  }
+}
+
+.listening-track {
+  font-size: 0.9375rem;
+  color: var(--fg);
+}
+
+/* The artist, subordinate twice over — fainter and smaller than the title,
+   like the city opposite but a step further back. */
+.listening-artist {
+  font-size: 0.8125rem;
+  color: var(--faint);
+}
+
+@media (max-width: 40rem) {
+  .listening {
+    /* The stats strip goes absolute on phones so it sits at the bottom of
+       the page rather than floating over it; this line follows for the same
+       reason, and sits a step above the strip since the two corners can't
+       share a row on a narrow screen. */
+    position: absolute;
+    z-index: auto;
+    bottom: 4.5rem;
+    left: 0.9rem;
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listening,
+  .listening-hint {
+    transition: none;
+  }
+}
+
+.listening[hidden] {
   display: none;
 }
