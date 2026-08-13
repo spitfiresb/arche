@@ -40,6 +40,21 @@
   const inMainY = (el) => sumOff(el, 'offsetTop') - sumOff(main, 'offsetTop');
   const inMainX = (el) => sumOff(el, 'offsetLeft') - sumOff(main, 'offsetLeft');
 
+  /* ---- The desktop stylesheet renders the page at zoom: 0.9, and zoom
+     splits the units in two: getBoundingClientRect, scrollY and
+     innerHeight all come back in zoomed pixels while offsetTop (and
+     every width/height/left/top this script writes) stays in layout
+     pixels. Everything here works in layout pixels, so every rect- or
+     scroll-based read is divided by the effective zoom first. The
+     factor is measured (main's rect height over its layout height)
+     rather than read from the stylesheet, so a browser that doesn't
+     scale rects measures 1 and divides by nothing. ---- */
+  let zf = 1;
+  const measureZoom = () => {
+    zf = main.offsetHeight
+      ? main.getBoundingClientRect().height / main.offsetHeight : 1;
+  };
+
   /* ---- The floor: a campground meadow running the full width of the
      viewport at the base of the descent, drawn in the wall's ink
      language: doubled ground edge, white-filled silhouettes so near
@@ -74,15 +89,17 @@
     floorSvg.textContent = '';
     floorFlame = null;
     floorStick = null;
+    measureZoom();
     const mrect = main.getBoundingClientRect();
-    const fw = document.documentElement.clientWidth;
+    const mainL = mrect.left / zf;        // main's left, layout px
+    const fw = document.documentElement.clientWidth / zf;
     const gy = 172;                       // ground line y inside this svg
-    const fy = coil.getBoundingClientRect().top - mrect.top + 148;
-    const cliffX = mrect.left + inMainX(ul) - 1;
+    const fy = (coil.getBoundingClientRect().top - mrect.top) / zf + 148;
+    const cliffX = mainL + inMainX(ul) - 1;
     floorSvg.setAttribute('viewBox', '0 0 ' + fw + ' 205');
     floorSvg.setAttribute('width', fw);
     floorSvg.setAttribute('height', 205);
-    floorSvg.style.left = ff(-mrect.left) + 'px';
+    floorSvg.style.left = ff(-mainL) + 'px';
     floorSvg.style.top = ff(fy - gy) + 'px';
 
     // soil: doubled ground edge, pebbles set into the dirt below
@@ -899,7 +916,9 @@
     ropeX = inMainX(ul) - 1;
     nodes = items.map((li) => ({ el: li, y: inMainY(li) + 6 }));
     // SVG elements have no offsetTop, so place the coil via rects
-    endY = coil.getBoundingClientRect().top - main.getBoundingClientRect().top;
+    measureZoom();
+    endY = (coil.getBoundingClientRect().top -
+      main.getBoundingClientRect().top) / zf;
     floorY = endY + 148;
     // The rope's true end: it runs live all the way down and
     // disappears into the turf; no static tail takes over
@@ -910,7 +929,7 @@
     // The perches he rappels between: each timeline node, then the
     // last stop above the coil
     positions = nodes.map((n) => n.y).concat([restY]);
-    mainTop = main.getBoundingClientRect().top + scrollY;
+    mainTop = (main.getBoundingClientRect().top + scrollY) / zf;
     // Figure, rope rig and overlay all span the whole descent and share
     // one coordinate space (x relative to the rope, y = document y), so
     // the rope, the man and his stick/embers line up exactly
@@ -1491,7 +1510,7 @@
       // on load that means bouncing down everything on screen, and each
       // scroll uncovers more wall for him to descend. Never upward:
       // you can't hop up a rope.
-      const vis = scrollY + innerHeight - mainTop - 80;
+      const vis = (scrollY + innerHeight) / zf - mainTop - 80;
       let wantY = positions[0];
       for (let i = 0; i < positions.length; i++) {
         if (positions[i] <= vis) wantY = positions[i];
