@@ -60,6 +60,50 @@ Three things to remember when touching it:
   `Apple Color Emoji` (Apple-only, has real flags, so a Mac downloads nothing)
   and then the webfont, and nothing else.
 
+## The music corner
+
+The bottom-left of the home page: "<note icon> <track> by <artist>" — no
+lede, nothing clickable, the "by <artist>" pair a step smaller and greyer
+than the title. Hovering opens a small grey hint above it, the same way
+the stats opposite open their labels: "Now Playing" while something is
+live, "Last Song · 3 hours ago" once it isn't. No reporter anywhere —
+Spotify's own servers know what's playing, so `/api/pulse` pulls it and
+the result rides back on the response every page is already fetching,
+same as the venue. `pulse.js` draws it.
+
+The one-row `spotify` table in D1 carries the whole connection: the refresh
+token, a cached access token, and the last track as a small JSON blob.
+Things to remember when touching it:
+
+- **The refresh token lives in D1, not in an env var, and that's
+  load-bearing.** This app's tokens expire 180 days after issue and Spotify
+  may rotate them on any refresh; the Function writes the replacement back
+  the moment that happens. A token in the dashboard is a token nobody
+  rotates, and the corner would die silently in six months. If the token
+  ever does die (`invalid_grant` in the logs), re-run
+  `node tools/spotify/authorize.mjs` and seed the printed token into both
+  databases.
+- **Spotify is never on the request path.** `/api/pulse` serves whatever
+  track is cached — even stale — and refreshes via `waitUntil` after the
+  response is gone, at most once per 25s window regardless of traffic. A
+  Spotify outage costs freshness, never latency, and a burst of visitors is
+  still one Spotify call.
+- **Only `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` are env vars**
+  (dashboard + `.dev.vars`). Missing means the corner stays empty; nothing
+  else breaks.
+- **Podcasts count, but only while playing, and only because we ask.**
+  `currently-playing` pretends episodes don't exist unless the request says
+  `additional_types=episode` — without it a playing podcast comes back as
+  `item: null`, indistinguishable from silence. The show's name stands in
+  for the artist. The recently-played fallback stays tracks-only, not by
+  choice: Spotify's history endpoint doesn't record episodes, so a finished
+  podcast falls back to the last *song*.
+- **Ages leave the server, timestamps don't.** The payload is title,
+  artists, a playing flag, and — for a finished track — `ago` in seconds,
+  same convention as `place.ago`, feeding the hover hint. The absolute
+  `played_at` stays behind; the browser gets a distance from now, never a
+  clock time.
+
 ## The location corner
 
 The bottom-left of the home page: "Last seen at <venue>". A LaunchAgent on my
@@ -80,7 +124,8 @@ Things to remember when touching it:
   publishes every category nobody thought to exclude — the first clinic
   waiting room, the first lawyer's office. The allowlist makes silence the
   default for anywhere new, unmapped, or private, and it's why home needs no
-  entry anywhere: a house contains no café, so nothing matches.
+  entry anywhere: a house contains no café, so nothing matches. It's
+  currently coffee shops only (`amenity=cafe`, `shop=coffee`), by choice.
 - **`VETO` is containment, via `is_in` — not proximity.** Costco's food court
   is legitimately tagged `amenity=fast_food` and sails straight through the
   allowlist; what stops it is that the *containing* way is `shop=wholesale`.
@@ -98,9 +143,7 @@ Things to remember when touching it:
   footprint 30m off and its second-hand bookshop is a pin at 20m, so distance
   alone publishes "Friends' Store". The order is: a feature containing the
   point, then a way/relation (a footprint you're probably inside), then a node
-  (a pin near you), and parks/gardens last — being inside Golden Gate Park
-  says almost nothing about where you are, so it only wins when nothing else
-  is in range. Distance breaks ties inside a tier and never across one.
+  (a pin near you). Distance breaks ties inside a tier and never across one.
 - **Don't add Overpass mirrors.** It looks like the obvious reliability win
   and it isn't: `is_in` is expensive, and both kumi.systems and private.coffee
   serve a trivial query in under two seconds while timing out on this one. A

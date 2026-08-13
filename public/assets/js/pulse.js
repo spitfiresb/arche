@@ -115,6 +115,14 @@
   const placeEl = whereat && whereat.querySelector('.whereat-place');
   const cityEl = whereat && whereat.querySelector('.whereat-city');
 
+  /* And the third: what's on Spotify, bottom-left. Same response, same
+     rules — either corner can be present, absent, or down alone. */
+  const listening = document.querySelector('.listening');
+  const hintEl = listening && listening.querySelector('.listening-hint');
+  const trackEl = listening && listening.querySelector('.listening-track');
+  const byEl = listening && listening.querySelector('.listening-by');
+  const artistEl = listening && listening.querySelector('.listening-artist');
+
   /* A country's flag emoji is just its two letters moved into the regional
      indicator block at U+1F1E6 — "US" becomes the pair the font draws as one
      glyph. No lookup table and no images; the server sends "US" and this
@@ -173,6 +181,59 @@
     }
   }
 
+  /* "3 hours ago", at the coarsest unit that isn't zero. The server sends an
+     age in seconds (already relative, nothing to reconcile with this clock);
+     anything under a minute is close enough to call now. */
+  function since(s) {
+    const d = Math.floor(s / 86400);
+    if (d >= 1) return d === 1 ? '1 day ago' : `${d} days ago`;
+    const h = Math.floor(s / 3600);
+    if (h >= 1) return h === 1 ? '1 hour ago' : `${h} hours ago`;
+    const m = Math.floor(s / 60);
+    if (m >= 1) return m === 1 ? '1 minute ago' : `${m} minutes ago`;
+    return 'just now';
+  }
+
+  /* Mirrors paintPlace: null hides the corner, identical content doesn't
+     restart the fade. The line is just the song — "<note> title by artist",
+     plain text, no link; whether it's live lives in the hover hint above
+     it, which says "Now Playing" while it is and "Last Song · 3 hours ago"
+     once it isn't. */
+  let trackShown = null;
+  function paintTrack(track) {
+    if (!listening) return;
+
+    if (!track || !track.title) {
+      listening.hidden = true;
+      listening.classList.remove('is-live');
+      trackShown = null;
+      return;
+    }
+
+    /* The hint rewrites on every beat, outside the dedupe below: the song
+       hasn't changed but its age has, and a stale "1 hour ago" on an open
+       hover is exactly the kind of wrong a live corner can't afford. Plain
+       text swap, no animation to restart. */
+    if (hintEl) {
+      hintEl.textContent = track.playing
+        ? 'Now Playing'
+        : `Last Song${track.ago != null ? ` · ${since(track.ago)}` : ''}`;
+    }
+
+    const key = `${track.title}|${track.artist}`;
+    if (key === trackShown) return;
+    trackShown = key;
+
+    trackEl.textContent = track.title;
+    if (byEl) byEl.hidden = !track.artist;
+    if (artistEl) artistEl.textContent = track.artist || '';
+
+    if (listening.hidden) {
+      listening.hidden = false;
+      requestAnimationFrame(() => listening.classList.add('is-live'));
+    }
+  }
+
   // Digits are held at a fixed width so the strip never re-lays out under a
   // number that grows — the padding is the layout, not decoration.
   const PAD = { visits: 6, online: 3, load: 4 };
@@ -219,9 +280,10 @@
       if (!res.ok) throw new Error(`pulse: ${res.status}`);
       const data = await res.json();
 
-      // Before the early return below: the two corners are independent, and
-      // a page carrying one but not the other still gets what it has.
+      // Before the early return below: the corners are independent, and
+      // a page carrying one but not the others still gets what it has.
       paintPlace(data.place);
+      paintTrack(data.track);
 
       if (!strip) return;
       tick('visits', data.visits);
