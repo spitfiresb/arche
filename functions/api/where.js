@@ -61,13 +61,8 @@ const LOOKUP_MS = 12000;
 // deliberately a code change rather than a setting, because every addition
 // is a decision about what the internet gets to know.
 const ALLOW = {
-  amenity: [
-    "cafe", "restaurant", "fast_food", "bar", "pub", "biergarten",
-    "ice_cream", "library", "arts_centre", "theatre", "cinema", "marketplace",
-  ],
-  shop: ["coffee", "bakery", "books", "deli", "confectionery", "tea", "pastry"],
-  tourism: ["museum", "gallery", "aquarium", "zoo"],
-  leisure: ["park", "garden", "nature_reserve"],
+  amenity: ["cafe"],
+  shop: ["coffee"],
 };
 
 // ---- What silences everything inside it ----------------------------------
@@ -300,7 +295,7 @@ out center tags;`;
     const m = Number.isFinite(p.lat) && Number.isFinite(p.lon)
       ? metres(lat, lon, p.lat, p.lon)
       : Infinity;
-    const r = rank(tags, contains, el.type);
+    const r = rank(contains, el.type);
     if (!best || r < best.r || (r === best.r && m < best.m)) {
       best = { r, m, name: tags.name };
     }
@@ -309,11 +304,6 @@ out center tags;`;
   // its own would turn "nothing worth saying" into a permanent coarse tracker.
   return { ok: true, venue: best ? best.name : null, city: best ? city : null };
 }
-
-// Parks are ambient in a way buildings aren't. Being inside one is weak
-// evidence of where you are — half a neighbourhood can be inside Golden Gate
-// Park — so a park only wins when nothing more specific is in range.
-const AMBIENT = new Set(["park", "garden", "nature_reserve"]);
 
 // Ordering candidates. Distance breaks ties within a tier but never crosses
 // one, because nearest-thing-wins publishes the wrong name in exactly the
@@ -325,8 +315,7 @@ const AMBIENT = new Set(["park", "garden", "nature_reserve"]);
 // Library the library is a footprint 30m off and its little second-hand
 // bookshop is a pin at 20m — by distance the bookshop wins, by shape the
 // library does, and the library is the true answer.
-function rank(tags, contains, type) {
-  if (AMBIENT.has(tags.leisure)) return 3;  // last resort
+function rank(contains, type) {
   if (contains) return 0;                   // inside beats everything
   if (type !== "node") return 1;            // a footprint beats a pin
   return 2;
