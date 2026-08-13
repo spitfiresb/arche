@@ -193,6 +193,16 @@ body.ld-locked .ld-expand { opacity: 0; }
   z-index: 20;
 }
 .ld-overlay[hidden] { display: none; }
+/* Desktop renders under zoom: 0.9 (style.css), and viewport units scale
+   with the zoom, so a raw 100dvh overlay covers only 90% of the screen —
+   an open demo leaves a strip of the page showing along the bottom.
+   Divide the zoom back out; same breakpoint as the zoom rule. */
+@media (min-width: 40.0625rem) {
+  .ld-overlay {
+    height: calc(100vh / 0.9);
+    height: calc(100dvh / 0.9);
+  }
+}
 /* Open OR closing both stay above the page. The grow rides up on top of
    everything; the shrink has to ride back down the same way, revealing the
    page from under the frame as it goes rather than dropping below it at the
