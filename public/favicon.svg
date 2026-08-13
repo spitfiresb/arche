@@ -1,19 +1,13 @@
-<!-- A sphere lit from the lower-right corner: white at the 4:30 rim easing
-     through mint and sage into forest green, darkest at the upper-left. The
-     gradient center sits on the rim itself (78%/78%) so the ramp is monotonic —
-     centering it inside the ball would put green on both sides of the white
-     and read as a spotlight instead of a lit sphere. -->
+<!-- A diagonal two-stop linear gradient, forest green at the top-left to white
+     at the bottom-right. Pure white lands at the corner of the bounding box,
+     past the circle's rim, so the ball itself only reaches a pale mint at its
+     lower-right edge — the green stays dominant. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
-    <radialGradient id="sphere" cx="78%" cy="78%" r="115%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="14%" stop-color="#eef6ea"/>
-      <stop offset="30%" stop-color="#c8e0bd"/>
-      <stop offset="47%" stop-color="#8db884"/>
-      <stop offset="63%" stop-color="#548e51"/>
-      <stop offset="81%" stop-color="#2f6f38"/>
-      <stop offset="100%" stop-color="#1c4d26"/>
-    </radialGradient>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c4d26"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
   </defs>
-  <circle cx="16" cy="16" r="15.4" fill="url(#sphere)"/>
+  <circle cx="16" cy="16" r="15.4" fill="url(#grad)"/>
 </svg>
