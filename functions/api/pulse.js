@@ -176,6 +176,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
         // one is playing); the wire carries only the distance from now.
         track.ago = track.at ? Math.max(Math.floor(Date.now() / 1000) - track.at, 0) : null;
         delete track.at;
+        delete track.seen;
       }
       if (spot.age > TRACK_TTL) waitUntil(refreshSpotify(db, env, spot));
     }
@@ -240,10 +241,23 @@ async function refreshSpotify(db, env, row) {
 
     // What's playing right now; failing that, the last thing that played.
     // 204 means nothing is playing. Podcasts count — an episode shows with
-    // its show's name where the artist would go — though only while live:
-    // the recently-played fallback is tracks-only because Spotify's history
-    // endpoint simply doesn't record episodes.
-    const track = await nowPlaying(access_token) || await lastPlayed(access_token);
+    // its show's name where the artist would go.
+    //
+    // Spotify's history endpoint doesn't record episodes, so a finished
+    // podcast leaves no trace we can query — the only durable record is our
+    // own: every pass that sees something live stamps the blob with `seen`.
+    // When playback stops, that last observation becomes the item's stand-in
+    // finish time and competes with the history endpoint's last song;
+    // whichever is newer wins. The stamp is only as fresh as the last beat
+    // that saw the episode playing, so a podcast heard with no tab open
+    // anywhere still falls back to the last song — that's the ceiling of
+    // what the API allows.
+    let track = await nowPlaying(access_token);
+    if (track) {
+      track.seen = now;
+    } else {
+      track = latest(remembered(row.track), await lastPlayed(access_token));
+    }
 
     // COALESCE keeps the previous track when this pass produced nothing (a
     // flaked API call, or a brand-new account with no history) — the corner
@@ -294,6 +308,33 @@ async function lastPlayed(token) {
   if (!entry?.track) return null;
   const at = Math.floor(Date.parse(entry.played_at) / 1000);
   return shape(entry.track, false, Number.isFinite(at) ? at : null);
+}
+
+// The previous cache entry, recast as a finished item so it can be ranked
+// against the history endpoint's answer. A blob carrying `seen` was live the
+// last time we looked, so that observation stands in for when it finished; a
+// blob already carrying `at` finished long ago and ranks as-is. A blob with
+// neither has no place on a timeline (a pre-`seen` cache, or corrupt) and is
+// dropped rather than guessed at.
+function remembered(blob) {
+  let prev = null;
+  try {
+    prev = JSON.parse(blob);
+  } catch (e) {
+    return null;
+  }
+  if (prev?.seen) {
+    return { title: prev.title, artist: prev.artist, playing: false, at: prev.seen };
+  }
+  return prev?.at ? prev : null;
+}
+
+// Whichever finished more recently. Ties (and anything unrankable) go to the
+// history entry — its played_at is Spotify's clock, not our beat cadence.
+function latest(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  return (a.at || 0) > (b.at || 0) ? a : b;
 }
 
 // The cached blob: a title, who made it, whether it's live right now, and —

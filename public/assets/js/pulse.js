@@ -197,8 +197,9 @@
   /* Mirrors paintPlace: null hides the corner, identical content doesn't
      restart the fade. The line is just the song — "<note> title by artist",
      plain text, no link; whether it's live lives in the hover hint above
-     it, which says "Now Playing" while it is and "Last Song · 3 hours ago"
-     once it isn't. */
+     it, which says "Now Playing" while it is and "Last Played · 3 hours ago"
+     once it isn't — "Played", not "Song", because a remembered podcast
+     episode can hold the corner too. */
   let trackShown = null;
   function paintTrack(track) {
     if (!listening) return;
@@ -217,7 +218,7 @@
     if (hintEl) {
       hintEl.textContent = track.playing
         ? 'Now Playing'
-        : `Last Song${track.ago != null ? ` · ${since(track.ago)}` : ''}`;
+        : `Last Played${track.ago != null ? ` · ${since(track.ago)}` : ''}`;
     }
 
     const key = `${track.title}|${track.artist}`;
