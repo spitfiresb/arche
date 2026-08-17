@@ -66,7 +66,7 @@ The bottom-left of the home page: "<note icon> <track> by <artist>" — no
 lede, nothing clickable, the "by <artist>" pair a step smaller and greyer
 than the title. Hovering opens a small grey hint above it, the same way
 the stats opposite open their labels: "Now Playing" while something is
-live, "Last Song · 3 hours ago" once it isn't. No reporter anywhere —
+live, "Last Played · 3 hours ago" once it isn't. No reporter anywhere —
 Spotify's own servers know what's playing, so `/api/pulse` pulls it and
 the result rides back on the response every page is already fetching,
 same as the venue. `pulse.js` draws it.
@@ -91,13 +91,17 @@ Things to remember when touching it:
 - **Only `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` are env vars**
   (dashboard + `.dev.vars`). Missing means the corner stays empty; nothing
   else breaks.
-- **Podcasts count, but only while playing, and only because we ask.**
-  `currently-playing` pretends episodes don't exist unless the request says
+- **Podcasts count, but only because we ask — twice.** `currently-playing`
+  pretends episodes don't exist unless the request says
   `additional_types=episode` — without it a playing podcast comes back as
   `item: null`, indistinguishable from silence. The show's name stands in
-  for the artist. The recently-played fallback stays tracks-only, not by
-  choice: Spotify's history endpoint doesn't record episodes, so a finished
-  podcast falls back to the last *song*.
+  for the artist. And Spotify's history endpoint doesn't record episodes at
+  all, so a finished podcast survives only because we remember it ourselves:
+  every refresh that sees something live stamps the cached blob with `seen`,
+  and when playback stops that last observation competes with the last
+  *song*'s `played_at` — newest wins. The stamp is only as fresh as the last
+  beat that saw the episode playing, so a podcast heard while no tab was
+  open on the site anywhere still falls back to the last song.
 - **Ages leave the server, timestamps don't.** The payload is title,
   artists, a playing flag, and — for a finished track — `ago` in seconds,
   same convention as `place.ago`, feeding the hover hint. The absolute
