@@ -94,6 +94,16 @@ if [ "$PUBLISHED" = "1" ] && [ "$FROM_PUB" -lt "$MOVE_M" ]; then
   exit 0
 fi
 
+# Still where the server last said "nothing publishable" — home, most of the
+# time. This is the branch the whole design leans on: without it, a declined
+# spot falls through to the lookup below and asks Overpass the same question
+# every three minutes for as long as I sit there. Silence here is what makes
+# an evening at home zero requests.
+if [ "$PUBLISHED" = "0" ] && [ "$FROM_PUB" -lt "$MOVE_M" ]; then
+  printf '%s %s %s %s 0\n' "$LAT" "$LON" "$B_LAT" "$B_LON" > "$STATE"
+  exit 0
+fi
+
 # Somewhere new, but only one reading deep. Walking past a cafe shouldn't
 # announce it, and two adjacent storefronts shouldn't trade the corner back
 # and forth, so nothing is reported until a second reading agrees.
