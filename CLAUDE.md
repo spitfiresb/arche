@@ -130,6 +130,12 @@ Things to remember when touching it:
   default for anywhere new, unmapped, or private, and it's why home needs no
   entry anywhere: a house contains no café, so nothing matches. It's
   currently coffee shops only (`amenity=cafe`, `shop=coffee`), by choice.
+- **`PINS` in `where.js` is for venues OSM doesn't know.** A pin is a
+  hand-placed candidate, not an override: it competes with OSM's results on
+  plain distance to the fix and only wins when it's closest. It resolves
+  without Overpass (so it survives outages) and skips `VETO` (a deliberate
+  entry beats a categorical rule). Adding one is a code change on purpose,
+  same as `ALLOW`.
 - **`VETO` is containment, via `is_in` — not proximity.** Costco's food court
   is legitimately tagged `amenity=fast_food` and sails straight through the
   allowlist; what stops it is that the *containing* way is `shop=wholesale`.

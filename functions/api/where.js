@@ -97,6 +97,29 @@ const VETO = {
   healthcare: true,
 };
 
+// ---- Places OSM doesn't know ---------------------------------------------
+//
+// Manual pins: venues I want the corner to be able to name that
+// OpenStreetMap hasn't mapped, or maps under a neighbour's name. OSM data
+// only ever gets as good as its last volunteer, and a strip-mall coffee
+// shop that opened last year routinely isn't in it at all.
+//
+// A pin is not an override. It joins the lookup as one more candidate and
+// competes with everything OSM returned on plain distance to the fix —
+// stand nearer a mapped café than any pin and the mapped café still wins.
+// Where a pin is stronger than OSM data: it doesn't need Overpass to be up
+// (a pin resolves locally, so it survives the outages that blank real
+// lookups), and the veto list doesn't apply to it, because a pin is placed
+// one venue at a time and a deliberate entry beats a categorical rule.
+//
+// In code rather than configuration, same as ALLOW and VETO: each pin is a
+// decision about what the internet gets to know, and the diff is the audit
+// trail. Nothing here is sensitive the way WHERE_MUTE's circles are — a pin
+// only exists to be published.
+const PINS = [
+  { name: "Qamaria Yemeni Coffee Co.", city: "Pleasanton", lat: 37.69952, lon: -121.90330 },
+];
+
 export async function onRequestPost({ request, env }) {
   try {
     const db = env.PULSE_DB;
@@ -202,6 +225,11 @@ export async function onRequestPost({ request, env }) {
 // { ok: true, venue } when it could — including { venue: null }, which is a
 // real and common answer meaning "nowhere here is worth mentioning".
 async function resolve(lat, lon) {
+  // The nearest in-range pin, before anything goes over the network. It
+  // still has to survive the distance contest at the bottom; what it never
+  // has to survive is Overpass having a bad afternoon.
+  const pin = nearestPin(lat, lon);
+
   // One round trip does both jobs. is_in returns every area containing the
   // point — the veto check. The nwr(around) clauses return named features
   // nearby, already filtered to the allowlist by the query itself so the
@@ -248,15 +276,24 @@ out center tags;`;
   // that and stops asking.
   const payload = res && res.ok ? await res.json().catch(() => null) : null;
   if (!payload) {
+    // With a pin in range there's still an answer worth giving: it can't be
+    // beaten by candidates nobody got to see, and returning ok keeps the
+    // reporter from retrying a lookup whose result we already hold.
+    if (pin) return { ok: true, venue: pin.name, city: pin.city };
     console.warn(`overpass unavailable: ${res ? res.status : "network"}`);
     return { ok: false };
   }
 
   const elements = payload.elements || [];
 
-  // Veto first, and unconditionally. If anything containing this point is on
-  // the list, we're done — there is no candidate good enough to override it.
-  if (elements.some((el) => vetoed(el.tags))) return { ok: true, venue: null };
+  // Veto first, and unconditionally for OSM candidates: if anything
+  // containing this point is on the list, nothing Overpass returned is good
+  // enough to override it. A pin walks past the veto on purpose — the veto
+  // exists to catch categories nobody vetted, and a pin is nothing but
+  // vetting.
+  if (elements.some((el) => vetoed(el.tags))) {
+    return { ok: true, venue: pin ? pin.name : null, city: pin ? pin.city : null };
+  }
 
   // The city, for free. is_in already returned every administrative boundary
   // containing the point — city, county, state, country — so the name that
@@ -300,6 +337,18 @@ out center tags;`;
       best = { r, m, name: tags.name };
     }
   }
+  // The pin's turn, and it competes on plain distance rather than joining
+  // the tiers: the tiers order kinds of OSM evidence against each other, and
+  // a pin isn't OSM evidence — it's me stating a fact the map lacks. So the
+  // rule is simply whichever is closer to the fix, pin or best OSM
+  // candidate, with the pin taking ties (equidistant means OSM has a name
+  // for a spot I've already named myself). A containing feature has no
+  // distance (Infinity, see above), so a pin beats it — a footprint big
+  // enough to contain me is exactly the coarse answer a pin corrects.
+  if (pin && (!best || pin.m <= best.m)) {
+    return { ok: true, venue: pin.name, city: pin.city || city };
+  }
+
   // The city rides along only when there's a venue to anchor it — a city on
   // its own would turn "nothing worth saying" into a permanent coarse tracker.
   return { ok: true, venue: best ? best.name : null, city: best ? city : null };
@@ -337,6 +386,22 @@ function metres(aLat, aLon, bLat, bLon) {
   const x = (bLon - aLon) * Math.cos(((aLat + bLat) / 2) * Math.PI / 180);
   const y = bLat - aLat;
   return Math.sqrt(x * x + y * y) * 111320;
+}
+
+// The closest pin within NEARBY_M, or null. The same radius as the Overpass
+// around: clauses on purpose — a pin is a candidate, not a zone, and it
+// should be reachable from exactly as far away as any mapped venue is.
+// Centre-distance is fine here where it wouldn't be for OSM features: a pin
+// is a point I placed on a storefront, so it has no geometry to be wrong
+// about.
+function nearestPin(lat, lon) {
+  let best = null;
+  for (const p of PINS) {
+    const m = metres(lat, lon, p.lat, p.lon);
+    if (m > NEARBY_M) continue;
+    if (!best || m < best.m) best = { name: p.name, city: p.city || null, m };
+  }
+  return best;
 }
 
 // "lat,lon,radius;lat,lon,radius" — malformed entries are skipped rather than
