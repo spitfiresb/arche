@@ -104,20 +104,26 @@ const VETO = {
 // only ever gets as good as its last volunteer, and a strip-mall coffee
 // shop that opened last year routinely isn't in it at all.
 //
-// A pin is not an override. It joins the lookup as one more candidate and
-// competes with everything OSM returned on plain distance to the fix —
-// stand nearer a mapped café than any pin and the mapped café still wins.
-// Where a pin is stronger than OSM data: it doesn't need Overpass to be up
-// (a pin resolves locally, so it survives the outages that blank real
-// lookups), and the veto list doesn't apply to it, because a pin is placed
-// one venue at a time and a deliberate entry beats a categorical rule.
+// A pin in range wins outright; distance only ranks pins against each
+// other. Letting OSM candidates out-compete a pin was tried first and lost
+// to its own premise: the pin exists because OSM's answer in that
+// neighbourhood is wrong, and Qamaria proved it — a mislocated footprint
+// named for a café at a different address sat closer to every Wi-Fi fix
+// than the real storefront, and closer-wins kept publishing it. Two of my
+// venues inside one 50m circle is finer than the positioning can resolve
+// anyway, so the hand-placed name owns the circle. Pins also resolve
+// without Overpass (so they survive the outages that blank real lookups)
+// and skip the veto list — a deliberate entry beats a categorical rule.
 //
 // In code rather than configuration, same as ALLOW and VETO: each pin is a
 // decision about what the internet gets to know, and the diff is the audit
 // trail. Nothing here is sensitive the way WHERE_MUTE's circles are — a pin
 // only exists to be published.
 const PINS = [
-  { name: "Qamaria Yemeni Coffee Co.", city: "Pleasanton", lat: 37.69952, lon: -121.90330 },
+  // Storefront coordinate from Qamaria's own ordering page, not from a
+  // Wi-Fi fix — a pin placed where the fixes happen to land just bakes one
+  // day's drift into the contest.
+  { name: "Qamaria Yemeni Coffee Co.", city: "Pleasanton", lat: 37.6996289, lon: -121.9034303 },
 ];
 
 export async function onRequestPost({ request, env }) {
@@ -337,15 +343,12 @@ out center tags;`;
       best = { r, m, name: tags.name };
     }
   }
-  // The pin's turn, and it competes on plain distance rather than joining
-  // the tiers: the tiers order kinds of OSM evidence against each other, and
-  // a pin isn't OSM evidence — it's me stating a fact the map lacks. So the
-  // rule is simply whichever is closer to the fix, pin or best OSM
-  // candidate, with the pin taking ties (equidistant means OSM has a name
-  // for a spot I've already named myself). A containing feature has no
-  // distance (Infinity, see above), so a pin beats it — a footprint big
-  // enough to contain me is exactly the coarse answer a pin corrects.
-  if (pin && (!best || pin.m <= best.m)) {
+  // The pin's turn, above the tiers rather than in them: the tiers order
+  // kinds of OSM evidence against each other, and a pin isn't OSM evidence
+  // — it's me stating a fact the map lacks. See the note on PINS for why it
+  // outranks even a closer OSM candidate. The derived city still fills in
+  // when the pin doesn't carry its own.
+  if (pin) {
     return { ok: true, venue: pin.name, city: pin.city || city };
   }
 
