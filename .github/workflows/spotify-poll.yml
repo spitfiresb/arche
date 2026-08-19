@@ -1,0 +1,40 @@
+# The clock behind the music corner's podcast memory.
+#
+# Spotify's history endpoint never records podcast episodes, so an episode is
+# observable only while it's actually playing. Site visits usually provide
+# the observation for songs (a late check still recovers them from Spotify's
+# history), but a podcast heard while nobody happens to be browsing the site
+# would vanish. This poke guarantees a look every 15 minutes regardless of
+# traffic — /api/spotify-poll runs the same cache refresh a visitor beat
+# would have triggered.
+#
+# GitHub Actions rather than a Cloudflare Worker cron because Pages has no
+# cron support and a second deployable project isn't worth carrying for one
+# curl. Actions minutes are unlimited on public repos, so this costs nothing.
+#
+# SPOTIFY_POLL_TOKEN must exist both as a repo secret here and as an env var
+# in the Pages dashboard; the endpoint refuses to work without it.
+#
+# Note GitHub's scheduler is best-effort — runs can lag minutes behind the
+# cron under load. Fine here: the target is "sometime during a 20+ minute
+# episode", not a precise tick.
+
+name: spotify-poll
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  # Manual runs, for testing the wiring without waiting for the next tick.
+  workflow_dispatch:
+
+jobs:
+  poke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Poke /api/spotify-poll
+        run: |
+          curl -fsS --max-time 30 -X POST "https://zsaeed.com/api/spotify-poll" \
+            -H "Authorization: Bearer $SPOTIFY_POLL_TOKEN"
+        env:
+          SPOTIFY_POLL_TOKEN: ${{ secrets.SPOTIFY_POLL_TOKEN }}

@@ -208,7 +208,9 @@ export async function onRequestPost({ request, env, waitUntil }) {
 const SPOTIFY_MS = 6000;   // per-call budget; we're off the request path, but
                            // waitUntil still shouldn't hang for minutes
 
-async function refreshSpotify(db, env, row) {
+// Exported for /api/spotify-poll, the scheduled beat that keeps podcast
+// episodes observable when nobody happens to be visiting the site.
+export async function refreshSpotify(db, env, row) {
   try {
     if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) return;
 
