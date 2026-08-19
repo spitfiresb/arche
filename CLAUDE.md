@@ -100,8 +100,13 @@ Things to remember when touching it:
   every refresh that sees something live stamps the cached blob with `seen`,
   and when playback stops that last observation competes with the last
   *song*'s `played_at` — newest wins. The stamp is only as fresh as the last
-  beat that saw the episode playing, so a podcast heard while no tab was
-  open on the site anywhere still falls back to the last song.
+  beat that saw the episode playing, and visitor traffic can't be trusted to
+  supply one, so a scheduled GitHub Actions workflow
+  (`.github/workflows/spotify-poll.yml`) POSTs `/api/spotify-poll` every 15
+  minutes and runs the same refresh a visitor beat would. The endpoint is
+  gated by `SPOTIFY_POLL_TOKEN` (Pages dashboard + `.dev.vars` + a GitHub
+  repo secret of the same name). An episode shorter than the poll interval
+  can still slip through if no beat lands while it plays.
 - **Ages leave the server, timestamps don't.** The payload is title,
   artists, a playing flag, and — for a finished track — `ago` in seconds,
   same convention as `place.ago`, feeding the hover hint. The absolute
