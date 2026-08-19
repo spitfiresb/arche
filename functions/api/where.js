@@ -124,6 +124,10 @@ const PINS = [
   // Wi-Fi fix — a pin placed where the fixes happen to land just bakes one
   // day's drift into the contest.
   { name: "Qamaria Yemeni Coffee Co.", city: "Pleasanton", lat: 37.6996289, lon: -121.9034303 },
+  // OSM has this one at the right address but the wrong tag — amenity=restaurant,
+  // not amenity=cafe — so it fails ALLOW outright rather than losing a distance
+  // contest. Coordinate is OSM's own node for the venue (102 South Park St).
+  { name: "Caffe Centro", city: "San Francisco", lat: 37.7817082, lon: -122.3942534 },
 ];
 
 export async function onRequestPost({ request, env }) {
