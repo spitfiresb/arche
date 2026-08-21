@@ -15,15 +15,28 @@
 # SPOTIFY_POLL_TOKEN must exist both as a repo secret here and as an env var
 # in the Pages dashboard; the endpoint refuses to work without it.
 #
-# Note GitHub's scheduler is best-effort — runs can lag minutes behind the
-# cron under load. Fine here: the target is "sometime during a 20+ minute
-# episode", not a precise tick.
+# GitHub's scheduler is best-effort, and "best-effort" turned out to mean
+# something much weaker than lateness. Measured over 40 runs, a */15 schedule
+# delivered 35% of its ticks: median gap 41 minutes, worst 111. It does not
+# queue what it skips, so two thirds of the intended looks simply never
+# happened and episodes inside those gaps were unobservable.
+#
+# Two changes, both aimed at that. The minute offsets dodge the stampede at
+# :00/:15/:30/:45, which is where every hand-written cron in the world piles
+# up and where the dropped ticks cluster. And the interval asks for three
+# times the coverage actually wanted, because a scheduler that delivers a
+# third of what you ask for has to be over-asked.
+#
+# This is still a bet on someone else's queue. If it doesn't hold, the fix is
+# a Cloudflare Worker cron trigger poking the same endpoint — Pages has no
+# cron of its own, so that means a second deployable, which is the cost this
+# is trying to avoid paying.
 
 name: spotify-poll
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 * * * *"
   # Manual runs, for testing the wiring without waiting for the next tick.
   workflow_dispatch:
 

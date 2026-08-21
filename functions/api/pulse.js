@@ -177,6 +177,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
         track.ago = track.at ? Math.max(Math.floor(Date.now() / 1000) - track.at, 0) : null;
         delete track.at;
         delete track.seen;
+        delete track.ends;
       }
       if (spot.age > TRACK_TTL) waitUntil(refreshSpotify(db, env, spot));
     }
@@ -257,8 +258,18 @@ export async function refreshSpotify(db, env, row) {
     let track = await nowPlaying(access_token);
     if (track) {
       track.seen = now;
+      // Where the episode is heading, not just that we saw it. Spotify hands
+      // back how far in we are and how long the item runs, so one look
+      // anywhere inside a 90-minute episode already knows when it ends —
+      // see `remembered` for why that's worth storing.
+      if (track.remaining != null) track.ends = now + track.remaining;
+      delete track.remaining;
     } else {
-      track = latest(remembered(row.track), await lastPlayed(access_token));
+      // History first, so `remembered` can be told what played after us. A
+      // song that started while we thought the episode was still running is
+      // the only evidence available that it was cut short.
+      const history = await lastPlayed(access_token);
+      track = latest(remembered(row.track, now, history?.at ?? null), history);
     }
 
     // COALESCE keeps the previous track when this pass produced nothing (a
@@ -295,7 +306,14 @@ async function nowPlaying(token) {
   if (!res || res.status !== 200) return null;
   const data = await res.json().catch(() => null);
   if (!data?.item) return null;
-  return shape(data.item, data.is_playing === true);
+  const track = shape(data.item, data.is_playing === true);
+  // How much of this item is left, in seconds. Only meaningful while it's
+  // actually playing — a paused item's progress stops predicting anything.
+  const left = (data.item.duration_ms - data.progress_ms) / 1000;
+  if (data.is_playing === true && Number.isFinite(left) && left >= 0) {
+    track.remaining = Math.round(left);
+  }
+  return track;
 }
 
 async function lastPlayed(token) {
@@ -314,11 +332,29 @@ async function lastPlayed(token) {
 
 // The previous cache entry, recast as a finished item so it can be ranked
 // against the history endpoint's answer. A blob carrying `seen` was live the
-// last time we looked, so that observation stands in for when it finished; a
-// blob already carrying `at` finished long ago and ranks as-is. A blob with
-// neither has no place on a timeline (a pre-`seen` cache, or corrupt) and is
-// dropped rather than guessed at.
-function remembered(blob) {
+// last time we looked; a blob already carrying `at` finished long ago and
+// ranks as-is. A blob with neither has no place on a timeline (a pre-`seen`
+// cache, or corrupt) and is dropped rather than guessed at.
+//
+// Working out when a `seen` blob finished is the whole reason `ends` exists.
+// The last look is a lower bound and nothing more: a podcast observed five
+// minutes into an hour and never seen again really did end fifty-five
+// minutes later, and stamping it at the observation ages it by an hour it
+// never sat idle. Three facts narrow it down:
+//
+//   ends       where playback was heading when we last looked
+//   now        the moment we found it stopped
+//   historyAt  when the next song started, if one did
+//
+// If it had time to reach `ends` before we noticed the silence, it ran to
+// completion and `ends` is exact — which is what decouples the corner's
+// accuracy from how often the poll fires. If we caught the stop early, it
+// was cut short somewhere between the last look and now, and the last look
+// is the only instant anyone can actually attest to, so nothing is invented.
+// Either way a song that started after the last look proves playback had
+// already moved on by then, and caps the answer: an episode cannot still be
+// running through a song.
+function remembered(blob, now, historyAt = null) {
   let prev = null;
   try {
     prev = JSON.parse(blob);
@@ -326,7 +362,10 @@ function remembered(blob) {
     return null;
   }
   if (prev?.seen) {
-    return { title: prev.title, artist: prev.artist, playing: false, at: prev.seen };
+    let at = prev.seen;
+    if (prev.ends && now >= prev.ends) at = prev.ends;
+    if (historyAt && historyAt > prev.seen) at = Math.min(at, historyAt);
+    return { title: prev.title, artist: prev.artist, playing: false, at };
   }
   return prev?.at ? prev : null;
 }
@@ -341,10 +380,12 @@ function latest(a, b) {
 
 // The cached blob: a title, who made it, whether it's live right now, and —
 // for a finished track — when it finished, which the response handler above
-// converts to a coarse age for the hover hint. No link, no album art, no
-// progress bar: the corner is one line of plain text. For a podcast episode
-// the show's name stands where the artists would — that's the name a reader
-// recognizes.
+// converts to a coarse age for the hover hint. A live one also carries `seen`
+// and `ends`, both of which exist only to work out that finish time later and
+// are stripped before the wire. No link, no album art, no progress bar: the
+// corner is one line of plain text, and where playback has got to is working
+// state, not something a reader is shown. For a podcast episode the show's
+// name stands where the artists would — that's the name a reader recognizes.
 function shape(item, playing, at = null) {
   const artist = item.artists?.length
     ? item.artists.map((a) => a.name).join(", ")
