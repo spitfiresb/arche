@@ -166,6 +166,15 @@ Things to remember when touching it:
   and it isn't: `is_in` is expensive, and both kumi.systems and private.coffee
   serve a trivial query in under two seconds while timing out on this one. A
   mirror list buys twenty seconds of waiting before the same failure.
+- **Retry the one endpoint instead.** Overpass's own CDN answers 521 — "can't
+  reach the backend" — on roughly a third of calls made from a Worker and
+  almost none made from a laptop, so the flakiness is the CDN-to-CDN hop, not
+  the query. Each 521 costs under two seconds, so `askOverpass` asks up to
+  three times inside one request, bounded by `LOOKUP_BUDGET_MS` (15s) rather
+  than by the attempt count — the Mac's `curl --max-time 20` is the ceiling
+  everything here fits under. 5xx, timeouts and a 200 carrying Overpass's
+  HTML "too busy" page all retry; 4xx doesn't, because a 400 is our query
+  being wrong and a 429 is a throttle that hammering only prolongs.
 - **A failed lookup must not return `published:false`.** That's the same
   answer as "nothing here", and the reporter caches that answer and stops
   asking about the spot — so one rate-limited Overpass response would blank a

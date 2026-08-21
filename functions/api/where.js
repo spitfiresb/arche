@@ -42,7 +42,27 @@ const OVERPASS = "https://overpass-api.de/api/interpreter";
 // wildly wrong for anything with area — the centroid of Golden Gate Park is
 // half a kilometre from most of the people standing in it.
 const NEARBY_M = 50;
+
+// One attempt, and then the whole lookup.
+//
+// Overpass sits behind its own CDN, and that CDN intermittently answers 521
+// — the edge saying it could not reach the backend at all. Measured from a
+// Worker it came back on about a third of calls in an afternoon, against
+// none at all from a laptop on a home connection, so it is not this query
+// being expensive: it is the hop from one CDN to another. A 521 arrives in
+// under two seconds, which makes giving up after one attempt the wrong
+// trade — it spends the cheapest possible failure and then leaves the corner
+// three minutes stale waiting for the next beat. Three attempts inside one
+// request take a beat's odds of failing from roughly a third to a fiftieth.
+//
+// The budget is the real limit and the attempt count is a formality: the
+// Mac's curl gives up at twenty seconds, so everything here has to be done
+// before then. That falls out about right, because the failures worth
+// retrying are the fast ones — an attempt that burns the full LOOKUP_MS has
+// nearly nothing left to hand the next one, and shouldn't.
 const LOOKUP_MS = 12000;
+const LOOKUP_BUDGET_MS = 15000;
+const LOOKUP_TRIES = 3;
 
 // ---- What counts as somewhere public -------------------------------------
 //
@@ -267,30 +287,16 @@ out tags;
 );
 out center tags;`;
 
-  const res = await fetch(OVERPASS, {
-    method: "POST",
-    // Overpass asks callers to identify themselves and throttles the ones
-    // that don't. This is a handful of requests a day — only when I've
-    // actually moved — but it should still say who it is.
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "zsaeed.com-where/1.0 (+https://zsaeed.com)",
-    },
-    body: new URLSearchParams({ data: query }),
-    signal: AbortSignal.timeout(LOOKUP_MS),
-  }).catch(() => null);
-
-  // 429 and 504 are the ones to expect: a throttle, or a backend having a
-  // moment. Say so rather than reporting an empty result — an empty result
-  // reads identically to "there's nothing here", and the reporter caches
-  // that and stops asking.
-  const payload = res && res.ok ? await res.json().catch(() => null) : null;
+  // 521, 429 and 504 are the ones to expect: the CDN unable to reach the
+  // backend, a throttle, or a backend having a moment. Say so rather than
+  // reporting an empty result — an empty result reads identically to
+  // "there's nothing here", and the reporter caches that and stops asking.
+  const payload = await askOverpass(query);
   if (!payload) {
     // With a pin in range there's still an answer worth giving: it can't be
     // beaten by candidates nobody got to see, and returning ok keeps the
     // reporter from retrying a lookup whose result we already hold.
     if (pin) return { ok: true, venue: pin.name, city: pin.city };
-    console.warn(`overpass unavailable: ${res ? res.status : "network"}`);
     return { ok: false };
   }
 
@@ -359,6 +365,55 @@ out center tags;`;
   // The city rides along only when there's a venue to anchor it — a city on
   // its own would turn "nothing worth saying" into a permanent coarse tracker.
   return { ok: true, venue: best ? best.name : null, city: best ? city : null };
+}
+
+// The query, asked until it's answered or the budget runs out. Returns the
+// parsed response, or null when Overpass never managed to give one.
+//
+// Every retry goes back to the same endpoint, which is not the mirror list
+// this file rules out elsewhere and shouldn't grow into one: the mirrors
+// can't serve is_in at all, so failing over to one buys a slower version of
+// the same failure. What this retries is the endpoint that does work,
+// through a CDN that intermittently doesn't.
+async function askOverpass(query) {
+  const deadline = Date.now() + LOOKUP_BUDGET_MS;
+  let last = "network";
+
+  for (let attempt = 0; attempt < LOOKUP_TRIES; attempt++) {
+    const left = deadline - Date.now();
+    if (left <= 0) break;
+
+    const res = await fetch(OVERPASS, {
+      method: "POST",
+      // Overpass asks callers to identify themselves and throttles the ones
+      // that don't. This is a handful of requests a day — only when I've
+      // actually moved — but it should still say who it is.
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "zsaeed.com-where/1.0 (+https://zsaeed.com)",
+      },
+      body: new URLSearchParams({ data: query }),
+      // Never past the deadline, so the last attempt can't overrun the
+      // budget just because it started near the end of it.
+      signal: AbortSignal.timeout(Math.min(LOOKUP_MS, left)),
+    }).catch(() => null);
+
+    // Overpass serves its own "server is probably too busy" notice as an
+    // HTML body under a 200, so a success code isn't an answer until the
+    // JSON parses. That case retries like any other failure.
+    const payload = res && res.ok ? await res.json().catch(() => null) : null;
+    if (payload) return payload;
+
+    last = res ? res.status : "network";
+    // A 4xx is not worth asking twice. 400 means the query itself is wrong,
+    // and no amount of repetition fixes that; 429 means the slots are full,
+    // and hammering is the one response guaranteed to keep them that way.
+    // Dropped connections, timeouts and 5xx get another go.
+    if (res && !res.ok && res.status < 500) break;
+  }
+
+  console.warn(`overpass unavailable: ${last}`);
+  return null;
 }
 
 // Ordering candidates. Distance breaks ties within a tier but never crosses
