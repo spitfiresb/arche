@@ -31,7 +31,16 @@ export async function onRequestPost({ request, env }) {
       return json({ error: "File too large (8 MB max)" }, 413);
     }
 
-    const formData = await request.formData();
+    // formData() throws outright on a body that isn't multipart, and letting
+    // that reach the catch below reports someone else's malformed request as
+    // an Internal Server Error — the one status that says "this end is
+    // broken" when nothing here is.
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch (e) {
+      return json({ error: "Expected a multipart form upload" }, 400);
+    }
     const file = formData.get("file");
 
     if (!file || typeof file === "string") {

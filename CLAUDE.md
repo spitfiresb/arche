@@ -99,14 +99,33 @@ Things to remember when touching it:
   all, so a finished podcast survives only because we remember it ourselves:
   every refresh that sees something live stamps the cached blob with `seen`,
   and when playback stops that last observation competes with the last
-  *song*'s `played_at` — newest wins. The stamp is only as fresh as the last
-  beat that saw the episode playing, and visitor traffic can't be trusted to
-  supply one, so a scheduled GitHub Actions workflow
-  (`.github/workflows/spotify-poll.yml`) POSTs `/api/spotify-poll` every 15
-  minutes and runs the same refresh a visitor beat would. The endpoint is
-  gated by `SPOTIFY_POLL_TOKEN` (Pages dashboard + `.dev.vars` + a GitHub
-  repo secret of the same name). An episode shorter than the poll interval
-  can still slip through if no beat lands while it plays.
+  *song*'s `played_at` — newest wins. Visitor traffic can't be trusted to
+  supply the observation, so a scheduled GitHub Actions workflow
+  (`.github/workflows/spotify-poll.yml`) POSTs `/api/spotify-poll` and runs
+  the same refresh a visitor beat would. The endpoint is gated by
+  `SPOTIFY_POLL_TOKEN` (Pages dashboard + `.dev.vars` + a GitHub repo secret
+  of the same name). An episode that plays entirely between two looks is
+  still lost — that floor is the API's, not ours.
+- **One look per episode is enough, and that's deliberate.** A live refresh
+  also stores `ends`, projected from `progress_ms` and `duration_ms`, so
+  `remembered` can work out when an episode finished rather than assuming it
+  finished the moment we happened to look. Seeing an hour-long episode five
+  minutes in and never again used to age it by a full hour it never sat idle.
+  The rules, in `remembered`: if playback had time to reach `ends` before we
+  found it stopped, it ran to completion and `ends` is exact; if we caught
+  the stop early it was cut short somewhere unknowable, so the last look
+  stands and nothing is invented; and a song that started after the last look
+  caps the answer either way, because an episode cannot still be running
+  through a song. That last clamp is what stops a projection from outranking
+  a song that genuinely played later — don't remove it.
+- **Don't trust GitHub's cron.** Measured over 40 runs, `*/15` delivered 35%
+  of its ticks: median gap 41 minutes, worst 111, and skipped ticks are
+  dropped rather than queued. The schedule now asks for every 5 minutes at
+  offset minutes, over-requesting to survive the drop rate and dodging the
+  stampede at `:00`/`:15`/`:30`/`:45`. Re-measure before believing any
+  interval here (`gh run list --workflow spotify-poll`). If it stops holding,
+  the escalation is a Cloudflare Worker cron trigger poking the same
+  endpoint, which costs a second deployable.
 - **Ages leave the server, timestamps don't.** The payload is title,
   artists, a playing flag, and — for a finished track — `ago` in seconds,
   same convention as `place.ago`, feeding the hover hint. The absolute

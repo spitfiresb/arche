@@ -27,6 +27,8 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG="${WHERE_CONFIG:-$HOME/.config/zsaeed-where.env}"
 STATE_DIR="$HOME/.local/state/zsaeed-where"
 STATE="$STATE_DIR/last"
+LOG="$HOME/Library/Logs/zsaeed-where.log"
+LOG_MAX=262144   # 256K, a few thousand lines of a bad week
 
 MOVE_M=40    # beyond this from the last publish, ask the server again
 DWELL_M=40   # and only after two readings this close together
@@ -39,6 +41,17 @@ ENDPOINT="${WHERE_ENDPOINT:-https://zsaeed.com/api/where}"
 [ -n "${WHERE_TOKEN:-}" ] || { echo "report: WHERE_TOKEN unset in $CONFIG" >&2; exit 1; }
 
 mkdir -p "$STATE_DIR"
+
+# Nothing rotates this otherwise, and it only ever grows: launchd appends
+# every complaint here forever, so a stretch of a failing endpoint at twenty
+# beats an hour writes for as long as the failure lasts. Truncate in place
+# rather than rename — launchd holds this open with O_APPEND and keeps
+# writing to the same descriptor, so a moved file would leave it appending
+# to something nobody can find. Emptying it in place just resets the offset.
+if [ -f "$LOG" ] && [ "$(wc -c < "$LOG")" -gt "$LOG_MAX" ]; then
+  : > "$LOG"
+  echo "report: log exceeded ${LOG_MAX} bytes, truncated"
+fi
 
 post() {
   curl -fsS --max-time 20 -X POST "$ENDPOINT" \
