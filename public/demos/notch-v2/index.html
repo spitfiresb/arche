@@ -13,7 +13,10 @@
  * standing in for the pointer, and starts over when it reaches the end.
  * Everything the app does gets a turn: the player, the save button and the
  * "Saved in" panel, live Claude Code sessions (spinner, sessions panel,
- * permission prompt, Clawd), and the screenshot toast.
+ * Clawd), and the screenshot toast. Only what the loop shows is here: the
+ * app's other toasts (permission, question, failed) and the amber blocked
+ * spinner were built and then cut, because code the loop never reaches is
+ * code nobody checks.
  *
  * One file on purpose: markup, styles and behaviour together so it can be
  * edited as a single thing. Sizes are the app's own points (ScreenMetrics,
@@ -24,9 +27,8 @@
  *   open with "Saved in"          300x256   (expandedMusicSize)
  *   open with sessions panel      108 + rows*35 + (rows-1)*3 + 10, max 256
  *   open / close                  0.32s / 0.22s ease-out
- *   Claude spinner                · ✢ ✳ ∗ ✻ ✽ every 0.30s (1.2s amber when blocked)
+ *   Claude spinner                · ✢ ✳ ∗ ✻ ✽ every 0.30s
  *   Clawd, complete               0.30s lead, 1.7s crossing, 2.7s total
- *   Clawd, permission             trots in, hops every 0.7s, leaves at 4.4s, 5.6s
  *   screenshot toast              2.25s pinned, collapse at 2.35s (stretched here)
  *   marquee                       1s hold, 28pt/s, 32pt gap
  *   bar wiggle                    sin(t*5.2+p) and sin(t*9.7+p*2.1), summed 0.6/0.4
@@ -66,9 +68,7 @@ body {
   --close-anim: 0.22s;
 
   --claude: #d9785a;          /* Color(red: 0.85, green: 0.47, blue: 0.34) */
-  --amber: #ffad33;           /* 1.0, 0.68, 0.20 */
   --done: #66de80;            /* 0.40, 0.87, 0.50 */
-  --failed: #ff6666;
   --spotify: #1fd662;         /* 0.12, 0.84, 0.38 */
 
   position: relative;
@@ -216,7 +216,6 @@ body {
   color: var(--claude);
   line-height: 1;
 }
-.nt-spin.is-blocked { color: var(--amber); }
 /* In the pill it slides in at the trailing edge and nudges the bars left. */
 .nt-spin-peek {
   flex: none;
@@ -403,8 +402,13 @@ body {
 .nt-toast.is-running .nt-ch { opacity: 1; transform: none; transition: opacity 0.36s cubic-bezier(0.2, 1.4, 0.4, 1), transform 0.36s cubic-bezier(0.2, 1.4, 0.4, 1); transition-delay: var(--d); }
 .nt-check { flex: none; width: calc(18 * var(--u)); height: calc(18 * var(--u)); }
 .nt-check circle, .nt-check path { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.nt-check circle { stroke-dasharray: 63; stroke-dashoffset: 63; transform: rotate(-90deg); transform-origin: 50% 50%; }
-.nt-check path { stroke-dasharray: 30; stroke-dashoffset: 30; }
+/* One dash, then a gap longer than the path, and an offset that overshoots
+   the dash by more than the cap radius: with round caps, an offset equal to
+   the length leaves the cap poking into the visible path as a dot, and a
+   gap shorter than the path lets the next dash peek in at the far end.
+   SwiftUI's trim(to: 0) draws nothing. */
+.nt-check circle { stroke-dasharray: 63 200; stroke-dashoffset: 66; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.nt-check path { stroke-dasharray: 30 200; stroke-dashoffset: 33; }
 .nt-toast.is-running .nt-check circle { stroke-dashoffset: 0; transition: stroke-dashoffset 0.4s ease-in-out var(--ring-d); }
 .nt-toast.is-running .nt-check path { stroke-dashoffset: 0; transition: stroke-dashoffset 0.22s ease-out var(--check-d); }
 
@@ -420,8 +424,6 @@ body {
   letter-spacing: calc(-0.1 * var(--u));
 }
 .nt-clawd-label { position: absolute; top: 50%; left: 0; transform: translateY(-50%); white-space: nowrap; color: #fff; }
-.nt-clawd-label.is-permission, .nt-clawd-label.is-question { color: var(--amber); }
-.nt-clawd-label.is-failed { color: var(--failed); }
 .nt-clawd {
   position: absolute;
   top: 50%; left: 0;
@@ -432,9 +434,6 @@ body {
 }
 .nt-clawd > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: none; shape-rendering: crispEdges; }
 .nt-clawd > svg.is-frame { display: block; }
-.nt-clawd-glyph { position: absolute; width: calc(3 * var(--u)); height: calc(5 * var(--u)); display: none; }
-.nt-clawd-glyph.is-on { display: block; }
-.nt-clawd-glyph svg { width: 100%; height: 100%; shape-rendering: crispEdges; }
 
 /* ── Sessions corner + panel ───────────────────────────────────────── */
 /* SessionsCorner: a 30pt strip whose top is 68pt down the blob (108 - 10 -
@@ -641,20 +640,17 @@ body {
   var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---- Stand-in data ---------------------------------------------------
-  // Three tracks off one record, so the one sleeve on hand is the right
-  // sleeve for all of them. `saved` is which playlists hold the track: the
-  // save button and the "Saved in" panel both read it. The long title is
-  // there to overflow the panel and make the marquee run.
+  // One track: a 25-second lap of a two-minute song never reaches the end
+  // of it, so a queue behind it would be dead data. `saved` is which
+  // playlists hold the track: the save button and the "Saved in" panel
+  // both read it. The long title overflows the panel, so the marquee is
+  // running from the moment the notch opens.
   var ABBEY_ROAD = "art-abbey-road.jpg";
   var ABBEY_ACCENT = "#a4d8f2";       // the pale sky over Abbey Road, sampled off the file
   var ABBEY_FALLBACK = "linear-gradient(160deg, #6f9fc4 0%, #b9d7e8 42%, #5b6570 100%)";
 
   var TRACKS = [
-    // The long one leads: it overflows the panel, so the marquee is running
-    // from the moment the notch opens instead of waiting for a track change.
-    { title: "She Came in Through the Bathroom Window", artist: "The Beatles", duration: 117, saved: [] },
-    { title: "Come Together", artist: "The Beatles", duration: 259, saved: ["liked"] },
-    { title: "Here Comes the Sun", artist: "The Beatles", duration: 185, saved: ["focus"] }
+    { title: "She Came in Through the Bathroom Window", artist: "The Beatles", duration: 117, saved: [] }
   ];
   TRACKS.forEach(function (t) {
     t.accent = ABBEY_ACCENT; t.artFile = ABBEY_ROAD; t.art = ABBEY_FALLBACK;
@@ -727,22 +723,18 @@ body {
     idle:     { label: "idle",      color: "rgba(255,255,255,0.35)" },
     thinking: { label: "thinking",  color: "#d9785a" },
     tool:     { label: "working",   color: "#d9785a" },
-    waiting:  { label: "needs you", color: "#ffad33" },
-    done:     { label: "done",      color: "#66de80" },
-    failed:   { label: "failed",    color: "#ff6666" }
+    done:     { label: "done",      color: "#66de80" }
   };
 
   /* Clawd, Claude Code's pixel mascot, traced from the reference sprite: an
      8x6 torso with one-pixel arm nubs, eyes set right of centre (looking
-     where he's going) and four one-pixel legs, on a 10x7 grid. */
+     where he's going) and four one-pixel legs, on a 10x7 grid. Two running
+     frames; he never stands still here. */
   var CLAWD = {
     run: [
       [".########.", ".########.", "###o###o##", "##########", ".########.", ".########.", ".#....#..."],
       [".########.", ".########.", "###o###o##", "##########", ".########.", ".########.", "...#....#."]
     ],
-    stand: [".########.", ".########.", "###o###o##", "##########", ".########.", ".########.", ".#.#..#.#."],
-    bang:  [".#.", ".#.", ".#.", "...", ".#."],
-    query: ["##.", "..#", ".#.", "...", ".#."],
     body: "#de886d"
   };
 
@@ -760,12 +752,7 @@ body {
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true">' + out + '</svg>';
   }
 
-  var TOAST_KIND = {
-    complete:   { duration: 2.7, message: function (n) { return n + " session complete"; } },
-    permission: { duration: 5.6, message: function (n) { return n + " needs permission"; } },
-    question:   { duration: 5.6, message: function (n) { return n + " has a question"; } },
-    failed:     { duration: 4.6, message: function (n) { return n + " session failed"; } }
-  };
+  var TOAST_COMPLETE = { duration: 2.7, message: function (n) { return n + " session complete"; } };
 
   // ---- State -----------------------------------------------------------
   var st = {
@@ -895,9 +882,7 @@ body {
           '<div class="nt-pane nt-pane-clawd"><div class="nt-clawd-toast">' +
             '<span class="nt-clawd-label"></span>' +
             '<span class="nt-clawd">' +
-              bitmapSVG(CLAWD.run[0], CLAWD.body, "#000") + bitmapSVG(CLAWD.run[1], CLAWD.body, "#000") + bitmapSVG(CLAWD.stand, CLAWD.body, "#000") +
-              '<span class="nt-clawd-glyph nt-clawd-bang">' + bitmapSVG(CLAWD.bang, "#ffad33", "#ffad33") + '</span>' +
-              '<span class="nt-clawd-glyph nt-clawd-query">' + bitmapSVG(CLAWD.query, "#ffad33", "#ffad33") + '</span>' +
+              bitmapSVG(CLAWD.run[0], CLAWD.body, "#000") + bitmapSVG(CLAWD.run[1], CLAWD.body, "#000") +
             '</span>' +
           '</div></div>' +
 
@@ -958,8 +943,6 @@ body {
     el.clawdLabel = root.querySelector(".nt-clawd-label");
     el.clawd = root.querySelector(".nt-clawd");
     el.clawdFrames = el.clawd.querySelectorAll(":scope > svg");
-    el.clawdBang = root.querySelector(".nt-clawd-bang");
-    el.clawdQuery = root.querySelector(".nt-clawd-query");
     el.corner = root.querySelector(".nt-corner");
     el.spinPeek = root.querySelector(".nt-spin-peek");
     el.flash = root.querySelector(".nt-flash");
@@ -1120,14 +1103,16 @@ body {
     return row;
   }
 
-  /* Contained playlists first, then the rest under ADD TO — Spotify's own
-     "Add to playlist" dialog, minus the new-playlist row. */
+  /* Liked Songs is always the first row, whichever way it's toggled — the
+     app pins it outside the ForEach. Then the contained playlists, then the
+     rest under ADD TO — Spotify's own "Add to playlist" dialog, minus the
+     new-playlist row. */
   function renderSavedIn() {
     var t = track();
     el.savedinList.innerHTML = "";
-    PLAYLISTS.filter(function (p) { return t.saved.indexOf(p.id) >= 0; })
-      .forEach(function (p) { el.savedinList.appendChild(playlistRow(p, true)); });
-    var others = PLAYLISTS.filter(function (p) { return t.saved.indexOf(p.id) < 0; });
+    PLAYLISTS.filter(function (p) { return p.liked || t.saved.indexOf(p.id) >= 0; })
+      .forEach(function (p) { el.savedinList.appendChild(playlistRow(p, t.saved.indexOf(p.id) >= 0)); });
+    var others = PLAYLISTS.filter(function (p) { return !p.liked && t.saved.indexOf(p.id) < 0; });
     if (others.length) {
       var h = document.createElement("span");
       h.className = "nt-savedin-h is-add";
@@ -1211,9 +1196,7 @@ body {
 
   // ---- Sessions --------------------------------------------------------
   function isBusy(s) { return s.state === "thinking" || s.state === "tool"; }
-  function needsAttention(s) { return s.state === "waiting" || s.state === "failed"; }
-  function anyActive() { return st.sessions.some(function (s) { return isBusy(s) || needsAttention(s); }); }
-  function headlineBlocked() { return st.sessions.some(needsAttention); }
+  function anyActive() { return st.sessions.some(isBusy); }
 
   function panelHeight(rows) { return rows === 0 ? 24 : rows * 35 + (rows - 1) * 3; }
 
@@ -1224,17 +1207,15 @@ body {
   }
 
   function detailText(s) {
-    if (s.attention) return s.attention;
     if (s.activity) return s.activity;
     if (s.state === "done" && s.reply) return s.reply;
     if (s.prompt) return "› " + s.prompt;
     return "waiting for a prompt";
   }
 
-  /* Ordered for display: needs-you first, then busiest, then most recent. */
+  /* Ordered for display: busiest first, then most recent. */
   function orderedSessions() {
     return st.sessions.slice().sort(function (a, b) {
-      if (needsAttention(a) !== needsAttention(b)) return needsAttention(a) ? -1 : 1;
       if (isBusy(a) !== isBusy(b)) return isBusy(a) ? -1 : 1;
       return b.lastEvent - a.lastEvent;
     });
@@ -1247,10 +1228,9 @@ body {
       var row = document.createElement("div");
       row.className = "nt-row";
       row.dataset.session = s.id;
-      var live = isBusy(s) || needsAttention(s);
       row.innerHTML =
-        '<span class="nt-row-state">' + (live
-          ? '<span class="nt-spin' + (needsAttention(s) ? " is-blocked" : "") + '">·</span>'
+        '<span class="nt-row-state">' + (isBusy(s)
+          ? '<span class="nt-spin">·</span>'
           : '<span class="nt-row-dot" style="background:' + STATE[s.state].color + '"></span>') + '</span>' +
         '<span class="nt-row-host">' + (s.host === "vscode" ? ICON.vscode : ICON.terminal) + '</span>' +
         '<span class="nt-row-text">' +
@@ -1271,29 +1251,22 @@ body {
   }
 
   function renderClaudeChrome() {
-    var active = anyActive(), blocked = headlineBlocked();
+    var active = anyActive();
     el.spinPeek.classList.toggle("is-on", active);
-    el.spinPeek.classList.toggle("is-blocked", blocked);
     el.corner.classList.toggle("is-active", active);
-    el.corner.querySelector(".nt-spin").classList.toggle("is-blocked", blocked);
     // The corner is the panel's only handle; when nothing is running it goes
     // away, and the panel goes with it.
     if (!active && st.sessionsOpen) st.sessionsOpen = false;
   }
 
-  /* ClaudeSpinner: the CLI's own glyph cycle at 0.30s a frame; amber and
-     nearly still (1.2s) when a session is blocked on you. Every spinner on
-     the page shares one clock, as the app's TimelineViews effectively do. */
-  var spinCache = { frame: -1, blocked: -1 };
+  /* ClaudeSpinner: the CLI's own glyph cycle at 0.30s a frame. Every spinner
+     on the page shares one clock, as the app's TimelineViews effectively do. */
+  var spinFrame = -1;
   function tickSpinners(now, force) {
-    var t = now / 1000;
-    var frame = Math.floor(t / 0.30) % SPIN_FRAMES.length;
-    var blockedFrame = Math.floor(t / 1.2) % 2;
-    if (!force && frame === spinCache.frame && blockedFrame === spinCache.blocked) return;
-    spinCache.frame = frame; spinCache.blocked = blockedFrame;
-    root.querySelectorAll(".nt-spin").forEach(function (n) {
-      n.textContent = n.classList.contains("is-blocked") ? (blockedFrame === 0 ? "✻" : "✽") : SPIN_FRAMES[frame];
-    });
+    var frame = Math.floor(now / 1000 / 0.30) % SPIN_FRAMES.length;
+    if (!force && frame === spinFrame) return;
+    spinFrame = frame;
+    root.querySelectorAll(".nt-spin").forEach(function (n) { n.textContent = SPIN_FRAMES[frame]; });
   }
 
   function refreshClaude() {
@@ -1304,7 +1277,7 @@ body {
 
   function startSession(id, project, branch, host, prompt) {
     var s = { id: id, project: project, branch: branch, host: host, state: "thinking",
-      activity: null, prompt: prompt, reply: null, attention: null,
+      activity: null, prompt: prompt, reply: null,
       turnStart: Date.now(), turnEnd: null, lastEvent: Date.now() };
     st.sessions.push(s);
     refreshClaude();
@@ -1416,28 +1389,22 @@ body {
   }
 
   // ---- Session toast (Clawd) -------------------------------------------
-  /* SessionToastView, choreographed by kind:
-       complete    sprints the full width, the label painted in behind him
-       permission  trots in, stops beside the label, hops with a blinking "!"
-       question    the same, but rocks side to side under a "?"
-       failed      trots in, trips and tips onto his side
-     Every horizontal move is at one cruise speed, set by the full-width
-     crossing: 1.7s, after a 0.3s lead for the notch to finish expanding. */
+  /* SessionToastView, "complete": Clawd sprints the full width of the notch
+     at one cruise speed — 1.7s for the crossing, after a 0.3s lead for the
+     notch to finish expanding — and the label is painted in behind him. */
   var clawd = null;
 
-  function presentSessionToast(kind, s) {
-    var K = TOAST_KIND[kind];
+  function presentSessionToast(s) {
     clearTimeout(closeTimer);
     st.toast = "session";
     st.open = true;
     st.sessionsOpen = false;
     st.savedOpen = false;
     var name = s.project.length > 14 ? s.project.slice(0, 13) + "…" : s.project;
-    el.clawdLabel.textContent = K.message(name);
-    el.clawdLabel.className = "nt-clawd-label is-" + kind;
+    el.clawdLabel.textContent = TOAST_COMPLETE.message(name);
     renderPanes();
-    scheduleClose(K.duration);
-    clawd = { kind: kind, start: performance.now() };
+    scheduleClose(TOAST_COMPLETE.duration);
+    clawd = { start: performance.now() };
     el.clawd.style.opacity = 0;
   }
 
@@ -1453,73 +1420,24 @@ body {
     var t = (now - clawd.start) / 1000;
     var w = el.clawdToast.clientWidth;
     var spriteW = 15 * 10 / 7 * u;
-    var inset = 14 * u, gap = 8 * u;
+    var inset = 14 * u;
     var labelW = el.clawdLabel.offsetWidth;
     var lead = 0.30, run = 1.7, stride = 0.085;
-    var speed = (w + 2 * inset + spriteW) / run;        // points per second
     var entryX = -inset - spriteW, exitX = w + inset;
-    var x, frame, bob = 0, rot = 0, opacity = 1, glyph = null, textLeft, reveal;
-    var show = t >= lead;
 
-    function runFrame(since) {
-      var f = Math.floor(Math.max(0, since) / stride) % 2;
-      return { frame: f, bob: f === 1 ? -0.7 * u : 0 };
-    }
-
-    if (clawd.kind === "complete") {
-      var p = Math.min(Math.max((t - lead) / run, 0), 1);
-      x = entryX + (exitX - entryX) * p;
-      var rf = runFrame(t - lead); frame = rf.frame; bob = rf.bob;
-      textLeft = (w - labelW) / 2;
-      reveal = x + spriteW / 2;
-    } else {
-      // Stop-in-the-middle variants: Clawd + gap + label, centred as a group.
-      var groupW = spriteW + gap + labelW;
-      var stopX = (w - groupW) / 2;
-      textLeft = stopX + spriteW + gap;
-      var inDur = (stopX - entryX) / speed;
-      var arriveT = lead + inDur;
-      if (t < arriveT) {
-        var q = Math.min(Math.max((t - lead) / inDur, 0), 1);
-        x = entryX + (stopX - entryX) * q;               // linear: cruise, then stop
-        var rf2 = runFrame(t - lead); frame = rf2.frame; bob = rf2.bob;
-        reveal = x + spriteW / 2;
-      } else if (clawd.kind === "failed") {
-        var fp = Math.min(Math.max((t - (arriveT + 0.12)) / 0.25, 0), 1);
-        rot = 90 * (1 - Math.pow(1 - fp, 2));            // tip over, ease-out
-        opacity = t > 4.0 ? Math.max(0, 1 - (t - 4.0) / 0.4) : 1;
-        x = stopX; frame = 2; reveal = null;
-      } else if (t < 4.4) {
-        var since = t - arriveT;
-        x = stopX; frame = 2; reveal = null;
-        if (clawd.kind === "permission") {
-          var hop = (since % 0.7) / 0.7;                 // a little hop every 0.7s
-          bob = hop < 0.35 ? -3 * Math.sin(hop / 0.35 * Math.PI) * u : 0;
-          glyph = Math.floor(since / 0.35) % 2 === 0 ? "bang" : null;
-        } else {
-          rot = Math.sin(since / 0.9 * 2 * Math.PI) * 7; // slow rock
-          glyph = "query";
-        }
-      } else {
-        var outDur = (exitX - stopX) / speed;
-        var r = Math.min((t - 4.4) / outDur, 1);
-        x = stopX + (exitX - stopX) * r;
-        var rf3 = runFrame(t); frame = rf3.frame; bob = rf3.bob; reveal = null;
-      }
-    }
+    var p = Math.min(Math.max((t - lead) / run, 0), 1);
+    var x = entryX + (exitX - entryX) * p;
+    var frame = Math.floor(Math.max(0, t - lead) / stride) % 2;
+    var bob = frame === 1 ? -0.7 * u : 0;
+    var textLeft = (w - labelW) / 2;
 
     setFrame(frame);
-    el.clawd.style.opacity = show ? opacity : 0;
-    el.clawd.style.transform = "translate(" + x.toFixed(2) + "px," + bob.toFixed(2) + "px) rotate(" + rot.toFixed(2) + "deg)";
+    el.clawd.style.opacity = t >= lead ? 1 : 0;
+    el.clawd.style.transform = "translate(" + x.toFixed(2) + "px," + bob.toFixed(2) + "px)";
     el.clawdLabel.style.left = textLeft.toFixed(2) + "px";
-    el.clawdLabel.style.opacity = opacity;
     // The label is painted in behind him rather than fading up as a block.
-    var revealW = reveal === null ? labelW + 4 : Math.max(0, reveal - textLeft);
+    var revealW = Math.max(0, x + spriteW / 2 - textLeft);
     el.clawdLabel.style.clipPath = "inset(-4px " + Math.max(0, labelW - revealW).toFixed(2) + "px -4px -2px)";
-    el.clawdBang.classList.toggle("is-on", glyph === "bang");
-    el.clawdQuery.classList.toggle("is-on", glyph === "query");
-    var gx = x + spriteW / 2 - 1.5 * u, gy = -12 * u + bob;
-    el.clawdBang.style.transform = el.clawdQuery.style.transform = "translate(" + gx + "px," + gy + "px)";
   }
 
   // ---- Animation loop --------------------------------------------------
@@ -1748,7 +1666,7 @@ body {
     at(9900, function () {
       setSession(A, { state: "done", turnEnd: Date.now(),
         reply: "Done — the artist line scrolls when it overflows, same hold and speed as the title." });
-      presentSessionToast("complete", A);
+      presentSessionToast(A);
     });
 
     // — and there it is on the desktop, worth keeping: crosshair, drag,
@@ -1789,12 +1707,15 @@ body {
       })(performance.now());
     });
     at(15900, function () {
-      endSelection();
+      el.sel.classList.remove("is-on");
       // Out of frame across the shutter: the crosshair and the arrow have
       // different hot spots, and swapping them in view reads as a jump.
+      // The fade takes 0.3s, so the swap waits until it's done — dropping
+      // is-cross here would put the arrow on screen for the whole fade.
       el.ghost.classList.remove("is-on");
       fireScreenshot("claude");
     });
+    at(16300, function () { el.ghost.classList.remove("is-cross"); });
 
     // The arrow comes back where the crosshair let go — the same point, the
     // way macOS gives the pointer back after the shutter — and only then
@@ -1806,7 +1727,9 @@ body {
     });
     at(20350, function () { setOpen(true); });            // still on the screenshots tab
     at(20900, function () { ghostOver(el.shots.children[0], 550); });   // the one just taken
-    at(22000, function () { ghostOver(el.shots.children[2], 550); });
+    // The second card, not the third: the strip shows two and a sliver, and
+    // hovering a card that's mostly clipped parks the cursor off the blob.
+    at(22000, function () { ghostOver(el.shots.children[1], 550); });
     // Back to rest, where the next loop picks it up — the cursor stays in
     // view across the join, so the loop closes without a seam.
     at(22900, function () { ghostRest(650); el.win.classList.remove("is-on"); });
