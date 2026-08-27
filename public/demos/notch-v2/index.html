@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notch — Zain Saeed</title>
+<meta name="description" content="A browser recreation of Notch, a macOS utility that turns the display notch into a Dynamic Island: Now Playing, screenshots, and live Claude Code sessions.">
+<style>
+/* Notch — a browser recreation of the macOS app, running itself.
+ *
+ * Nothing here responds to the visitor: no buttons, no hover, no keys. A
+ * scripted loop drives the app the way a person would, with a drawn cursor
+ * standing in for the pointer, and starts over when it reaches the end.
+ * Everything the app does gets a turn: the player, the save button and the
+ * "Saved in" panel, live Claude Code sessions (spinner, sessions panel,
+ * Clawd), and the screenshot toast. Only what the loop shows is here: the
+ * app's other toasts (permission, question, failed) and the amber blocked
+ * spinner were built and then cut, because code the loop never reaches is
+ * code nobody checks.
+ *
+ * One file on purpose: markup, styles and behaviour together so it can be
+ * edited as a single thing. Sizes are the app's own points (ScreenMetrics,
+ * NotchShape, the view code), scaled once with --u, so a number here is the
+ * same number in the Swift:
+ *
+ *   collapsed / open / toast     220x32 / 300x108 / 252x46
+ *   open with "Saved in"          300x256   (expandedMusicSize)
+ *   open with sessions panel      108 + rows*35 + (rows-1)*3 + 10, max 256
+ *   open / close                  0.32s / 0.22s ease-out
+ *   Claude spinner                · ✢ ✳ ∗ ✻ ✽ every 0.30s
+ *   Clawd, complete               0.30s lead, 1.7s crossing, 2.7s total
+ *   screenshot toast              2.25s pinned, collapse at 2.35s (stretched here)
+ *   marquee                       1s hold, 28pt/s, 32pt gap
+ *   bar wiggle                    sin(t*5.2+p) and sin(t*9.7+p*2.1), summed 0.6/0.4
+ */
+
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #101014;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.nt-screen {
+  --s: 1;
+  --u: calc(1px * var(--s));
+
+  /* ScreenMetrics, verbatim */
+  --notch-w: calc(220 * var(--u));
+  --notch-h: calc(32 * var(--u));
+  --open-w: calc(300 * var(--u));
+  --open-h: calc(108 * var(--u));
+  --music-h: calc(256 * var(--u));
+  --toast-w: calc(252 * var(--u));
+  --toast-h: calc(46 * var(--u));
+  --inset: calc(8 * var(--u));
+
+  --open-anim: 0.32s;
+  --close-anim: 0.22s;
+
+  --claude: #d9785a;          /* Color(red: 0.85, green: 0.47, blue: 0.34) */
+  --done: #66de80;            /* 0.40, 0.87, 0.50 */
+  --spotify: #1fd662;         /* 0.12, 0.84, 0.38 */
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* Nothing in here is interactive, so nothing should invite a click. */
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Desktop ───────────────────────────────────────────────────────── */
+.nt-wall {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 78% 8%, rgba(120, 96, 190, 0.55) 0%, rgba(120, 96, 190, 0) 55%),
+    radial-gradient(100% 80% at 12% 92%, rgba(48, 126, 150, 0.5) 0%, rgba(48, 126, 150, 0) 60%),
+    radial-gradient(90% 70% at 50% 110%, rgba(196, 128, 92, 0.35) 0%, rgba(196, 128, 92, 0) 60%),
+    linear-gradient(168deg, #1b1c2b 0%, #232338 42%, #1a2430 100%);
+}
+.nt-wall::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 120% at 50% 45%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+/* ── Menu bar ──────────────────────────────────────────────────────── */
+.nt-menubar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--notch-h);
+  display: flex;
+  align-items: center;
+  padding: 0 calc(14 * var(--u));
+  font-size: calc(13 * var(--u));
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(calc(18 * var(--u)));
+  -webkit-backdrop-filter: blur(calc(18 * var(--u)));
+}
+.nt-menu-left, .nt-menu-right {
+  display: flex;
+  align-items: center;
+  gap: calc(15 * var(--u));
+  white-space: nowrap;
+}
+.nt-menu-gap { flex: 1 0 var(--notch-w); }
+.nt-menu-left .nt-app { font-weight: 600; }
+.nt-menubar svg { display: block; height: calc(14 * var(--u)); width: auto; fill: currentColor; }
+.nt-clock { font-variant-numeric: tabular-nums; }
+
+/* ── The blob ──────────────────────────────────────────────────────── */
+.nt-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--notch-w);
+  height: var(--notch-h);
+  transform: translateX(-50%);
+  z-index: 5;
+  transition: width var(--close-anim) ease-out, height var(--close-anim) ease-out;
+}
+.nt-notch.is-open {
+  width: var(--open-w);
+  height: var(--open-h);
+  transition: width var(--open-anim) ease-out, height var(--open-anim) ease-out;
+}
+/* Taller states — the script sets --blob-h from openBlobSize(). */
+.nt-notch.is-open.is-tall { height: var(--blob-h); }
+.nt-notch.is-toast { width: var(--toast-w); height: var(--toast-h); }
+
+.nt-body {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: var(--inset); right: var(--inset);
+  background: #000;
+  border-radius: 0 0 calc(10 * var(--u)) calc(10 * var(--u));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: border-radius var(--close-anim) ease-out;
+}
+.nt-notch.is-open .nt-body {
+  border-radius: 0 0 calc(20 * var(--u)) calc(20 * var(--u));
+  transition: border-radius var(--open-anim) ease-out;
+}
+.nt-notch.is-toast .nt-body { border-radius: 0 0 calc(16 * var(--u)) calc(16 * var(--u)); }
+
+/* A quarter-disc carved out of each bottom-inner corner leaves exactly the
+   concave flare the Swift quad-curve draws. */
+.nt-fillet {
+  position: absolute;
+  top: 0;
+  width: var(--inset);
+  height: var(--inset);
+}
+.nt-fillet-l { left: 0;  background: radial-gradient(circle at 0 100%,   rgba(0,0,0,0) 0 var(--inset), #000 var(--inset)); }
+.nt-fillet-r { right: 0; background: radial-gradient(circle at 100% 100%, rgba(0,0,0,0) 0 var(--inset), #000 var(--inset)); }
+
+.nt-shadow {
+  position: absolute;
+  left: calc(20 * var(--u)); right: calc(20 * var(--u));
+  top: 100%;
+  height: calc(10 * var(--u));
+  margin-top: calc(-4 * var(--u));
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.36);
+  filter: blur(calc(10 * var(--u)));
+}
+
+/* ── Panes ─────────────────────────────────────────────────────────── */
+/* Each pane is laid out at the size its state ENDS at, width included, so
+   nothing reflows mid-animation and a marquee measured while the notch is
+   shut still measures against the open width. */
+.nt-pane {
+  position: absolute;
+  top: 0; left: 0;
+  width: calc(var(--open-w) - 2 * var(--inset));
+  height: var(--open-h);
+  padding: calc(10 * var(--u)) calc(14 * var(--u));
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--close-anim) ease-out;
+}
+.nt-pane.is-shown { opacity: 1; transition: opacity var(--open-anim) ease-out; }
+.nt-pane-peek  { width: calc(var(--notch-w) - 2 * var(--inset)); height: var(--notch-h); padding: 0 calc(14 * var(--u)); }
+.nt-pane-toast { width: calc(var(--toast-w) - 2 * var(--inset)); height: var(--toast-h); padding: 0 calc(6 * var(--u)); }
+.nt-pane-clawd { width: calc(var(--toast-w) - 2 * var(--inset)); height: var(--toast-h); padding: 0 calc(6 * var(--u)); }
+.nt-pane-music.is-tall { height: var(--music-h); }
+
+/* Collapsed peek: art · bars · (Claude spinner) */
+.nt-peek { display: flex; align-items: center; height: 100%; }
+.nt-peek .nt-art { width: calc(14 * var(--u)); height: calc(14 * var(--u)); border-radius: calc(6 * var(--u)); }
+.nt-peek .nt-bars { margin-left: auto; }
+.nt-art { flex: none; border: 1px solid rgba(255, 255, 255, 0.12); transition: background 0.34s ease-in-out; }
+
+/* ── Claude spinner ────────────────────────────────────────────────── */
+.nt-spin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--claude);
+  line-height: 1;
+}
+/* In the pill it slides in at the trailing edge and nudges the bars left. */
+.nt-spin-peek {
+  flex: none;
+  width: 0;
+  height: calc(15 * var(--u));
+  font-size: calc(13 * var(--u));
+  margin-left: 0;
+  margin-top: calc(-2 * var(--u));
+  opacity: 0;
+  transform: translateX(calc(10 * var(--u)));
+  overflow: hidden;
+  transition: width 0.36s cubic-bezier(0.3, 1.1, 0.4, 1), margin-left 0.36s cubic-bezier(0.3, 1.1, 0.4, 1),
+    opacity 0.26s ease-out, transform 0.36s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+.nt-spin-peek.is-on { width: calc(15 * var(--u)); margin-left: calc(8 * var(--u)); opacity: 1; transform: none; }
+
+/* ── Dancing bars ──────────────────────────────────────────────────── */
+.nt-bars {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(20 * var(--u));
+  height: calc(14 * var(--u));
+}
+.nt-bar {
+  width: calc(1.8 * var(--u));
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent, #fff);
+  transform: scaleY(0.14);
+  transition: background-color 0.34s ease-in-out;
+}
+
+/* ── Music tab ─────────────────────────────────────────────────────── */
+.nt-music { display: flex; flex-direction: column; height: 100%; gap: calc(5 * var(--u)); }
+.nt-track { display: flex; flex: none; align-items: center; gap: calc(9 * var(--u)); }
+.nt-track .nt-art { width: calc(36 * var(--u)); height: calc(36 * var(--u)); border-radius: calc(6 * var(--u)); }
+.nt-meta { display: block; flex: 1; min-width: 0; }
+
+/* MarqueeText: plain text when it fits, a scrolling pair when it doesn't. */
+.nt-marquee { position: relative; display: block; white-space: nowrap; overflow: hidden; line-height: 1.25; }
+.nt-marquee-static { display: block; overflow: hidden; }
+.nt-marquee-run { position: absolute; inset: 0; display: none; white-space: nowrap; }
+.nt-marquee.is-scrolling .nt-marquee-static { visibility: hidden; }
+.nt-marquee.is-scrolling .nt-marquee-run { display: block; }
+.nt-marquee-run span { display: inline-block; padding-right: calc(32 * var(--u)); }
+/* The trailing edge fades so text slides out instead of being chopped; the
+   leading edge only fades once it has something to hide. */
+.nt-marquee.is-scrolling {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 14 * var(--u)), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 14 * var(--u)), transparent 100%);
+}
+.nt-marquee.is-scrolling.is-moved {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 calc(10 * var(--u)), #000 calc(100% - 14 * var(--u)), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 calc(10 * var(--u)), #000 calc(100% - 14 * var(--u)), transparent 100%);
+}
+.nt-title  { font-size: calc(13.5 * var(--u)); font-weight: 600; }
+.nt-artist { font-size: calc(11.5 * var(--u)); margin-top: calc(2 * var(--u)); color: rgba(255, 255, 255, 0.6); }
+
+.nt-scrub { display: flex; align-items: center; gap: calc(7 * var(--u)); height: calc(14 * var(--u)); flex: none; }
+.nt-time { flex: none; font-size: calc(9 * var(--u)); font-weight: 500; font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, 0.55); }
+.nt-time-l { width: calc(26 * var(--u)); }
+.nt-time-r { width: calc(30 * var(--u)); text-align: right; }
+.nt-track-line { position: relative; flex: 1; height: 100%; display: flex; align-items: center; }
+.nt-rail { position: relative; width: 100%; height: calc(2.5 * var(--u)); border-radius: 999px; background: rgba(255, 255, 255, 0.16); }
+.nt-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--accent, #fff); transition: background-color 0.34s ease-in-out; }
+
+/* Transport: ⏮ ⏯ ⏭ centred, the save button at the leading edge. */
+.nt-transport { position: relative; flex: none; display: flex; align-items: center; justify-content: center; gap: calc(26 * var(--u)); height: calc(30 * var(--u)); }
+.nt-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; background: none;
+  color: rgba(255, 255, 255, 0.55);
+  /* Press down snappy, release springy — the app builds this by hand. */
+  transition: transform 0.5s cubic-bezier(0.2, 1.5, 0.4, 1), color 0.2s ease-out;
+}
+/* The drawn cursor is not a pointer, so every hover affordance needs a class
+   the script can set by hand. */
+.nt-btn.is-ghost-hover { color: #fff; transform: scale(1.2); }
+.nt-btn.is-pressed { transform: scale(0.78); transition: transform 0.12s ease-out; }
+.nt-btn svg { display: block; fill: currentColor; }
+.nt-btn-side svg { width: calc(13 * var(--u)); height: calc(13 * var(--u)); }
+.nt-btn-play { position: relative; width: calc(30 * var(--u)); height: calc(30 * var(--u)); }
+.nt-btn-play.is-ghost-hover { transform: scale(1.15); }
+.nt-btn-play.is-pressed { transform: scale(0.82); }
+.nt-btn-play svg { width: calc(17 * var(--u)); height: calc(17 * var(--u)); }
+/* Play and pause cross-fade in place: two motions on one button read as a stutter. */
+.nt-btn-play .nt-glyph { position: absolute; transition: opacity 0.32s ease-out; }
+
+/* SaveButton: grey ⊕ when the track is saved nowhere, Spotify-green ✓ when
+   it's in something. Liking it bursts confetti. */
+.nt-save {
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: calc(25 * var(--u)); height: calc(21 * var(--u));
+  transition: transform 0.32s cubic-bezier(0.3, 1.2, 0.4, 1), color 0.2s ease-out;
+}
+.nt-save.is-ghost-hover { color: #fff; transform: translateY(-50%) scale(1.2); }
+.nt-save.is-pressed { transform: translateY(-50%) scale(0.78); transition: transform 0.12s ease-out; }
+.nt-save.is-saved { color: var(--spotify); }
+.nt-save svg { position: absolute; width: calc(13 * var(--u)); height: calc(13 * var(--u)); transition: opacity 0.2s ease-out, transform 0.42s cubic-bezier(0.3, 1.6, 0.4, 1); }
+.nt-save .nt-save-check { opacity: 0; transform: scale(0.4); }
+.nt-save.is-saved .nt-save-plus  { opacity: 0; transform: scale(0.4); }
+.nt-save.is-saved .nt-save-check { opacity: 1; transform: none; }
+.nt-confetti { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.nt-confetti i { position: absolute; border-radius: 50%; background: var(--spotify); opacity: 0; }
+
+/* "Saved in": unfolds under the transport row as the blob grows downward. */
+.nt-savedin {
+  flex: 1;
+  min-height: 0;
+  display: none;
+  flex-direction: column;
+  gap: calc(3 * var(--u));
+  padding-top: calc(4 * var(--u));
+  opacity: 0;
+  transition: opacity var(--open-anim) ease-out;
+}
+.nt-savedin.is-shown { display: flex; opacity: 1; }
+.nt-savedin-head { display: flex; align-items: center; justify-content: space-between; flex: none; }
+.nt-savedin-h { font-size: calc(8.5 * var(--u)); font-weight: 700; letter-spacing: calc(0.8 * var(--u)); color: rgba(255, 255, 255, 0.45); }
+.nt-savedin-h.is-add { font-size: calc(8 * var(--u)); color: rgba(255, 255, 255, 0.35); margin-top: calc(6 * var(--u)); }
+.nt-savedin-x svg { width: calc(9 * var(--u)); height: calc(9 * var(--u)); }
+.nt-savedin-list { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: calc(4 * var(--u)); }
+.nt-pl {
+  display: flex; align-items: center; gap: calc(8 * var(--u));
+  padding: calc(1 * var(--u)) 0;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.12s ease-out;
+}
+.nt-pl.is-in, .nt-pl.is-ghost-hover { color: #fff; }
+.nt-pl-art {
+  flex: none;
+  width: calc(22 * var(--u)); height: calc(22 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: rgba(255, 255, 255, 0.08);
+  display: flex; align-items: center; justify-content: center;
+}
+.nt-pl-art svg { width: calc(9 * var(--u)); height: calc(9 * var(--u)); fill: rgba(255, 255, 255, 0.45); }
+/* Spotify's Liked Songs tile: a heart on a violet gradient. */
+.nt-pl-art.is-liked { background: linear-gradient(135deg, #4529de, #bfd4eb); }
+.nt-pl-art.is-liked svg { fill: #fff; }
+.nt-pl-name { flex: 1; min-width: 0; font-size: calc(11 * var(--u)); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-pl-mark { position: relative; flex: none; width: calc(12 * var(--u)); height: calc(12 * var(--u)); }
+.nt-pl-mark svg { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 0.18s ease-out, transform 0.28s cubic-bezier(0.3, 1.4, 0.4, 1); }
+.nt-pl-mark .nt-pl-o { fill: none; stroke: rgba(255, 255, 255, 0.35); stroke-width: 1.4; }
+.nt-pl.is-ghost-hover .nt-pl-o { stroke: rgba(255, 255, 255, 0.9); }
+.nt-pl-mark .nt-pl-c { fill: var(--spotify); opacity: 0; transform: scale(0.3); }
+.nt-pl-mark .nt-pl-m { fill: #ff5c57; opacity: 0; transform: scale(0.3); }
+.nt-pl.is-in .nt-pl-o { opacity: 0; }
+.nt-pl.is-in .nt-pl-c { opacity: 1; transform: none; }
+/* Hovering a row you're already in offers to take it out. */
+.nt-pl.is-in.is-ghost-hover .nt-pl-c { opacity: 0; }
+.nt-pl.is-in.is-ghost-hover .nt-pl-m { opacity: 1; transform: none; }
+
+/* ── Screenshots tab ───────────────────────────────────────────────── */
+.nt-shots { display: flex; align-items: center; gap: calc(8 * var(--u)); height: 100%; overflow: hidden; }
+.nt-shot {
+  position: relative; flex: none;
+  width: calc(104 * var(--u)); height: calc(64 * var(--u));
+  border-radius: calc(6 * var(--u)); overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  transition: transform 0.16s ease-out, box-shadow 0.16s ease-out;
+}
+.nt-shot-art { width: 100%; height: 100%; display: block; }
+.nt-shot.is-ghost-hover { transform: scale(0.95); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26); }
+.nt-stamp {
+  position: absolute; left: 50%; bottom: calc(5 * var(--u)); transform: translateX(-50%);
+  padding: calc(2 * var(--u)) calc(6 * var(--u)); border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: calc(9 * var(--u)); font-weight: 600; white-space: nowrap;
+  opacity: 0; transition: opacity 0.16s ease-out;
+}
+.nt-shot.is-ghost-hover .nt-stamp { opacity: 1; }
+
+/* ── Screenshot toast ──────────────────────────────────────────────── */
+/* Centred, where the app leaves it leading-aligned: here the banner is the
+   thing being shown, and off to one side of a wide pill it reads as a bug. */
+.nt-toast { display: flex; align-items: center; justify-content: center; gap: calc(9 * var(--u)); height: 100%; font-size: calc(12 * var(--u)); font-weight: 600; letter-spacing: calc(-0.1 * var(--u)); }
+.nt-toast .nt-ch { display: inline-block; white-space: pre; opacity: 0; transform: translateY(calc(5 * var(--u))) scale(0.5); transform-origin: bottom; }
+.nt-toast.is-running .nt-ch { opacity: 1; transform: none; transition: opacity 0.36s cubic-bezier(0.2, 1.4, 0.4, 1), transform 0.36s cubic-bezier(0.2, 1.4, 0.4, 1); transition-delay: var(--d); }
+.nt-check { flex: none; width: calc(18 * var(--u)); height: calc(18 * var(--u)); }
+.nt-check circle, .nt-check path { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* One dash, then a gap longer than the path, and an offset that overshoots
+   the dash by more than the cap radius: with round caps, an offset equal to
+   the length leaves the cap poking into the visible path as a dot, and a
+   gap shorter than the path lets the next dash peek in at the far end.
+   SwiftUI's trim(to: 0) draws nothing. */
+.nt-check circle { stroke-dasharray: 63 200; stroke-dashoffset: 66; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.nt-check path { stroke-dasharray: 30 200; stroke-dashoffset: 33; }
+.nt-toast.is-running .nt-check circle { stroke-dashoffset: 0; transition: stroke-dashoffset 0.4s ease-in-out var(--ring-d); }
+.nt-toast.is-running .nt-check path { stroke-dashoffset: 0; transition: stroke-dashoffset 0.22s ease-out var(--check-d); }
+
+/* ── Session toast (Clawd) ─────────────────────────────────────────── */
+.nt-clawd-toast {
+  position: relative;
+  height: 100%;
+  /* NotchRootView insets the toast content 14pt from the blob edge; the
+     pane already contributes 6. */
+  margin: 0 calc(8 * var(--u));
+  font-size: calc(12 * var(--u));
+  font-weight: 600;
+  letter-spacing: calc(-0.1 * var(--u));
+}
+.nt-clawd-label { position: absolute; top: 50%; left: 0; transform: translateY(-50%); white-space: nowrap; color: #fff; }
+.nt-clawd {
+  position: absolute;
+  top: 50%; left: 0;
+  width: calc(21.43 * var(--u));      /* 15pt tall on a 10x7 grid */
+  height: calc(15 * var(--u));
+  margin-top: calc(-7.5 * var(--u));
+  will-change: transform;
+}
+.nt-clawd > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: none; shape-rendering: crispEdges; }
+.nt-clawd > svg.is-frame { display: block; }
+
+/* ── Sessions corner + panel ───────────────────────────────────────── */
+/* SessionsCorner: a 30pt strip whose top is 68pt down the blob (108 - 10 -
+   30), inside the 22pt content inset — 8 in from this pane's own edge. */
+.nt-corner {
+  position: absolute;
+  top: calc(68 * var(--u));
+  right: calc(8 * var(--u));
+  width: calc(32 * var(--u));
+  height: calc(30 * var(--u));
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.22s ease-out;
+}
+.nt-notch.is-open .nt-corner { opacity: 1; }
+.nt-corner .nt-spin { font-size: calc(14 * var(--u)); transform: scale(0.4); opacity: 0; transition: transform 0.32s cubic-bezier(0.3, 1.3, 0.4, 1), opacity 0.2s ease-out; }
+.nt-corner.is-active .nt-spin { transform: none; opacity: 1; }
+
+/* The tab keeps its 108pt; the panel takes the space the blob grows by. */
+.nt-pane-sessions {
+  top: var(--open-h);
+  height: auto;
+  bottom: calc(10 * var(--u));
+  right: 0;
+  width: auto;
+  padding: 0 calc(14 * var(--u));
+  display: flex;
+  flex-direction: column;
+  gap: calc(3 * var(--u));
+  overflow: hidden;
+}
+.nt-row {
+  flex: none;
+  display: flex; align-items: center; gap: calc(8 * var(--u));
+  height: calc(35 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  border-radius: calc(7 * var(--u));
+  background: rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease-out;
+}
+.nt-row.is-ghost-hover { background: rgba(255, 255, 255, 0.10); }
+.nt-row-state { flex: none; width: calc(12 * var(--u)); display: flex; align-items: center; justify-content: center; }
+.nt-row-state .nt-spin { font-size: calc(10 * var(--u)); }
+.nt-row-dot { width: calc(6 * var(--u)); height: calc(6 * var(--u)); border-radius: 50%; }
+.nt-row-host { flex: none; width: calc(12 * var(--u)); display: flex; align-items: center; justify-content: center; }
+.nt-row-host svg { width: calc(11 * var(--u)); height: calc(9 * var(--u)); fill: none; stroke: rgba(255, 255, 255, 0.5); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nt-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(1 * var(--u)); }
+.nt-row-top { display: flex; align-items: center; gap: calc(5 * var(--u)); }
+.nt-row-name { font-size: calc(11.5 * var(--u)); font-weight: 600; white-space: nowrap; }
+.nt-row-branch { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: calc(9.5 * var(--u)); color: rgba(255, 255, 255, 0.45); white-space: nowrap; }
+.nt-row-label { margin-left: auto; font-size: calc(9.5 * var(--u)); font-weight: 500; white-space: nowrap; }
+.nt-row-timer { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: calc(9.5 * var(--u)); color: rgba(255, 255, 255, 0.55); font-variant-numeric: tabular-nums; }
+.nt-row-detail { font-size: calc(10 * var(--u)); color: rgba(255, 255, 255, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Settings gear ─────────────────────────────────────────────────── */
+/* Barely there at rest so it reads as a faint dot. */
+.nt-gear {
+  position: absolute;
+  top: calc(4 * var(--u)); right: calc(12 * var(--u));
+  width: calc(18 * var(--u)); height: calc(18 * var(--u));
+  padding: 0; border: 0; background: none;
+  color: rgba(255, 255, 255, 0.3);
+  transform: scale(0.62);
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.2, 1.4, 0.4, 1), color 0.2s ease-out, opacity 0.22s ease-out;
+}
+.nt-notch.is-open .nt-gear { opacity: 1; }
+.nt-gear svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+/* ── The Claude window on the desktop ──────────────────────────────── */
+/* Where the session the notch is tracking actually lives, and the thing the
+   screenshot is taken of. Only on screen for that chapter — the notch is
+   the subject, and a window parked under it the whole time competes. */
+.nt-claude-win {
+  position: absolute;
+  left: 50%;
+  top: calc(148 * var(--u));
+  width: calc(300 * var(--u));
+  transform: translateX(-50%) scale(0.97);
+  border-radius: calc(9 * var(--u));
+  overflow: hidden;
+  background: #16171c;
+  box-shadow:
+    0 calc(18 * var(--u)) calc(42 * var(--u)) rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+  opacity: 0;
+  transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+.nt-claude-win.is-on { opacity: 1; transform: translateX(-50%) scale(1); }
+.nt-claude-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: calc(22 * var(--u));
+  padding: 0 calc(9 * var(--u));
+  background: rgba(255, 255, 255, 0.06);
+}
+.nt-claude-lights { display: flex; gap: calc(5 * var(--u)); }
+.nt-claude-lights i { width: calc(7 * var(--u)); height: calc(7 * var(--u)); border-radius: 50%; }
+.nt-claude-lights i:nth-child(1) { background: #ff5f57; }
+.nt-claude-lights i:nth-child(2) { background: #febc2e; }
+.nt-claude-lights i:nth-child(3) { background: #28c840; }
+.nt-claude-title {
+  position: absolute; left: 0; right: 0;
+  text-align: center;
+  font-size: calc(9.5 * var(--u));
+  color: rgba(255, 255, 255, 0.5);
+}
+.nt-claude-body {
+  padding: calc(9 * var(--u)) calc(10 * var(--u)) calc(11 * var(--u));
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: calc(8.5 * var(--u));
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.62);
+}
+.nt-claude-body .nt-cl-prompt { color: rgba(255, 255, 255, 0.9); }
+.nt-claude-body .nt-cl-glyph { color: var(--claude); font-weight: 700; }
+.nt-claude-body .nt-cl-reply { color: rgba(255, 255, 255, 0.78); margin-top: calc(4 * var(--u)); }
+.nt-claude-body .nt-cl-dim { color: rgba(255, 255, 255, 0.34); }
+
+/* ── Screenshot selection ──────────────────────────────────────────── */
+/* ⇧⌘4: the pointer becomes a crosshair and dragging frames the capture. */
+.nt-sel {
+  position: absolute;
+  z-index: 16;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.10);
+  display: none;
+}
+.nt-sel.is-on { display: block; }
+.nt-sel-size {
+  position: absolute;
+  left: 50%; top: 100%;
+  transform: translate(-50%, calc(7 * var(--u)));
+  padding: calc(2 * var(--u)) calc(6 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: rgba(0, 0, 0, 0.75);
+  font-size: calc(9.5 * var(--u));
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ── Shutter flash ─────────────────────────────────────────────────── */
+.nt-flash { position: absolute; inset: 0; z-index: 20; background: #fff; opacity: 0; }
+.nt-flash.is-firing { animation: nt-flash 0.42s ease-out; }
+@keyframes nt-flash { 0% { opacity: 0; } 8% { opacity: 0.85; } 100% { opacity: 0; } }
+
+/* ── Drawn cursor ──────────────────────────────────────────────────── */
+/* Stands in for the pointer the visitor isn't using. */
+.nt-ghost {
+  position: absolute; top: 0; left: 0; z-index: 15;
+  width: calc(18 * var(--u)); height: calc(26 * var(--u));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: drop-shadow(0 calc(1 * var(--u)) calc(2 * var(--u)) rgba(0, 0, 0, 0.5));
+}
+.nt-ghost.is-on { opacity: 1; }
+.nt-ghost.is-clicking { transform: scale(0.86); }
+.nt-ghost svg { display: block; width: 100%; height: 100%; }
+/* The arrow points from its own top-left, so that corner is the hot spot;
+   a crosshair's is the middle, hence the offset. */
+.nt-ghost .nt-cross { display: none; }
+.nt-ghost.is-cross .nt-arrow { display: none; }
+.nt-ghost.is-cross .nt-cross { display: block; }
+.nt-ghost.is-cross {
+  width: calc(20 * var(--u)); height: calc(20 * var(--u));
+  margin: calc(-10 * var(--u)) 0 0 calc(-10 * var(--u));
+  filter: none;
+}
+</style>
+</head>
+<body>
+<div id="nt-screen" class="nt-screen"></div>
+<script>
+(function () {
+  "use strict";
+
+  // ---- Framing ---------------------------------------------------------
+  // A notch is 220pt on a 1512pt screen. Reproduce that ratio honestly and
+  // the subject of the demo is a 7px speck. So the screen is FRAMED rather
+  // than reproduced: scaled until the expanded panel takes a set share of
+  // the frame, which reads as a camera pushed in on the top of a display.
+  // Whichever axis binds first wins, so it holds up in a wide thumbnail and
+  // a tall fullscreen alike. The menu bar scales with it, because that is
+  // what zooming does.
+  // Pushed in far enough that the 13.5pt track title still reads when the
+  // whole thing is parked in a column of a page. The height fraction is set
+  // by the tallest state, not this one: 256pt of open "Saved in" panel has
+  // to fit under the same scale.
+  // 0.52 is as far in as the menu bar can be pushed: everything scales
+  // together, so at a bigger fraction the bar's own contents (which need
+  // about 560pt beside a 220pt notch) overflow the frame and the clock is
+  // the first thing out the door.
+  var PANEL_W = 300, PANEL_H = 108;
+  var PANEL_W_FRAC = 0.52;            // panel width, as a share of the frame
+  var PANEL_H_FRAC = 0.35;            // set by the 256pt tall state, not this one
+  var SCALE_MIN = 0.5, SCALE_MAX = 4;
+
+  var root = document.getElementById("nt-screen");
+
+  // The one thing that stops: the loop is the only motion here, and motion
+  // is the thing a reduced-motion preference is asking us not to make.
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- Stand-in data ---------------------------------------------------
+  // One track: a 25-second lap of a two-minute song never reaches the end
+  // of it, so a queue behind it would be dead data. `saved` is which
+  // playlists hold the track: the save button and the "Saved in" panel
+  // both read it. The long title overflows the panel, so the marquee is
+  // running from the moment the notch opens.
+  var ABBEY_ROAD = "art-abbey-road.jpg";
+  var ABBEY_ACCENT = "#a4d8f2";       // the pale sky over Abbey Road, sampled off the file
+  var ABBEY_FALLBACK = "linear-gradient(160deg, #6f9fc4 0%, #b9d7e8 42%, #5b6570 100%)";
+
+  var TRACKS = [
+    { title: "She Came in Through the Bathroom Window", artist: "The Beatles", duration: 117, saved: [] }
+  ];
+  TRACKS.forEach(function (t) {
+    t.accent = ABBEY_ACCENT; t.artFile = ABBEY_ROAD; t.art = ABBEY_FALLBACK;
+    t.saved0 = t.saved.slice();       // pristine copy, restored every loop
+  });
+
+  var PLAYLISTS = [
+    { id: "liked", name: "Liked Songs", liked: true },
+    { id: "late",  name: "Late Night Drive" },
+    { id: "focus", name: "Focus" },
+    { id: "run",   name: "Running" }
+  ];
+
+  /* The shelf holds drawn placeholders, not photographs of anything. An
+     earlier version stocked it with this site's own captures — real client
+     work, sitting in a fake desktop's screenshot tray, which is the wrong
+     place for it however good the pictures looked. */
+  function shotArt(kind) {
+    var bar = '<rect width="104" height="8" fill="rgba(0,0,0,0.18)"/>' +
+      '<circle cx="6" cy="4" r="1.5" fill="#ec6a5e"/><circle cx="11" cy="4" r="1.5" fill="#f4bf4f"/><circle cx="16" cy="4" r="1.5" fill="#61c554"/>';
+    var art = {
+      editor:
+        '<rect width="104" height="64" fill="#22262e"/>' + bar +
+        '<rect x="0" y="8" width="19" height="56" fill="rgba(0,0,0,0.22)"/>' +
+        '<g opacity="0.85"><rect x="24" y="14" width="26" height="2.6" rx="1.3" fill="#c678dd"/><rect x="53" y="14" width="17" height="2.6" rx="1.3" fill="#61afef"/><rect x="28" y="21" width="38" height="2.6" rx="1.3" fill="#98c379"/><rect x="28" y="28" width="22" height="2.6" rx="1.3" fill="#e5c07b"/><rect x="28" y="35" width="46" height="2.6" rx="1.3" fill="#5c6370"/><rect x="24" y="42" width="19" height="2.6" rx="1.3" fill="#e06c75"/><rect x="28" y="49" width="33" height="2.6" rx="1.3" fill="#5c6370"/></g>' +
+        '<g fill="#3a4048"><rect x="4" y="14" width="11" height="2.2" rx="1.1"/><rect x="4" y="20" width="8" height="2.2" rx="1.1"/><rect x="4" y="26" width="12" height="2.2" rx="1.1"/></g>',
+      browser:
+        '<rect width="104" height="64" fill="#f4f5f7"/><rect width="104" height="11" fill="#e3e5e9"/>' +
+        '<circle cx="6" cy="5.5" r="1.5" fill="#ec6a5e"/><circle cx="11" cy="5.5" r="1.5" fill="#f4bf4f"/><circle cx="16" cy="5.5" r="1.5" fill="#61c554"/>' +
+        '<rect x="23" y="3" width="52" height="5" rx="2.5" fill="#f7f8fa"/>' +
+        '<g fill="#4a76d6"><rect x="12" y="46" width="9" height="12" rx="1"/><rect x="25" y="38" width="9" height="20" rx="1"/><rect x="38" y="42" width="9" height="16" rx="1"/><rect x="51" y="30" width="9" height="28" rx="1"/><rect x="64" y="35" width="9" height="23" rx="1"/><rect x="77" y="24" width="9" height="34" rx="1"/></g>' +
+        '<g fill="#c9ced8"><rect x="12" y="17" width="34" height="3" rx="1.5"/><rect x="12" y="24" width="22" height="3" rx="1.5"/></g>',
+      terminal:
+        '<rect width="104" height="64" fill="#101215"/>' + bar +
+        '<g fill="#5af78e" opacity="0.9"><rect x="6" y="14" width="4" height="2.2" rx="1.1"/><rect x="6" y="27" width="4" height="2.2" rx="1.1"/><rect x="6" y="47" width="4" height="2.2" rx="1.1"/></g>' +
+        '<g fill="#8b94a3"><rect x="13" y="14" width="40" height="2.2" rx="1.1"/><rect x="6" y="20" width="62" height="2.2" rx="1.1"/><rect x="13" y="27" width="28" height="2.2" rx="1.1"/><rect x="6" y="33" width="70" height="2.2" rx="1.1"/><rect x="6" y="39" width="49" height="2.2" rx="1.1"/><rect x="13" y="47" width="34" height="2.2" rx="1.1"/></g>' +
+        '<rect x="50" y="47" width="4" height="2.6" fill="#5af78e"/>',
+      document:
+        '<rect width="104" height="64" fill="#5c6270"/><rect x="14" y="4" width="76" height="60" rx="2" fill="#fdfdfd"/><rect x="22" y="12" width="34" height="4" rx="2" fill="#2f333c"/>' +
+        '<g fill="#cdd1d8"><rect x="22" y="23" width="60" height="2.6" rx="1.3"/><rect x="22" y="30" width="56" height="2.6" rx="1.3"/><rect x="22" y="37" width="60" height="2.6" rx="1.3"/><rect x="22" y="44" width="38" height="2.6" rx="1.3"/><rect x="22" y="51" width="48" height="2.6" rx="1.3"/></g>',
+      gallery:
+        '<rect width="104" height="64" fill="#1b1e24"/>' + bar +
+        '<g><rect x="6" y="13" width="28" height="22" rx="2" fill="#3b6ea5"/><rect x="38" y="13" width="28" height="22" rx="2" fill="#a5713b"/><rect x="70" y="13" width="28" height="22" rx="2" fill="#4a8f6b"/><rect x="6" y="39" width="28" height="22" rx="2" fill="#8a4a7d"/><rect x="38" y="39" width="28" height="22" rx="2" fill="#4a6f8a"/><rect x="70" y="39" width="28" height="22" rx="2" fill="#8a7a4a"/></g>',
+      desktop:
+        '<defs><linearGradient id="ntdk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#232338"/><stop offset="0.55" stop-color="#2c3a52"/><stop offset="1" stop-color="#1a2430"/></linearGradient></defs>' +
+        '<rect width="104" height="64" fill="url(#ntdk)"/><rect width="104" height="6" fill="rgba(0,0,0,0.28)"/><rect x="42" y="0" width="20" height="6" rx="1.5" fill="#000"/>',
+      // What the loop's own capture is of: the Claude window, in miniature.
+      claude:
+        '<rect width="104" height="64" fill="#16171c"/>' +
+        '<rect width="104" height="9" fill="rgba(255,255,255,0.06)"/>' +
+        '<circle cx="7" cy="4.5" r="1.5" fill="#ff5f57"/><circle cx="12" cy="4.5" r="1.5" fill="#febc2e"/><circle cx="17" cy="4.5" r="1.5" fill="#28c840"/>' +
+        '<g fill="#ffffff" opacity="0.82"><rect x="8" y="16" width="3" height="2.4" rx="1.2"/><rect x="13" y="16" width="52" height="2.4" rx="1.2"/></g>' +
+        '<g fill="#d9785a"><rect x="8" y="24" width="2.6" height="2.6" rx="1.3"/><rect x="8" y="32" width="2.6" height="2.6" rx="1.3"/></g>' +
+        '<g fill="#8b94a3"><rect x="14" y="24" width="34" height="2.4" rx="1.2"/><rect x="14" y="32" width="42" height="2.4" rx="1.2"/></g>' +
+        '<g fill="#ffffff" opacity="0.55"><rect x="8" y="43" width="76" height="2.4" rx="1.2"/><rect x="8" y="49" width="48" height="2.4" rx="1.2"/></g>'
+    };
+    return '<svg class="nt-shot-art" viewBox="0 0 104 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">' + (art[kind] || art.document) + '</svg>';
+  }
+
+  var SHOTS = [
+    { kind: "editor", age: "just now" }, { kind: "browser", age: "2 minutes ago" },
+    { kind: "terminal", age: "18 minutes ago" }, { kind: "document", age: "1 hour ago" },
+    { kind: "gallery", age: "3 hours ago" }, { kind: "desktop", age: "yesterday" }
+  ];
+
+  // ---- Claude sessions -------------------------------------------------
+  // ClaudeSession as the store folds it out of hook events.
+  var SPIN_FRAMES = ["·", "✢", "✳", "∗", "✻", "✽"];
+  var STATE = {
+    idle:     { label: "idle",      color: "rgba(255,255,255,0.35)" },
+    thinking: { label: "thinking",  color: "#d9785a" },
+    tool:     { label: "working",   color: "#d9785a" },
+    done:     { label: "done",      color: "#66de80" }
+  };
+
+  /* Clawd, Claude Code's pixel mascot, traced from the reference sprite: an
+     8x6 torso with one-pixel arm nubs, eyes set right of centre (looking
+     where he's going) and four one-pixel legs, on a 10x7 grid. Two running
+     frames; he never stands still here. */
+  var CLAWD = {
+    run: [
+      [".########.", ".########.", "###o###o##", "##########", ".########.", ".########.", ".#....#..."],
+      [".########.", ".########.", "###o###o##", "##########", ".########.", ".########.", "...#....#."]
+    ],
+    body: "#de886d"
+  };
+
+  function bitmapSVG(rows, color, eye) {
+    var w = rows[0].length, h = rows.length, out = "";
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var ch = rows[y][x];
+        if (ch === ".") continue;
+        // Overlap neighbours by a hair so antialiasing can't leave seams.
+        out += '<rect x="' + (x - 0.15) + '" y="' + (y - 0.15) + '" width="1.3" height="1.3" fill="' +
+          (ch === "o" || ch === "x" ? eye : color) + '"/>';
+      }
+    }
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true">' + out + '</svg>';
+  }
+
+  var TOAST_COMPLETE = { duration: 2.7, message: function (n) { return n + " session complete"; } };
+
+  // ---- State -----------------------------------------------------------
+  var st = {
+    open: false,
+    tab: "music",
+    toast: null,           // null | "shot" | "session"
+    playing: true,
+    track: 0,
+    elapsed: 42,           // start mid-song; a player at 0:00 looks switched off
+    lastTick: 0,
+    sessionsOpen: false,   // NotchState.sessionsPanelExpanded
+    savedOpen: false,      // NotchState.musicPanelExpanded
+    sessions: []           // ClaudeSessionStore.sessions
+  };
+
+  // The app pins the screenshot banner 2.25s and collapses at 2.35s. Its
+  // animation runs ~1.5s of that, which leaves under a second to read it —
+  // fine on your own machine, too quick for someone seeing it once.
+  var SHOT_PIN = 3.35;
+
+  var closeTimer = null;
+  var el = {};
+
+  // ---- Icons -----------------------------------------------------------
+  var ICON = {
+    apple: '<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M13.1 10.6c0-2.2 1.8-3.3 1.9-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.1C.5 10.4 1.6 14.3 3 16.4c.7 1 1.5 2.2 2.6 2.2 1 0 1.4-.7 2.7-.7s1.6.7 2.7.7 1.8-1 2.5-2c.8-1.2 1.1-2.3 1.1-2.3s-2.2-.9-2.2-3.4zM11 4.1c.6-.7 1-1.7.9-2.7-.8 0-1.9.6-2.5 1.3-.6.6-1 1.6-.9 2.6.9.1 1.9-.5 2.5-1.2z"/></svg>',
+    wifi: '<svg viewBox="0 0 20 14" aria-hidden="true"><path d="M10 12.6 7.9 10.4a3 3 0 0 1 4.2 0zM10 6.5c-1.5 0-2.9.6-4 1.6L4.6 6.7A7.7 7.7 0 0 1 10 4.5c2.1 0 4 .8 5.4 2.2l-1.4 1.4a5.6 5.6 0 0 0-4-1.6zM10 .8c3 0 5.8 1.2 7.8 3.2l-1.4 1.4A9 9 0 0 0 10 2.8 9 9 0 0 0 3.6 5.4L2.2 4A11 11 0 0 1 10 .8z"/></svg>',
+    battery: '<svg viewBox="0 0 28 14" aria-hidden="true"><rect x="0.75" y="1.75" width="23" height="10.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.5"/><rect x="2.5" y="3.5" width="15" height="7" rx="1.6"/><path d="M25.4 5.2c1.1.4 1.1 3.2 0 3.6z"/></svg>',
+    control: '<svg viewBox="0 0 18 14" aria-hidden="true"><path d="M1 3.2h7.2a2.4 2.4 0 0 1 4.6 0H17v1.4h-4.2a2.4 2.4 0 0 1-4.6 0H1zM1 9.4h4.2a2.4 2.4 0 0 1 4.6 0H17v1.4H9.8a2.4 2.4 0 0 1-4.6 0H1z"/></svg>',
+    prev: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3.2c0-.5.4-.8.8-.8s.8.3.8.8v3.9l6-4.4c.6-.4 1.4 0 1.4.8v8.9c0 .8-.8 1.2-1.4.8l-6-4.4v3.9c0 .5-.4.8-.8.8s-.8-.3-.8-.8z"/></svg>',
+    next: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12 3.2c0-.5-.4-.8-.8-.8s-.8.3-.8.8v3.9l-6-4.4c-.6-.4-1.4 0-1.4.8v8.9c0 .8.8 1.2 1.4.8l6-4.4v3.9c0 .5.4.8.8.8s.8-.3.8-.8z"/></svg>',
+    play: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 2.5c0-.8.9-1.3 1.6-.9l8.2 5.1c.6.4.6 1.3 0 1.7L5 13.5c-.7.4-1.6-.1-1.6-.9z"/></svg>',
+    pause: '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.6" height="12" rx="1.4"/><rect x="9.4" y="2" width="3.6" height="12" rx="1.4"/></svg>',
+    plusCircle: '<svg class="nt-save-plus" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2a6.8 6.8 0 1 1 0 13.6A6.8 6.8 0 0 1 8 1.2zm0 1.4a5.4 5.4 0 1 0 0 10.8A5.4 5.4 0 0 0 8 2.6zM8 4.6c.4 0 .7.3.7.7v2h2c.4 0 .7.3.7.7s-.3.7-.7.7h-2v2c0 .4-.3.7-.7.7s-.7-.3-.7-.7v-2h-2c-.4 0-.7-.3-.7-.7s.3-.7.7-.7h2v-2c0-.4.3-.7.7-.7z"/></svg>',
+    checkCircle: '<svg class="nt-save-check" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2a6.8 6.8 0 1 1 0 13.6A6.8 6.8 0 0 1 8 1.2zm3.1 4.4a.7.7 0 0 0-1 0L7 8.7 5.9 7.6a.7.7 0 1 0-1 1l1.6 1.6c.3.3.7.3 1 0l3.6-3.6a.7.7 0 0 0 0-1z"/></svg>',
+    circle: '<svg class="nt-pl-o" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/></svg>',
+    checkFill: '<svg class="nt-pl-c" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2a6.8 6.8 0 1 1 0 13.6A6.8 6.8 0 0 1 8 1.2zm3.1 4.4a.7.7 0 0 0-1 0L7 8.7 5.9 7.6a.7.7 0 1 0-1 1l1.6 1.6c.3.3.7.3 1 0l3.6-3.6a.7.7 0 0 0 0-1z"/></svg>',
+    minusFill: '<svg class="nt-pl-m" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.2a6.8 6.8 0 1 1 0 13.6A6.8 6.8 0 0 1 8 1.2zM4.9 7.3a.7.7 0 0 0 0 1.4h6.2a.7.7 0 0 0 0-1.4z"/></svg>',
+    xmark: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.3 3.3a1 1 0 0 1 1.4 0L8 6.6l3.3-3.3a1 1 0 1 1 1.4 1.4L9.4 8l3.3 3.3a1 1 0 0 1-1.4 1.4L8 9.4l-3.3 3.3a1 1 0 0 1-1.4-1.4L6.6 8 3.3 4.7a1 1 0 0 1 0-1.4z"/></svg>',
+    heart: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2 6.9 13.2C3 9.7 1 7.9 1 5.5 1 3.6 2.5 2.2 4.4 2.2c1.1 0 2.2.5 2.9 1.4h1.4c.7-.9 1.8-1.4 2.9-1.4C13.5 2.2 15 3.6 15 5.5c0 2.4-2 4.2-5.9 7.7z"/></svg>',
+    noteList: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 2v7.3a2.3 2.3 0 1 1-1.4-2.1V2zM1 3h6v1.4H1zM1 6.5h6v1.4H1zM1 10h4.5v1.4H1z"/></svg>',
+    // The host each session runs in: "chevron.left.forwardslash.chevron.right"
+    // for VS Code, "terminal" for Terminal.app.
+    vscode: '<svg viewBox="0 0 22 18" aria-hidden="true"><path d="M6 3 2 9l4 6M16 3l4 6-4 6M13 2 9 16"/></svg>',
+    terminal: '<svg viewBox="0 0 22 18" aria-hidden="true"><rect x="2" y="2" width="18" height="14" rx="2"/><path d="M6 7l3 2-3 2M11 11h5"/></svg>',
+    // SF Symbols "gear": a solid hub with eight rounded teeth and a punched
+    // centre, not a thin outlined cog. Only one exists, so the mask id is safe.
+    gear: (function () {
+      var teeth = "";
+      for (var a = 0; a < 360; a += 45) teeth += '<rect x="6.85" y="0.9" width="2.3" height="3.6" rx="1.15" transform="rotate(' + a + ' 8 8)"/>';
+      return '<svg viewBox="0 0 16 16" aria-hidden="true"><mask id="nt-gear-hole"><rect width="16" height="16" fill="#fff"/><circle cx="8" cy="8" r="2.3" fill="#000"/></mask><g mask="url(#nt-gear-hole)" fill="currentColor"><circle cx="8" cy="8" r="5.2"/>' + teeth + '</g></svg>';
+    })(),
+    ghost: '<svg class="nt-arrow" viewBox="0 0 18 26" aria-hidden="true"><path d="M2 1.3 15.4 14 9.6 14.4l3.2 7.1-2.9 1.3-3.2-7.2L2 20z" fill="#fff" stroke="#111" stroke-width="1.1" stroke-linejoin="round"/></svg>',
+    // The ⇧⌘4 crosshair: a white cross with a dark halo so it reads on
+    // anything it's dragged over.
+    cross: '<svg class="nt-cross" viewBox="0 0 20 20" aria-hidden="true"><g fill="none">' +
+      '<path d="M10 1v6M10 13v6M1 10h6M13 10h6" stroke="#000" stroke-width="3.4" opacity="0.55"/>' +
+      '<path d="M10 1v6M10 13v6M1 10h6M13 10h6" stroke="#fff" stroke-width="1.5"/></g></svg>'
+  };
+
+  // ---- Build the screen ------------------------------------------------
+  function marquee(cls) {
+    return '<span class="nt-marquee ' + cls + '"><span class="nt-marquee-static"></span>' +
+      '<span class="nt-marquee-run"><span></span><span></span></span></span>';
+  }
+
+  function build() {
+    root.innerHTML =
+      '<div class="nt-wall"></div>' +
+      '<div class="nt-menubar">' +
+        // Short on purpose: pushed in this close, the expanded panel reaches
+        // a third of the way across, and one more item would be sliced
+        // mid-word — which reads as broken even though a real Mac does it.
+        '<div class="nt-menu-left">' + ICON.apple +
+          '<span class="nt-app">Code</span><span>File</span><span>Edit</span>' +
+        '</div>' +
+        '<div class="nt-menu-gap"></div>' +
+        '<div class="nt-menu-right">' + ICON.battery + ICON.wifi + '<span class="nt-clock"></span></div>' +
+      '</div>' +
+
+      '<div class="nt-notch">' +
+        '<div class="nt-shadow"></div>' +
+        '<span class="nt-fillet nt-fillet-l"></span><span class="nt-fillet nt-fillet-r"></span>' +
+        '<div class="nt-body">' +
+
+          '<div class="nt-pane nt-pane-peek is-shown"><div class="nt-peek">' +
+            '<span class="nt-art nt-art-peek"></span>' +
+            '<span class="nt-bars nt-bars-peek"></span>' +
+            '<span class="nt-spin nt-spin-peek">·</span>' +
+          '</div></div>' +
+
+          '<div class="nt-pane nt-pane-music"><div class="nt-music">' +
+            '<div class="nt-track">' +
+              '<span class="nt-art nt-art-full"></span>' +
+              '<span class="nt-meta">' + marquee("nt-title") + marquee("nt-artist") + '</span>' +
+              '<span class="nt-bars nt-bars-full"></span>' +
+            '</div>' +
+            '<div class="nt-scrub">' +
+              '<span class="nt-time nt-time-l">0:00</span>' +
+              '<span class="nt-track-line"><span class="nt-rail"><span class="nt-fill"></span></span></span>' +
+              '<span class="nt-time nt-time-r">-0:00</span>' +
+            '</div>' +
+            '<div class="nt-transport">' +
+              '<span class="nt-btn nt-save">' + ICON.plusCircle + ICON.checkCircle + '<span class="nt-confetti"></span></span>' +
+              '<span class="nt-btn nt-btn-side nt-prev">' + ICON.prev + '</span>' +
+              '<span class="nt-btn nt-btn-play">' +
+                '<span class="nt-glyph nt-glyph-play">' + ICON.play + '</span><span class="nt-glyph nt-glyph-pause">' + ICON.pause + '</span>' +
+              '</span>' +
+              '<span class="nt-btn nt-btn-side nt-next">' + ICON.next + '</span>' +
+            '</div>' +
+            '<div class="nt-savedin">' +
+              '<div class="nt-savedin-head"><span class="nt-savedin-h">SAVED IN</span>' +
+                '<span class="nt-btn nt-savedin-x">' + ICON.xmark + '</span></div>' +
+              '<div class="nt-savedin-list"></div>' +
+            '</div>' +
+          '</div></div>' +
+
+          '<div class="nt-pane nt-pane-shots"><div class="nt-shots"></div></div>' +
+
+          '<div class="nt-pane nt-pane-sessions"></div>' +
+
+          '<div class="nt-pane nt-pane-toast"><div class="nt-toast">' +
+            '<span class="nt-toast-text"></span>' +
+            '<svg class="nt-check" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10"/><path d="M6.5 11.4 9.2 14.1 15.5 7.8"/></svg>' +
+          '</div></div>' +
+
+          '<div class="nt-pane nt-pane-clawd"><div class="nt-clawd-toast">' +
+            '<span class="nt-clawd-label"></span>' +
+            '<span class="nt-clawd">' +
+              bitmapSVG(CLAWD.run[0], CLAWD.body, "#000") + bitmapSVG(CLAWD.run[1], CLAWD.body, "#000") +
+            '</span>' +
+          '</div></div>' +
+
+          // One gear and one corner spinner, above the tabs rather than
+          // inside each of them — the app puts both in the root ZStack, so
+          // they stay put while the tab underneath changes.
+          '<div class="nt-corner"><span class="nt-spin">·</span></div>' +
+          '<span class="nt-gear">' + ICON.gear + '</span>' +
+        '</div>' +
+      '</div>' +
+
+      // The window the tracked session is actually running in, and the
+      // thing the loop's screenshot is a screenshot of.
+      '<div class="nt-claude-win">' +
+        '<div class="nt-claude-bar">' +
+          '<span class="nt-claude-lights"><i></i><i></i><i></i></span>' +
+          '<span class="nt-claude-title">notch — claude</span>' +
+        '</div>' +
+        '<div class="nt-claude-body">' +
+          '<div class="nt-cl-prompt">› make the artist line scroll like the title</div>' +
+          '<div><span class="nt-cl-glyph">✳</span> Read <span class="nt-cl-dim">·</span> Tabs.swift</div>' +
+          '<div><span class="nt-cl-glyph">✳</span> Edit <span class="nt-cl-dim">·</span> Tabs.swift <span class="nt-cl-dim">+18 −4</span></div>' +
+          '<div class="nt-cl-reply">Done — the artist line scrolls when it overflows,<br>same hold and speed as the title.</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="nt-sel"><span class="nt-sel-size"></span></div>' +
+      '<div class="nt-flash"></div>' +
+      '<div class="nt-ghost">' + ICON.ghost + ICON.cross + '</div>';
+
+    el.notch = root.querySelector(".nt-notch");
+    el.panePeek = root.querySelector(".nt-pane-peek");
+    el.paneMusic = root.querySelector(".nt-pane-music");
+    el.paneShots = root.querySelector(".nt-pane-shots");
+    el.paneSessions = root.querySelector(".nt-pane-sessions");
+    el.paneToast = root.querySelector(".nt-pane-toast");
+    el.paneClawd = root.querySelector(".nt-pane-clawd");
+    el.clock = root.querySelector(".nt-clock");
+    el.artPeek = root.querySelector(".nt-art-peek");
+    el.artFull = root.querySelector(".nt-art-full");
+    el.title = root.querySelector(".nt-title");
+    el.artist = root.querySelector(".nt-artist");
+    el.timeL = root.querySelector(".nt-time-l");
+    el.timeR = root.querySelector(".nt-time-r");
+    el.fill = root.querySelector(".nt-fill");
+    el.glyphPlay = root.querySelector(".nt-glyph-play");
+    el.glyphPause = root.querySelector(".nt-glyph-pause");
+    el.play = root.querySelector(".nt-btn-play");
+    el.save = root.querySelector(".nt-save");
+    el.savedX = root.querySelector(".nt-savedin-x");
+    el.confetti = root.querySelector(".nt-confetti");
+    el.savedin = root.querySelector(".nt-savedin");
+    el.savedinList = root.querySelector(".nt-savedin-list");
+    el.shots = root.querySelector(".nt-shots");
+    el.toast = root.querySelector(".nt-toast");
+    el.toastText = root.querySelector(".nt-toast-text");
+    el.clawdToast = root.querySelector(".nt-clawd-toast");
+    el.clawdLabel = root.querySelector(".nt-clawd-label");
+    el.clawd = root.querySelector(".nt-clawd");
+    el.clawdFrames = el.clawd.querySelectorAll(":scope > svg");
+    el.corner = root.querySelector(".nt-corner");
+    el.spinPeek = root.querySelector(".nt-spin-peek");
+    el.flash = root.querySelector(".nt-flash");
+    el.ghost = root.querySelector(".nt-ghost");
+    el.win = root.querySelector(".nt-claude-win");
+    el.sel = root.querySelector(".nt-sel");
+    el.selSize = root.querySelector(".nt-sel-size");
+
+    buildBars(root.querySelector(".nt-bars-peek"));
+    buildBars(root.querySelector(".nt-bars-full"));
+    buildShots();
+    buildToastText();
+  }
+
+  function buildBars(host) {
+    for (var i = 0; i < 6; i++) host.appendChild(document.createElement("span")).className = "nt-bar";
+  }
+
+  function makeShot(shot) {
+    var card = document.createElement("div");
+    card.className = "nt-shot";
+    card.innerHTML = shotArt(shot.kind);
+    var stamp = document.createElement("span");
+    stamp.className = "nt-stamp";
+    stamp.textContent = shot.age;
+    card.appendChild(stamp);
+    return card;
+  }
+
+  function buildShots() {
+    el.shots.innerHTML = "";
+    SHOTS.forEach(function (shot) { el.shots.appendChild(makeShot(shot)); });
+  }
+
+  /* CascadeText: one span per character so each springs in on its own
+     delay, then a ring sweeps 360° and a checkmark strokes inside it. */
+  function buildToastText(text) {
+    text = text || "Screenshot copied to clipboard";
+    el.toastText.innerHTML = "";
+    for (var i = 0; i < text.length; i++) {
+      var s = document.createElement("span");
+      s.className = "nt-ch";
+      s.textContent = text[i] === " " ? " " : text[i];
+      s.style.setProperty("--d", (0.34 + i * 0.018).toFixed(3) + "s");
+      el.toastText.appendChild(s);
+    }
+    var end = 0.34 + text.length * 0.018 + 0.04;
+    el.toast.style.setProperty("--ring-d", end.toFixed(3) + "s");
+    el.toast.style.setProperty("--check-d", (end + 0.34).toFixed(3) + "s");
+  }
+
+  // ---- Scale -----------------------------------------------------------
+  function unit() { return parseFloat(getComputedStyle(root).getPropertyValue("--s")) || 1; }
+
+  function rescale() {
+    var s = Math.min(PANEL_W_FRAC * window.innerWidth / PANEL_W, PANEL_H_FRAC * window.innerHeight / PANEL_H);
+    root.style.setProperty("--s", Math.max(SCALE_MIN, Math.min(SCALE_MAX, s)));
+    renderMarquees();
+  }
+
+  // ---- Clock -----------------------------------------------------------
+  // Time only, no weekday: the bar is scaled up with everything else and the
+  // three extra characters are what tip it over the frame's edge.
+  function tickClock() {
+    var d = new Date();
+    var h = d.getHours(), ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    el.clock.textContent = h + ":" + String(d.getMinutes()).padStart(2, "0") + " " + ampm;
+  }
+
+  // ---- Music rendering -------------------------------------------------
+  function track() { return TRACKS[st.track]; }
+
+  /* Try the sleeve once per track and remember the answer. A missing file is
+     the expected case, not an error — the gradient it falls back to is a
+     complete design, not a broken image. */
+  function resolveArt(t) {
+    if (!t.artFile || t.artTried) return;
+    t.artTried = true;
+    var probe = new Image();
+    probe.onload = function () {
+      t.art = 'url("' + t.artFile + '") center / cover no-repeat';
+      if (track() === t) renderTrack();
+    };
+    probe.src = t.artFile;
+  }
+
+  function setMarquee(node, text) {
+    node.querySelector(".nt-marquee-static").textContent = text;
+    node.querySelectorAll(".nt-marquee-run span").forEach(function (s) { s.textContent = text; });
+    node._epoch = performance.now();
+  }
+
+  function renderMarquees() {
+    [el.title, el.artist].forEach(function (node) {
+      var stat = node.querySelector(".nt-marquee-static");
+      var overflows = stat.scrollWidth > node.clientWidth + 0.5;
+      node.classList.toggle("is-scrolling", overflows);
+      node._travel = overflows ? stat.scrollWidth + 32 * unit() : 0;
+      if (!overflows) node.classList.remove("is-moved");
+    });
+  }
+
+  function tickMarquees(now) {
+    [el.title, el.artist].forEach(function (node) {
+      if (!node._travel) return;
+      var dur = node._travel / (28 * unit());          // 28pt per second
+      var t = ((now - (node._epoch || 0)) / 1000) % (1.0 + dur);
+      var x = -Math.max(0, t - 1.0) / dur * node._travel;   // 1s hold, then glide
+      node.querySelector(".nt-marquee-run").style.transform = "translateX(" + x.toFixed(2) + "px)";
+      node.classList.toggle("is-moved", x < -1);
+    });
+  }
+
+  function renderTrack() {
+    var t = track();
+    resolveArt(t);
+    setMarquee(el.title, t.title);
+    setMarquee(el.artist, t.artist);
+    el.artPeek.style.background = t.art;
+    el.artFull.style.background = t.art;
+    // displayAccent tints the bars and the progress fill, and only those:
+    // the pane's own colour stays white.
+    el.paneMusic.style.setProperty("--accent", t.accent);
+    el.panePeek.style.setProperty("--accent", t.accent);
+    renderMarquees();
+    renderSave();
+  }
+
+  function fmt(s) {
+    s = Math.max(0, Math.round(s));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+
+  function renderProgress() {
+    var t = track();
+    el.fill.style.width = ((t.duration > 0 ? st.elapsed / t.duration : 0) * 100).toFixed(2) + "%";
+    el.timeL.textContent = fmt(st.elapsed);
+    el.timeR.textContent = "-" + fmt(t.duration - st.elapsed);
+  }
+
+  function renderPlayState() {
+    el.glyphPlay.style.opacity = st.playing ? 0 : 1;
+    el.glyphPause.style.opacity = st.playing ? 1 : 0;
+  }
+
+  // ---- Saved in --------------------------------------------------------
+  function renderSave() { el.save.classList.toggle("is-saved", track().saved.length > 0); }
+
+  function playlistRow(pl, contained) {
+    var row = document.createElement("div");
+    row.className = "nt-pl" + (contained ? " is-in" : "");
+    row.innerHTML =
+      '<span class="nt-pl-art' + (pl.liked ? " is-liked" : "") + '">' + (pl.liked ? ICON.heart : ICON.noteList) + '</span>' +
+      '<span class="nt-pl-name">' + pl.name + '</span>' +
+      '<span class="nt-pl-mark">' + ICON.circle + ICON.checkFill + ICON.minusFill + '</span>';
+    row.dataset.pl = pl.id;
+    return row;
+  }
+
+  /* Liked Songs is always the first row, whichever way it's toggled — the
+     app pins it outside the ForEach. Then the contained playlists, then the
+     rest under ADD TO — Spotify's own "Add to playlist" dialog, minus the
+     new-playlist row. */
+  function renderSavedIn() {
+    var t = track();
+    el.savedinList.innerHTML = "";
+    PLAYLISTS.filter(function (p) { return p.liked || t.saved.indexOf(p.id) >= 0; })
+      .forEach(function (p) { el.savedinList.appendChild(playlistRow(p, t.saved.indexOf(p.id) >= 0)); });
+    var others = PLAYLISTS.filter(function (p) { return !p.liked && t.saved.indexOf(p.id) < 0; });
+    if (others.length) {
+      var h = document.createElement("span");
+      h.className = "nt-savedin-h is-add";
+      h.textContent = "ADD TO";
+      el.savedinList.appendChild(h);
+      others.forEach(function (p) { el.savedinList.appendChild(playlistRow(p, false)); });
+    }
+  }
+
+  function playlistRowNode(id) { return el.savedinList.querySelector('[data-pl="' + id + '"]'); }
+
+  /* Adding a track to a playlist moves that row up out of ADD TO and into
+     SAVED IN, and everything between shifts to make room. The app gets that
+     slide for free — one ForEach spans both sections, so a toggle is a pure
+     reorder of stable identities and SwiftUI interpolates it. Rebuilding a
+     list of nodes has no such memory, so the positions are measured first
+     and each row is put back where it was and then released. */
+  function togglePlaylist(id) {
+    var was = {};
+    function record(into) {
+      el.savedinList.querySelectorAll("[data-pl]").forEach(function (n) {
+        into[n.dataset.pl] = n.getBoundingClientRect().top;
+      });
+      var head = el.savedinList.querySelector(".nt-savedin-h");
+      if (head) into._addto = head.getBoundingClientRect().top;
+    }
+    record(was);
+
+    var t = track(), i = t.saved.indexOf(id);
+    if (i >= 0) t.saved.splice(i, 1); else t.saved.push(id);
+    renderSavedIn();
+    renderSave();
+
+    var moved = [];
+    function shift(node, key) {
+      if (!node || was[key] == null) return;
+      var dy = was[key] - node.getBoundingClientRect().top;
+      if (Math.abs(dy) < 0.5) return;
+      node.style.transform = "translateY(" + dy.toFixed(2) + "px)";
+      moved.push(node);
+    }
+    el.savedinList.querySelectorAll("[data-pl]").forEach(function (n) { shift(n, n.dataset.pl); });
+    shift(el.savedinList.querySelector(".nt-savedin-h"), "_addto");
+    if (!moved.length) return;                       // closed panel: nothing measured
+
+    void el.savedinList.offsetWidth;                 // land the old positions first
+    moved.forEach(function (n) {
+      // .spring(response: 0.4, dampingFraction: 0.82) — a little overshoot.
+      n.style.transition = "transform 0.4s cubic-bezier(0.32, 1.26, 0.5, 1)";
+      n.style.transform = "";
+    });
+  }
+
+  /* ConfettiBurst: sixteen dots launched radially with an ease-out, a t²
+     drop for gravity, solid until 75% and then a quick fade. 0.42s. */
+  function confetti() {
+    el.confetti.innerHTML = "";
+    var dots = [];
+    for (var i = 0; i < 16; i++) {
+      var d = document.createElement("i");
+      var size = (i % 2 === 0 ? 1.2 : 0.9) * unit();
+      d.style.width = d.style.height = size + "px";
+      d.style.marginLeft = d.style.marginTop = (-size / 2) + "px";
+      el.confetti.appendChild(d);
+      dots.push({ node: d, angle: (i + 0.5) / 16 * 2 * Math.PI, radius: 13 + ((i * 7) % 3) * 3, g: 2 + ((i * 5) % 4) });
+    }
+    var start = performance.now();
+    (function step(now) {
+      var p = Math.min(1, (now - start) / 420);
+      var eased = 1 - Math.pow(1 - p, 3);
+      var u = unit();
+      dots.forEach(function (o) {
+        o.node.style.transform = "translate(" +
+          (Math.cos(o.angle) * o.radius * eased * u) + "px," +
+          (Math.sin(o.angle) * o.radius * eased * u + p * p * o.g * u) + "px)";
+        o.node.style.opacity = p < 0.75 ? 1 : Math.max(0, 1 - (p - 0.75) / 0.25);
+      });
+      if (p < 1) requestAnimationFrame(step); else el.confetti.innerHTML = "";
+    })(start);
+  }
+
+  // ---- Sessions --------------------------------------------------------
+  function isBusy(s) { return s.state === "thinking" || s.state === "tool"; }
+  function anyActive() { return st.sessions.some(isBusy); }
+
+  function panelHeight(rows) { return rows === 0 ? 24 : rows * 35 + (rows - 1) * 3; }
+
+  function timerText(s, now) {
+    if (!s.turnStart) return "";
+    var d = Math.floor(((s.turnEnd || now) - s.turnStart) / 1000);
+    return Math.floor(d / 60) + ":" + String(d % 60).padStart(2, "0");
+  }
+
+  function detailText(s) {
+    if (s.activity) return s.activity;
+    if (s.state === "done" && s.reply) return s.reply;
+    if (s.prompt) return "› " + s.prompt;
+    return "waiting for a prompt";
+  }
+
+  /* Ordered for display: busiest first, then most recent. */
+  function orderedSessions() {
+    return st.sessions.slice().sort(function (a, b) {
+      if (isBusy(a) !== isBusy(b)) return isBusy(a) ? -1 : 1;
+      return b.lastEvent - a.lastEvent;
+    });
+  }
+
+  function renderSessions() {
+    var now = Date.now();
+    el.paneSessions.innerHTML = "";
+    orderedSessions().forEach(function (s) {
+      var row = document.createElement("div");
+      row.className = "nt-row";
+      row.dataset.session = s.id;
+      row.innerHTML =
+        '<span class="nt-row-state">' + (isBusy(s)
+          ? '<span class="nt-spin">·</span>'
+          : '<span class="nt-row-dot" style="background:' + STATE[s.state].color + '"></span>') + '</span>' +
+        '<span class="nt-row-host">' + (s.host === "vscode" ? ICON.vscode : ICON.terminal) + '</span>' +
+        '<span class="nt-row-text">' +
+          '<span class="nt-row-top">' +
+            '<span class="nt-row-name"></span>' +
+            '<span class="nt-row-branch"></span>' +
+            '<span class="nt-row-label" style="color:' + STATE[s.state].color + '">' + STATE[s.state].label + '</span>' +
+            '<span class="nt-row-timer">' + timerText(s, now) + '</span>' +
+          '</span>' +
+          '<span class="nt-row-detail"></span>' +
+        '</span>';
+      row.querySelector(".nt-row-name").textContent = s.project;
+      row.querySelector(".nt-row-branch").textContent = s.branch;
+      row.querySelector(".nt-row-detail").textContent = detailText(s);
+      el.paneSessions.appendChild(row);
+    });
+    tickSpinners(performance.now(), true);
+  }
+
+  function renderClaudeChrome() {
+    var active = anyActive();
+    el.spinPeek.classList.toggle("is-on", active);
+    el.corner.classList.toggle("is-active", active);
+    // The corner is the panel's only handle; when nothing is running it goes
+    // away, and the panel goes with it.
+    if (!active && st.sessionsOpen) st.sessionsOpen = false;
+  }
+
+  /* ClaudeSpinner: the CLI's own glyph cycle at 0.30s a frame. Every spinner
+     on the page shares one clock, as the app's TimelineViews effectively do. */
+  var spinFrame = -1;
+  function tickSpinners(now, force) {
+    var frame = Math.floor(now / 1000 / 0.30) % SPIN_FRAMES.length;
+    if (!force && frame === spinFrame) return;
+    spinFrame = frame;
+    root.querySelectorAll(".nt-spin").forEach(function (n) { n.textContent = SPIN_FRAMES[frame]; });
+  }
+
+  function refreshClaude() {
+    renderSessions();
+    renderClaudeChrome();
+    renderPanes();
+  }
+
+  function startSession(id, project, branch, host, prompt) {
+    var s = { id: id, project: project, branch: branch, host: host, state: "thinking",
+      activity: null, prompt: prompt, reply: null,
+      turnStart: Date.now(), turnEnd: null, lastEvent: Date.now() };
+    st.sessions.push(s);
+    refreshClaude();
+    return s;
+  }
+
+  function setSession(s, patch) {
+    Object.keys(patch).forEach(function (k) { s[k] = patch[k]; });
+    s.lastEvent = Date.now();
+    refreshClaude();
+  }
+
+  // ---- Panes / geometry ------------------------------------------------
+  /* openBlobSize: the tab is always 108 tall; a taller blob is that same tab
+     with a panel unfolded beneath it, so nothing in the tab ever moves. */
+  function blobHeight() {
+    if (st.savedOpen && st.tab === "music") return 256;
+    if (st.sessionsOpen) return Math.min(108 + panelHeight(st.sessions.length) + 10, 256);
+    return 108;
+  }
+
+  /* One place decides what's visible: the states are mutually exclusive, and
+     drifting them apart is how a toast ends up painted over a music tab. */
+  function renderPanes() {
+    var showing = st.toast === "shot" ? "toast"
+      : st.toast === "session" ? "clawd"
+      : (st.open ? st.tab : "peek");
+    el.panePeek.classList.toggle("is-shown", showing === "peek");
+    el.paneMusic.classList.toggle("is-shown", showing === "music");
+    el.paneShots.classList.toggle("is-shown", showing === "screenshots");
+    el.paneToast.classList.toggle("is-shown", showing === "toast");
+    el.paneClawd.classList.toggle("is-shown", showing === "clawd");
+    el.paneSessions.classList.toggle("is-shown", st.open && !st.toast && st.sessionsOpen);
+    el.paneMusic.classList.toggle("is-tall", st.savedOpen && st.tab === "music");
+    el.savedin.classList.toggle("is-shown", st.open && st.tab === "music" && st.savedOpen);
+    el.notch.classList.toggle("is-open", st.open && !st.toast);
+    el.notch.classList.toggle("is-toast", !!st.toast);
+    el.notch.classList.toggle("is-tall", st.open && !st.toast && blobHeight() > 108);
+    el.notch.style.setProperty("--blob-h", "calc(" + blobHeight() + " * var(--u))");
+  }
+
+  function setOpen(v) {
+    st.open = v;
+    if (!v) { st.sessionsOpen = false; st.savedOpen = false; }
+    renderPanes();
+  }
+
+  function scheduleClose(after) {
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(function () {
+      st.toast = null;
+      stopClawd();
+      setOpen(false);
+    }, after * 1000);
+  }
+
+  // ---- Screenshot toast ------------------------------------------------
+  /* presentScreenshotToast: flash the screen, drop a new thumb at the head
+     of the shelf, and pop the banner. The tab is set to screenshots so that
+     dismissing the banner reveals the strip it's talking about. */
+  /* ⇧⌘4 in three parts: the pointer turns into a crosshair, a drag frames
+     what's about to be captured, and letting go fires the shutter. The
+     rectangle is drawn in the demo's own points so the size it reports is
+     the size the app would report. */
+  function selectionFrom(a, b) {
+    var x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+    var w = Math.abs(b.x - a.x), h = Math.abs(b.y - a.y);
+    el.sel.style.left = x + "px";
+    el.sel.style.top = y + "px";
+    el.sel.style.width = w + "px";
+    el.sel.style.height = h + "px";
+    var u = unit();
+    el.selSize.textContent = Math.round(w / u) + " × " + Math.round(h / u);
+  }
+
+  function endSelection() {
+    el.sel.classList.remove("is-on");
+    el.ghost.classList.remove("is-cross");
+  }
+
+  function fireScreenshot(kind) {
+    el.flash.classList.remove("is-firing");
+    void el.flash.offsetWidth;
+    el.flash.classList.add("is-firing");
+
+    st.toast = null;
+    stopClawd();
+    renderPanes();
+    buildToastText();
+    el.toast.classList.remove("is-running");
+    void el.toast.offsetWidth;
+
+    // A capture that leaves the shelf unchanged makes the shelf look like
+    // decoration. Drop the new one at the head, where macOS would put it.
+    el.shots.insertBefore(makeShot({ kind: kind || "desktop", age: "just now" }), el.shots.firstChild);
+    while (el.shots.children.length > 8) el.shots.removeChild(el.shots.lastChild);
+    el.shots.querySelectorAll(".nt-stamp").forEach(function (n, i) {
+      if (i === 1 && n.textContent === "just now") n.textContent = "a moment ago";
+    });
+
+    st.toast = "shot";
+    st.tab = "screenshots";
+    st.open = true;
+    st.sessionsOpen = false;
+    st.savedOpen = false;
+    renderPanes();
+    el.toast.classList.add("is-running");
+    scheduleClose(SHOT_PIN);
+  }
+
+  // ---- Session toast (Clawd) -------------------------------------------
+  /* SessionToastView, "complete": Clawd sprints the full width of the notch
+     at one cruise speed — 1.7s for the crossing, after a 0.3s lead for the
+     notch to finish expanding — and the label is painted in behind him. */
+  var clawd = null;
+
+  function presentSessionToast(s) {
+    clearTimeout(closeTimer);
+    st.toast = "session";
+    st.open = true;
+    st.sessionsOpen = false;
+    st.savedOpen = false;
+    var name = s.project.length > 14 ? s.project.slice(0, 13) + "…" : s.project;
+    el.clawdLabel.textContent = TOAST_COMPLETE.message(name);
+    renderPanes();
+    scheduleClose(TOAST_COMPLETE.duration);
+    clawd = { start: performance.now() };
+    el.clawd.style.opacity = 0;
+  }
+
+  function stopClawd() { clawd = null; }
+
+  function setFrame(i) {
+    el.clawdFrames.forEach(function (f, n) { f.classList.toggle("is-frame", n === i); });
+  }
+
+  function tickClawd(now) {
+    if (!clawd) return;
+    var u = unit();
+    var t = (now - clawd.start) / 1000;
+    var w = el.clawdToast.clientWidth;
+    var spriteW = 15 * 10 / 7 * u;
+    var inset = 14 * u;
+    var labelW = el.clawdLabel.offsetWidth;
+    var lead = 0.30, run = 1.7, stride = 0.085;
+    var entryX = -inset - spriteW, exitX = w + inset;
+
+    var p = Math.min(Math.max((t - lead) / run, 0), 1);
+    var x = entryX + (exitX - entryX) * p;
+    var frame = Math.floor(Math.max(0, t - lead) / stride) % 2;
+    var bob = frame === 1 ? -0.7 * u : 0;
+    var textLeft = (w - labelW) / 2;
+
+    setFrame(frame);
+    el.clawd.style.opacity = t >= lead ? 1 : 0;
+    el.clawd.style.transform = "translate(" + x.toFixed(2) + "px," + bob.toFixed(2) + "px)";
+    el.clawdLabel.style.left = textLeft.toFixed(2) + "px";
+    // The label is painted in behind him rather than fading up as a block.
+    var revealW = Math.max(0, x + spriteW / 2 - textLeft);
+    el.clawdLabel.style.clipPath = "inset(-4px " + Math.max(0, labelW - revealW).toFixed(2) + "px -4px -2px)";
+  }
+
+  // ---- Animation loop --------------------------------------------------
+  var bars = null;
+  var lastSessionsTick = 0;
+
+  function frame(now) {
+    if (!running) return;                                // resume re-arms it
+    if (!bars) bars = root.querySelectorAll(".nt-bar");
+    var t = now / 1000;
+
+    // DancingBars' no-signal fallback: two summed sines per bar, phase-offset
+    // down the row, so the motion is organic and never repeats on a beat.
+    for (var i = 0; i < bars.length; i++) {
+      var h;
+      if (!st.playing) {
+        h = 0.14;                                        // restHeight
+      } else {
+        var phase = (i % 6) * 1.1;
+        var a = Math.sin(t * 5.2 + phase) * 0.5 + 0.5;
+        var b = Math.sin(t * 9.7 + phase * 2.1) * 0.5 + 0.5;
+        h = 0.22 + (a * 0.6 + b * 0.4) * 0.78;
+      }
+      bars[i].style.transform = "scaleY(" + h.toFixed(3) + ")";
+    }
+
+    if (st.lastTick) {
+      var dt = (now - st.lastTick) / 1000;
+      if (st.playing) {
+        st.elapsed += dt;
+        if (st.elapsed >= track().duration) {
+          st.elapsed = 0;
+          st.track = (st.track + 1) % TRACKS.length;
+          renderTrack();
+        }
+        renderProgress();
+      }
+    }
+    st.lastTick = now;
+
+    tickSpinners(now);
+    tickMarquees(now);
+    tickClawd(now);
+    // The panel's timers tick once a second while it's unfolded.
+    if (st.sessionsOpen && now - lastSessionsTick > 1000) { lastSessionsTick = now; renderSessions(); }
+
+    requestAnimationFrame(frame);
+  }
+
+  // ---- The drawn cursor ------------------------------------------------
+  var ghostHovering = null;
+
+  function ghostTo(x, y, ms) {
+    el.ghost.style.transition = "transform " + ms + "ms cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease";
+    el.ghost.style.transform = "translate(" + x + "px, " + y + "px)";
+  }
+
+  /* Move onto a control and light that control's hover state by hand: the
+     drawn cursor is not a pointer, so nothing lights up on its own. Only one
+     thing is hovered at a time, same as a real pointer. */
+  function ghostOver(node, ms) {
+    if (ghostHovering) ghostHovering.classList.remove("is-ghost-hover");
+    ghostHovering = node || null;
+    if (!node) return;
+    node.classList.add("is-ghost-hover");
+    var r = node.getBoundingClientRect();
+    ghostTo(r.left + r.width / 2, r.top + r.height / 2, ms || 550);
+  }
+
+  function ghostTap(node, action) {
+    el.ghost.classList.add("is-clicking");
+    if (node) node.classList.add("is-pressed");
+    setTimeout(function () {
+      el.ghost.classList.remove("is-clicking");
+      if (node) node.classList.remove("is-pressed");
+      if (action) action();
+    }, 130);
+  }
+
+  function notchPoint(fracX, fracY) {
+    var r = el.notch.getBoundingClientRect();
+    return { x: r.left + r.width * fracX, y: r.top + r.height * fracY };
+  }
+
+  /* Where the cursor rests when it isn't doing anything: on the desk, just
+     left of where the Claude window sits, clear of the notch in every state
+     (the 256pt "Saved in" panel is the tallest, and this is 40pt beside its
+     edge, not under it). A fixed spot, so leaving the notch is always the
+     same short move to the same place — and the same place the next loop
+     sets off from, so the loop joins up without the cursor ever having to
+     vanish or reappear. */
+  function restPoint() {
+    var u = unit();
+    return { x: window.innerWidth / 2 - 190 * u, y: 198 * u };
+  }
+
+  /* Step away from the notch — what the hover watcher sees as the cursor
+     leaving, and what lets a toast own the frame afterwards. It goes to
+     rest and stays in view: a pointer that drifts toward the edge and fades
+     reads as leaving the screen, which nobody does between two clicks. */
+  function ghostRest(ms) {
+    ghostOver(null);
+    var p = restPoint();
+    ghostTo(p.x, p.y, ms || 600);
+  }
+
+  // ---- The loop --------------------------------------------------------
+  /* A scripted run through everything the app does, driven by the drawn
+     cursor so it reads as someone using it rather than as an animation
+     playing. Nothing here waits on the visitor: the events a real machine
+     would supply — a session starting, a screenshot being taken — simply
+     happen, and then it all starts again. */
+  var timers = [];
+  var running = false;
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+
+  /* Nothing here ever finishes, so it has to stop itself when no one is
+     looking: a hidden tab throttles rAF to nothing but leaves the timers
+     running, and the loop would come back mid-sentence. Below the fold
+     counts too — this is one panel of a long page. */
+  function onScreen() {
+    if (document.hidden) return false;
+    try {
+      var fe = window.frameElement;
+      if (!fe) return true;
+      var r = fe.getBoundingClientRect();
+      return r.bottom > -80 && r.top < (window.parent.innerHeight || 0) + 80;
+    } catch (e) {
+      return true;              // framed cross-origin: assume it's visible
+    }
+  }
+
+  function setRunning(on) {
+    if (on === running) return;
+    running = on;
+    if (on) {
+      st.lastTick = 0;          // don't credit the pause to the playback clock
+      requestAnimationFrame(frame);
+      loop();
+    } else {
+      timers.forEach(clearTimeout); timers = [];
+      clearTimeout(closeTimer);
+    }
+  }
+
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    clearTimeout(closeTimer);
+    stopClawd();
+    ghostOver(null);
+    // The cursor carries over: a loop ends with it at rest and the next one
+    // sets off from there. Only a cursor that isn't showing yet (first run,
+    // or resuming after the shutter hid it) is placed — at rest, unseen, so
+    // it fades in on its way to the notch rather than popping in.
+    el.ghost.classList.remove("is-cross");
+    if (!el.ghost.classList.contains("is-on")) {
+      var rest = restPoint();
+      el.ghost.style.transition = "none";
+      el.ghost.style.transform = "translate(" + rest.x + "px, " + rest.y + "px)";
+      void el.ghost.offsetWidth;                     // commit that as the start
+    }
+    st.toast = null;
+    st.open = false;
+    st.tab = "music";
+    st.sessionsOpen = false;
+    st.savedOpen = false;
+    st.sessions = [];
+    st.playing = true;
+    st.track = 0;
+    st.elapsed = 42;
+    TRACKS.forEach(function (t) { t.saved = t.saved0.slice(); });
+    el.win.classList.remove("is-on");
+    endSelection();
+    buildShots();
+    renderTrack();
+    renderProgress();
+    renderPlayState();
+    refreshClaude();
+  }
+
+  function loop() {
+    reset();
+
+    // A session is already under way when the loop opens: the notch is
+    // reporting work you started somewhere else, which is the whole point of
+    // it, so the spinner is in the pill from the first frame.
+    var A = startSession("a", "notch", "main", "vscode", "make the artist line scroll like the title");
+    A.turnStart = Date.now() - 12000;
+    // One state for the whole visit. The app's row holds its line for as
+    // long as a tool runs, which is usually the whole time you're looking;
+    // a row that flips every second or two is something the app doesn't do,
+    // and reads as a slideshow instead of a status.
+    setSession(A, { state: "tool", activity: "Edit · Tabs.swift" });
+
+    // Straight in: the cursor sets off from rest for the notch, which opens
+    // as it arrives. No launch greeting, nothing to sit through.
+    var pill = notchPoint(0.5, 0.6);
+    ghostTo(pill.x, pill.y, 900);
+    el.ghost.classList.add("is-on");                 // first run: fades in on the way
+
+    // — Now Playing. The save button: grey ⊕ → like it → confetti, green ✓.
+    at(900, function () { setOpen(true); });
+    at(1500, function () { ghostOver(el.save, 500); });
+    at(2100, function () { ghostTap(el.save, function () { togglePlaylist("liked"); confetti(); }); });
+    // Pressed again it answers the question Spotify answers nowhere else at
+    // a glance: *where* is this song saved?
+    at(3000, function () { ghostTap(el.save, function () { st.savedOpen = true; renderSavedIn(); renderPanes(); }); });
+    at(3800, function () { ghostOver(playlistRowNode("focus"), 500); });
+    at(4400, function () { ghostTap(playlistRowNode("focus"), function () { togglePlaylist("focus"); }); });
+    at(5000, function () { ghostOver(playlistRowNode("focus"), 260); });   // it slid; follow it up
+    at(5700, function () { ghostOver(el.savedX, 450); });
+    at(6150, function () { ghostTap(el.savedX, function () { st.savedOpen = false; renderPanes(); }); });
+
+    // — and straight on into the session, in the same open notch. The
+    //   spinner in the corner is the panel's handle: hovering it is what
+    //   unfolds the sessions panel in the app, so that is what happens here.
+    at(6500, function () { ghostOver(el.corner, 450); });
+    at(6950, function () { st.sessionsOpen = true; refreshClaude(); });
+    // A glance down the row, and out. Nothing in the row moves but the
+    // timer (see the note where A starts), so there is nothing to wait for.
+    at(7500, function () { ghostOver(el.paneSessions.firstChild, 450); });
+    at(8700, function () { ghostRest(650); });      // and waits on the desk; the notch has it from here
+    at(9200, function () { setOpen(false); });
+
+    // The turn finishes, and Clawd sprints the width of the notch.
+    at(9900, function () {
+      setSession(A, { state: "done", turnEnd: Date.now(),
+        reply: "Done — the artist line scrolls when it overflows, same hold and speed as the title." });
+      presentSessionToast(A);
+    });
+
+    // — and there it is on the desktop, worth keeping: crosshair, drag,
+    //   shutter, and the banner that says where it went.
+    at(13200, function () { el.win.classList.add("is-on"); });
+    // ⇧⌘4: the arrow becomes a crosshair. The two have different hot spots,
+    // so the swap happens out of sight — the arrow fades where it rests and
+    // the crosshair fades in on its way to the corner.
+    at(13550, function () { el.ghost.classList.remove("is-on"); });
+    at(13900, function () {
+      var r = el.win.getBoundingClientRect(), m = 9 * unit();
+      el.ghost.classList.add("is-cross", "is-on");
+      ghostTo(r.left - m, r.top - m, 800);
+    });
+    at(14800, function () {
+      var r = el.win.getBoundingClientRect(), m = 9 * unit();
+      var from = { x: r.left - m, y: r.top - m };
+      var to = { x: r.right + m, y: r.bottom + m };
+      el.sel.classList.add("is-on");
+      selectionFrom(from, from);
+      // One drag, drawn per frame. Stepping it on timers — a fresh CSS
+      // transition every 60ms — stutters, because timers don't land on
+      // frames and each restart re-eases from wherever the last one got
+      // to. So the crosshair is placed directly, no transition, from the
+      // same clock the compositor paints on.
+      var DRAG_MS = 900;
+      el.ghost.style.transition = "opacity 0.3s ease";
+      var t0 = null;
+      (function drag(now) {
+        if (!running) return;                        // paused mid-drag: the next loop resets
+        if (t0 === null) t0 = now;
+        var p = Math.min(1, (now - t0) / DRAG_MS);
+        var e = 1 - Math.pow(1 - p, 2);              // ease out of the corner
+        var at_ = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
+        selectionFrom(from, at_);
+        el.ghost.style.transform = "translate(" + at_.x + "px, " + at_.y + "px)";
+        if (p < 1) requestAnimationFrame(drag);
+      })(performance.now());
+    });
+    at(15900, function () {
+      el.sel.classList.remove("is-on");
+      // Out of frame across the shutter: the crosshair and the arrow have
+      // different hot spots, and swapping them in view reads as a jump.
+      // The fade takes 0.3s, so the swap waits until it's done — dropping
+      // is-cross here would put the arrow on screen for the whole fade.
+      el.ghost.classList.remove("is-on");
+      fireScreenshot("claude");
+    });
+    at(16300, function () { el.ghost.classList.remove("is-cross"); });
+
+    // The arrow comes back where the crosshair let go — the same point, the
+    // way macOS gives the pointer back after the shutter — and only then
+    // heads for the notch, so it returns rather than materialises mid-air.
+    at(19300, function () { el.ghost.classList.add("is-on"); });
+    at(19600, function () {
+      var p = notchPoint(0.5, 0.6);
+      ghostTo(p.x, p.y, 750);
+    });
+    at(20350, function () { setOpen(true); });            // still on the screenshots tab
+    at(20900, function () { ghostOver(el.shots.children[0], 550); });   // the one just taken
+    // The second card, not the third: the strip shows two and a sliver, and
+    // hovering a card that's mostly clipped parks the cursor off the blob.
+    at(22000, function () { ghostOver(el.shots.children[1], 550); });
+    // Back to rest, where the next loop picks it up — the cursor stays in
+    // view across the join, so the loop closes without a seam.
+    at(22900, function () { ghostRest(650); el.win.classList.remove("is-on"); });
+    at(23400, function () { setOpen(false); });
+
+    at(25000, loop);
+  }
+
+  // ---- Boot ------------------------------------------------------------
+  build();
+  rescale();
+  tickClock();
+  setInterval(tickClock, 20000);
+  renderTrack();
+  renderProgress();
+  renderPlayState();
+  refreshClaude();
+  window.addEventListener("resize", rescale);
+  // Fonts settle a frame or two after first paint; the marquee has to be
+  // measured against the width they actually take.
+  requestAnimationFrame(rescale);
+
+  if (still) {
+    // A reduced-motion preference is asking for less movement, and the loop
+    // is the only movement here. Compose the one frame that says the most —
+    // the panel open, a session running under it — and leave it alone.
+    st.playing = false;
+    st.elapsed = 41;
+    TRACKS[0].saved = ["liked"];        // the ✓ says more than an empty ⊕
+    renderTrack();
+    renderProgress();
+    renderPlayState();
+    startSession("a", "notch", "main", "vscode", "make the artist line scroll like the title");
+    // A turn that started the instant the page did would read 0:00, which
+    // looks like a stopped clock rather than a still frame of a running one.
+    st.sessions[0].turnStart = Date.now() - 26000;
+    setSession(st.sessions[0], { state: "tool", activity: "Edit · Tabs.swift" });
+    st.open = true;
+    st.sessionsOpen = true;
+    refreshClaude();
+    tickSpinners(600, true);            // parked on ✳ rather than a bare dot
+    bars = root.querySelectorAll(".nt-bar");
+    bars.forEach(function (b) { b.style.transform = "scaleY(0.14)"; });
+  } else {
+    setRunning(onScreen());
+    document.addEventListener("visibilitychange", function () { setRunning(onScreen()); });
+    // Scrolling happens in the parent document, which won't tell us about it;
+    // a slow poll costs one rect read a second and needs no cooperation.
+    setInterval(function () { setRunning(onScreen()); }, 1000);
+  }
+})();
+</script>
+</body>
+</html>

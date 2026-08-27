@@ -55,13 +55,8 @@
     <ul class="bands">
       <li id="notch">
         <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/notch/"
-          data-bg="#1b1c2b" data-title="Notch - live demo"
-          tabindex="0" role="button"
-          aria-label="Expand the Notch live demo to fullscreen">
-            <img src="/assets/img/notch/preview.png"
-            alt="A macOS desktop with the notch expanded into a music panel: album art, track title, a progress scrubber and transport controls">
-          </figure>
+          <iframe class="ld-inline" src="/demos/notch-v2/"
+          title="Notch - the app running itself" loading="lazy"></iframe>
         </div>
         <div class="band-prose">
           <div class="band-head">
@@ -78,18 +73,19 @@
             </a>
           </div>
           <p data-i18n="work.notch.p1">A macOS utility that creates its own notch at the top of the
-          display. Hover the black pill and it expands into Now Playing
-          controls, a screenshot shelf, and clipboard history</p>
+          display. Lets you control music, add or remove songs from playlists,
+          and see a Claude session's status in real time. It also makes taking
+          screenshots on a Mac a bit easier</p>
 
           <div class="band-spec">
             <h3 data-i18n="spec.title">Technical specifications</h3>
             <dl>
               <div>
                 <dt data-i18n="spec.how">How it works</dt>
-                <dd data-i18n="work.notch.how">An NSPanel pinned to the top of every Space, a notch that
-                expands on hover. Now Playing over the private MediaRemote API,
-                screenshots via FSEvents, the level meter off an AVAudioEngine
-                tap</dd>
+                <dd data-i18n="work.notch.how">An NSPanel pinned above every Space. Now Playing over the
+                private MediaRemote API, audio bars from a CoreAudio tap,
+                screenshots from a folder watch, and Claude sessions from hook
+                events</dd>
               </div>
               <div>
                 <dt data-i18n="spec.builton">Built on</dt>

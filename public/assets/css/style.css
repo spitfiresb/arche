@@ -1253,6 +1253,11 @@ ul.bands > li.solo:nth-child(even) .band-prose {
   border-radius: 0;
 }
 
+/* The Notch demo is a lit screen on a dark desk; the pale boot colour the
+   other embeds use would flash white before it paints. */
+#notch .ld-inline,
+#notch .ld-inline-box { background: #1b1c2b; }
+
 /* The system map's page shares the site background, so a frame would draw a
    box around what should read as part of the page itself, and for the same
    reason it stays square while the other previews round off. */

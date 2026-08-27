@@ -132,6 +132,36 @@ Things to remember when touching it:
   `played_at` stays behind; the browser gets a distance from now, never a
   clock time.
 
+## The Notch demo
+
+The Notch band on `/work/cool` embeds `public/demos/notch-v2/` — one
+self-contained file that recreates the app in the browser and then *runs
+itself*: a 25-second loop walks a drawn cursor through Now Playing, the
+"Saved in" playlist panel, a live Claude Code session (already under way
+when the loop opens, so the spinner is in the pill from the first frame),
+Clawd's completion sprint, and then a ⇧⌘4 drag over a Claude window on the
+desktop that ends in the screenshot toast. Nothing in it responds to the
+visitor — no buttons, no hover, no keys — so it reads as a video without
+being one.
+
+- **It's an `.ld-inline` iframe, not an `.ld-thumb`.** A thumb only runs the
+  demo once you click through to fullscreen, which is no good for something
+  whose whole point is that it plays on its own.
+- **Every size is the app's own point value**, scaled once with `--u`; the
+  header comment lists the timings it mirrors. Changing `PANEL_W_FRAC` is
+  how far the camera is pushed in, and 0.52 is the ceiling: past that the
+  menu bar (which scales too) overflows the frame.
+- **It pauses when nobody's looking.** A loop that never ends would
+  otherwise animate in a background tab or below the fold; `onScreen()`
+  checks `document.hidden` and the iframe's own rect in the parent.
+- **The playlist slide is a FLIP, not a transition.** Toggling a playlist
+  rebuilds the list, and rebuilt nodes have no memory of where they were, so
+  `togglePlaylist` measures every row first and puts each one back before
+  releasing it. The app gets the same slide for free — one `ForEach` spans
+  both sections there, so a toggle is a pure reorder.
+- `public/demos/notch/` is the previous, interactive edition, kept for
+  comparison. Nothing links to it.
+
 ## The location corner
 
 The bottom-left of the home page: "Last seen at <venue>". A LaunchAgent on my

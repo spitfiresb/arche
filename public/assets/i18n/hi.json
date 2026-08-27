@@ -94,8 +94,8 @@
   "work.agdash.p1": "Oregon के सबसे बड़े equipment dealer के लिए एक geospatial analytics platform। फ़िलहाल छह राज्यों में 1,500 से ज़्यादा कर्मचारी इसका इस्तेमाल कर रहे हैं",
   "work.agdash.data": "USDA Census of Agriculture, छह राज्यों की 250 counties। सीमाएँ Census Bureau की TIGER/Line files से",
 
-  "work.notch.p1": "एक macOS utility जो डिस्प्ले के ऊपर अपना खुद का notch बनाती है। काली pill पर hover करें और वह Now Playing controls, एक screenshot shelf और clipboard history में खुल जाती है",
-  "work.notch.how": "हर Space के ऊपर pinned एक NSPanel, एक notch जो hover पर फैल जाता है। Now Playing निजी MediaRemote API से, screenshots FSEvents के ज़रिए, और level meter एक AVAudioEngine tap से",
+  "work.notch.p1": "एक macOS utility जो डिस्प्ले के ऊपर अपना खुद का notch बनाती है। इससे आप music control कर सकते हैं, playlists में गाने जोड़ या हटा सकते हैं, और Claude session का status real time में देख सकते हैं। Mac पर screenshot लेना भी थोड़ा आसान हो जाता है",
+  "work.notch.how": "हर Space के ऊपर pinned एक NSPanel। Now Playing निजी MediaRemote API से, audio bars एक CoreAudio tap से, screenshots एक folder watch से, और Claude sessions hook events से",
   "work.notch.builton": "Swift, SwiftUI और AppKit",
   "work.notch.why": "Open source विकल्पों से मन नहीं भरा, तो मैंने अपना खुद का बनाने की ठान ली",
 
