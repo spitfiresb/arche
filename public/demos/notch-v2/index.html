@@ -1604,15 +1604,26 @@ body {
     return { x: r.left + r.width * fracX, y: r.top + r.height * fracY };
   }
 
-  /* Step away from the notch and fade out — what the hover watcher sees as
-     the cursor leaving, and what lets a toast own the frame afterwards. */
-  function ghostAway(ms) {
+  /* Where the cursor rests when it isn't doing anything: on the desk, just
+     left of where the Claude window sits, clear of the notch in every state
+     (the 256pt "Saved in" panel is the tallest, and this is 40pt beside its
+     edge, not under it). A fixed spot, so leaving the notch is always the
+     same short move to the same place — and the same place the next loop
+     sets off from, so the loop joins up without the cursor ever having to
+     vanish or reappear. */
+  function restPoint() {
+    var u = unit();
+    return { x: window.innerWidth / 2 - 190 * u, y: 198 * u };
+  }
+
+  /* Step away from the notch — what the hover watcher sees as the cursor
+     leaving, and what lets a toast own the frame afterwards. It goes to
+     rest and stays in view: a pointer that drifts toward the edge and fades
+     reads as leaving the screen, which nobody does between two clicks. */
+  function ghostRest(ms) {
     ghostOver(null);
-    var r = el.notch.getBoundingClientRect();
-    // Clear of the blob, but never so far down that it leaves the frame —
-    // the blob is three times taller with a panel unfolded.
-    var y = Math.min(r.bottom + 60 * unit(), window.innerHeight * 0.82);
-    ghostTo(r.left + r.width / 2, y, ms || 600);
+    var p = restPoint();
+    ghostTo(p.x, p.y, ms || 600);
   }
 
   // ---- The loop --------------------------------------------------------
@@ -1659,7 +1670,17 @@ body {
     clearTimeout(closeTimer);
     stopClawd();
     ghostOver(null);
-    el.ghost.classList.remove("is-on");
+    // The cursor carries over: a loop ends with it at rest and the next one
+    // sets off from there. Only a cursor that isn't showing yet (first run,
+    // or resuming after the shutter hid it) is placed — at rest, unseen, so
+    // it fades in on its way to the notch rather than popping in.
+    el.ghost.classList.remove("is-cross");
+    if (!el.ghost.classList.contains("is-on")) {
+      var rest = restPoint();
+      el.ghost.style.transition = "none";
+      el.ghost.style.transform = "translate(" + rest.x + "px, " + rest.y + "px)";
+      void el.ghost.offsetWidth;                     // commit that as the start
+    }
     st.toast = null;
     st.open = false;
     st.tab = "music";
@@ -1687,16 +1708,17 @@ body {
     // it, so the spinner is in the pill from the first frame.
     var A = startSession("a", "notch", "main", "vscode", "make the artist line scroll like the title");
     A.turnStart = Date.now() - 12000;
-    setSession(A, { state: "tool", activity: "Read · Tabs.swift" });
+    // One state for the whole visit. The app's row holds its line for as
+    // long as a tool runs, which is usually the whole time you're looking;
+    // a row that flips every second or two is something the app doesn't do,
+    // and reads as a slideshow instead of a status.
+    setSession(A, { state: "tool", activity: "Edit · Tabs.swift" });
 
-    // Straight in: the cursor is already on its way to the notch, which
-    // opens as it arrives. No launch greeting, nothing to sit through.
+    // Straight in: the cursor sets off from rest for the notch, which opens
+    // as it arrives. No launch greeting, nothing to sit through.
     var pill = notchPoint(0.5, 0.6);
-    el.ghost.style.transition = "none";
-    el.ghost.style.transform = "translate(" + (window.innerWidth * 0.30) + "px, " + (window.innerHeight * 0.62) + "px)";
-    void el.ghost.offsetWidth;                       // commit that as the start
     ghostTo(pill.x, pill.y, 900);
-    el.ghost.classList.add("is-on");                 // fades in on the way
+    el.ghost.classList.add("is-on");                 // first run: fades in on the way
 
     // — Now Playing. The save button: grey ⊕ → like it → confetti, green ✓.
     at(900, function () { setOpen(true); });
@@ -1711,18 +1733,19 @@ body {
     at(5700, function () { ghostOver(el.savedX, 450); });
     at(6150, function () { ghostTap(el.savedX, function () { st.savedOpen = false; renderPanes(); }); });
 
-    // — and straight on into the session, in the same open notch: the
-    //   playlist panel folds away and the sessions panel takes its place.
-    at(6800, function () { ghostOver(null); st.sessionsOpen = true; refreshClaude(); });
-    at(7600, function () { setSession(A, { state: "thinking", activity: null }); });
-    at(8200, function () { setSession(A, { state: "tool", activity: "Edit · Tabs.swift" }); });
-    at(10000, function () { setSession(A, { state: "thinking", activity: null }); });
-    at(10800, function () { ghostAway(650); });
-    at(11300, function () { setOpen(false); });
-    at(11600, function () { el.ghost.classList.remove("is-on"); });   // the notch has it from here
+    // — and straight on into the session, in the same open notch. The
+    //   spinner in the corner is the panel's handle: hovering it is what
+    //   unfolds the sessions panel in the app, so that is what happens here.
+    at(6500, function () { ghostOver(el.corner, 450); });
+    at(6950, function () { st.sessionsOpen = true; refreshClaude(); });
+    // A glance down the row, and out. Nothing in the row moves but the
+    // timer (see the note where A starts), so there is nothing to wait for.
+    at(7500, function () { ghostOver(el.paneSessions.firstChild, 450); });
+    at(8700, function () { ghostRest(650); });      // and waits on the desk; the notch has it from here
+    at(9200, function () { setOpen(false); });
 
     // The turn finishes, and Clawd sprints the width of the notch.
-    at(11900, function () {
+    at(9900, function () {
       setSession(A, { state: "done", turnEnd: Date.now(),
         reply: "Done — the artist line scrolls when it overflows, same hold and speed as the title." });
       presentSessionToast("complete", A);
@@ -1730,31 +1753,42 @@ body {
 
     // — and there it is on the desktop, worth keeping: crosshair, drag,
     //   shutter, and the banner that says where it went.
-    at(15200, function () { el.win.classList.add("is-on"); });
-    at(15900, function () {
+    at(13200, function () { el.win.classList.add("is-on"); });
+    // ⇧⌘4: the arrow becomes a crosshair. The two have different hot spots,
+    // so the swap happens out of sight — the arrow fades where it rests and
+    // the crosshair fades in on its way to the corner.
+    at(13550, function () { el.ghost.classList.remove("is-on"); });
+    at(13900, function () {
       var r = el.win.getBoundingClientRect(), m = 9 * unit();
       el.ghost.classList.add("is-cross", "is-on");
       ghostTo(r.left - m, r.top - m, 800);
     });
-    at(16800, function () {
+    at(14800, function () {
       var r = el.win.getBoundingClientRect(), m = 9 * unit();
       var from = { x: r.left - m, y: r.top - m };
       var to = { x: r.right + m, y: r.bottom + m };
       el.sel.classList.add("is-on");
       selectionFrom(from, from);
-      for (var i = 1; i <= 14; i++) {
-        (function (n) {
-          at(n * 62, function () {
-            var p = n / 14;
-            var e = 1 - Math.pow(1 - p, 2);           // ease out of the corner
-            var now = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
-            selectionFrom(from, now);
-            ghostTo(now.x, now.y, 62);
-          });
-        })(i);
-      }
+      // One drag, drawn per frame. Stepping it on timers — a fresh CSS
+      // transition every 60ms — stutters, because timers don't land on
+      // frames and each restart re-eases from wherever the last one got
+      // to. So the crosshair is placed directly, no transition, from the
+      // same clock the compositor paints on.
+      var DRAG_MS = 900;
+      el.ghost.style.transition = "opacity 0.3s ease";
+      var t0 = null;
+      (function drag(now) {
+        if (!running) return;                        // paused mid-drag: the next loop resets
+        if (t0 === null) t0 = now;
+        var p = Math.min(1, (now - t0) / DRAG_MS);
+        var e = 1 - Math.pow(1 - p, 2);              // ease out of the corner
+        var at_ = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
+        selectionFrom(from, at_);
+        el.ghost.style.transform = "translate(" + at_.x + "px, " + at_.y + "px)";
+        if (p < 1) requestAnimationFrame(drag);
+      })(performance.now());
     });
-    at(17900, function () {
+    at(15900, function () {
       endSelection();
       // Out of frame across the shutter: the crosshair and the arrow have
       // different hot spots, and swapping them in view reads as a jump.
@@ -1762,19 +1796,23 @@ body {
       fireScreenshot("claude");
     });
 
-    at(21600, function () {
+    // The arrow comes back where the crosshair let go — the same point, the
+    // way macOS gives the pointer back after the shutter — and only then
+    // heads for the notch, so it returns rather than materialises mid-air.
+    at(19300, function () { el.ghost.classList.add("is-on"); });
+    at(19600, function () {
       var p = notchPoint(0.5, 0.6);
       ghostTo(p.x, p.y, 750);
-      el.ghost.classList.add("is-on");
     });
-    at(22350, function () { setOpen(true); });            // still on the screenshots tab
-    at(22900, function () { ghostOver(el.shots.children[0], 550); });   // the one just taken
-    at(24000, function () { ghostOver(el.shots.children[2], 550); });
-    at(24900, function () { ghostAway(650); el.win.classList.remove("is-on"); });
-    at(25400, function () { setOpen(false); });
-    at(25800, function () { el.ghost.classList.remove("is-on"); });
+    at(20350, function () { setOpen(true); });            // still on the screenshots tab
+    at(20900, function () { ghostOver(el.shots.children[0], 550); });   // the one just taken
+    at(22000, function () { ghostOver(el.shots.children[2], 550); });
+    // Back to rest, where the next loop picks it up — the cursor stays in
+    // view across the join, so the loop closes without a seam.
+    at(22900, function () { ghostRest(650); el.win.classList.remove("is-on"); });
+    at(23400, function () { setOpen(false); });
 
-    at(27000, loop);
+    at(25000, loop);
   }
 
   // ---- Boot ------------------------------------------------------------

@@ -136,7 +136,7 @@ Things to remember when touching it:
 
 The Notch band on `/work/cool` embeds `public/demos/notch-v2/` — one
 self-contained file that recreates the app in the browser and then *runs
-itself*: a 27-second loop walks a drawn cursor through Now Playing, the
+itself*: a 25-second loop walks a drawn cursor through Now Playing, the
 "Saved in" playlist panel, a live Claude Code session (already under way
 when the loop opens, so the spinner is in the pill from the first frame),
 Clawd's completion sprint, and then a ⇧⌘4 drag over a Claude window on the
