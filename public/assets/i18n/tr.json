@@ -94,8 +94,8 @@
   "work.agdash.p1": "Oregon'un en büyük ekipman bayisi için bir coğrafi analitik platformu. Şu anda altı eyalette 1.500'den fazla çalışan tarafından kullanılıyor",
   "work.agdash.data": "USDA Tarım Sayımı, altı eyalette 250 ilçe. Sınırlar Census Bureau'nun TIGER/Line dosyalarından",
 
-  "work.notch.p1": "Ekranın üstünde kendi çentiğini oluşturan bir macOS aracı. Siyah hapın üzerine geldiğinizde Şu An Çalıyor kontrollerine, bir ekran görüntüsü rafına ve pano geçmişine genişler",
-  "work.notch.how": "Her Space'in en üstüne sabitlenmiş bir NSPanel ve üzerine gelince genişleyen bir çentik. Şu An Çalıyor bilgisi özel MediaRemote API'siyle, ekran görüntüleri FSEvents ile, ses seviyesi göstergesi ise bir AVAudioEngine tap'iyle",
+  "work.notch.p1": "Ekranın üstünde kendi çentiğini oluşturan bir macOS aracı. Siyah hapın üzerine geldiğinizde Şu An Çalıyor kontrolleri ve bir ekran görüntüsü rafı açılır; bir Claude Code oturumu başlatın, çentik de onu izler: çalışırken bir spinner, bir tur bittiğinde ise çentiği koşarak geçen Clawd",
+  "work.notch.how": "Her Space'in en üstüne sabitlenmiş bir NSPanel ve üzerine gelince genişleyen bir çentik. Şu An Çalıyor bilgisi özel MediaRemote API'sinden, sese tepki veren altı çubuk bir CoreAudio process tap'inden, ekran görüntüleri klasör izlemeden, Claude Code oturumları ise bir dosyaya yazılan hook olaylarından yeniden kuruluyor",
   "work.notch.builton": "Swift, SwiftUI ve AppKit",
   "work.notch.why": "Açık kaynak alternatiflerden memnun kalmadım, ben de kendiminkini yapmaya karar verdim",
 

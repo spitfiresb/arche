@@ -1,9 +1,9 @@
 /* Live-demo component. Drop-in usage:
  *
  *   <link rel="stylesheet" href="/assets/css/live-demo.css">
- *   <figure class="ld-thumb" data-live-demo="/demos/notch/"
+ *   <figure class="ld-thumb" data-live-demo="/demos/foo/"
  *           tabindex="0" role="button" aria-label="Expand the live demo">
- *     <img src="/assets/img/notch/preview.png" alt="...">
+ *     <img src="/assets/img/foo/preview.png" alt="...">
  *   </figure>
  *   <script src="/assets/js/live-demo.js"></script>
  *

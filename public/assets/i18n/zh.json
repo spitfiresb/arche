@@ -94,8 +94,8 @@
   "work.agdash.p1": "为俄勒冈州最大的设备经销商打造的地理空间分析平台。目前有横跨六个州的 1500 多名员工在使用",
   "work.agdash.data": "USDA 农业普查数据，覆盖六个州的 250 个县。边界数据来自人口普查局的 TIGER/Line 文件",
 
-  "work.notch.p1": "一款在屏幕顶部造出自己的“刘海”的 macOS 小工具。鼠标悬停在黑色胶囊上，它会展开为正在播放控件、截图搁架和剪贴板历史",
-  "work.notch.how": "一个固定在每个空间顶部的 NSPanel，悬停即展开的刘海。正在播放信息走私有的 MediaRemote API，截图通过 FSEvents 监听，音量电平表取自 AVAudioEngine 的音频分接",
+  "work.notch.p1": "一款在屏幕顶部造出自己的“刘海”的 macOS 小工具。鼠标悬停在黑色胶囊上，它会展开为正在播放控件和截图搁架；启动一个 Claude Code 会话，刘海便随之而动：工作时是一个转圈的指示器，一轮结束时 Clawd 会从刘海上一路跑过",
+  "work.notch.how": "一个固定在每个空间顶部的 NSPanel，悬停即展开的刘海。正在播放信息走私有的 MediaRemote API，六根随声音跳动的音柱来自 CoreAudio 的进程音频分接，截图靠监听文件夹，Claude Code 会话则由写入文件的 hook 事件重建",
   "work.notch.builton": "Swift、SwiftUI 和 AppKit",
   "work.notch.why": "开源的替代品都不合我意，索性自己做一个",
 

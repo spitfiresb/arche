@@ -94,8 +94,8 @@
   "work.agdash.p1": "Oregon کے سب سے بڑے ایکوئپمنٹ ڈیلر کے لیے ایک جیو اسپیشل اینالیٹکس پلیٹ فارم۔ اس وقت چھ ریاستوں میں 1,500 سے زائد ملازمین اسے استعمال کر رہے ہیں",
   "work.agdash.data": "USDA Census of Agriculture، چھ ریاستوں کی 250 کاؤنٹیز۔ حدود Census Bureau کی TIGER/Line فائلوں سے",
 
-  "work.notch.p1": "ایک macOS یوٹیلیٹی جو ڈسپلے کے اوپر اپنا notch بناتی ہے۔ سیاہ pill پر کرسر لے جائیں تو یہ کھل کر Now Playing کنٹرولز، ایک اسکرین شاٹ شیلف اور کلپ بورڈ ہسٹری بن جاتا ہے",
-  "work.notch.how": "ایک NSPanel جو ہر Space کے اوپر پن ہوتا ہے، ایک notch جو ہوور پر پھیل جاتا ہے۔ Now Playing نجی MediaRemote API کے ذریعے، اسکرین شاٹس FSEvents سے، اور لیول میٹر ایک AVAudioEngine ٹیپ سے",
+  "work.notch.p1": "ایک macOS یوٹیلیٹی جو ڈسپلے کے اوپر اپنا notch بناتی ہے۔ سیاہ pill پر کرسر لے جائیں تو یہ Now Playing کنٹرولز اور screenshot shelf میں کھل جاتا ہے؛ Claude Code کا session شروع کریں تو notch ساتھ ساتھ چلتا ہے — کام کے دوران ایک spinner، اور turn مکمل ہوتے ہی Clawd دوڑتا ہوا پار نکل جاتا ہے",
+  "work.notch.how": "ایک NSPanel جو ہر Space کے اوپر پن ہوتا ہے، ایک notch جو ہوور پر پھیل جاتا ہے۔ Now Playing نجی MediaRemote API سے، آواز پر تھرکتی چھ bars CoreAudio کے process tap سے، screenshots فولڈر واچ سے، اور Claude Code sessions ایک فائل میں لکھے hook events سے دوبارہ بنائے جاتے ہیں",
   "work.notch.builton": "Swift، SwiftUI اور AppKit",
   "work.notch.why": "اوپن سورس متبادل مجھے پسند نہیں آئے، تو میں نے اپنا بنانے کا فیصلہ کر لیا",
 

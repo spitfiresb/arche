@@ -1,22 +1,4 @@
-# Secrets. .dev.vars is what `wrangler pages dev` reads for the Pages Function;
-# .env holds the Cloudflare account id and API token used for manual deploys.
-.env
-.env.*
-!.env.example
 .dev.vars
-!.dev.vars.example
-
-# Wrangler's local dev cache
+.env
 .wrangler/
-
-# The compiled CoreLocation helper, assembled by tools/where/install.sh from
-# locate.swift and Locate-Info.plist. A platform binary, and macOS keys its
-# location grant to the signed bundle, so it belongs on the machine that
-# granted it rather than in git.
-tools/where/Locate.app/
-
-# Python bytecode from public/demos/unpak-dashboard/make-data.py
-__pycache__/
-*.pyc
-
 .DS_Store

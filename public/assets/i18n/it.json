@@ -94,8 +94,8 @@
   "work.agdash.p1": "Una piattaforma di analisi geospaziale per il più grande rivenditore di macchinari dell'Oregon. Attualmente utilizzata da oltre 1.500 dipendenti in sei stati",
   "work.agdash.data": "USDA Census of Agriculture, 250 contee in sei stati. Confini dai file TIGER/Line del Census Bureau",
 
-  "work.notch.p1": "Una utility per macOS che crea un notch tutto suo in cima al display. Passa il cursore sulla pillola nera e si espande in controlli per la riproduzione, un ripiano per gli screenshot e la cronologia degli appunti",
-  "work.notch.how": "Un NSPanel ancorato in cima a ogni Spazio, un notch che si espande al passaggio del cursore. Riproduzione in corso tramite l'API privata MediaRemote, screenshot via FSEvents, l'indicatore di livello da un tap su AVAudioEngine",
+  "work.notch.p1": "Una utility per macOS che crea un notch tutto suo in cima al display. Passa il cursore sulla pillola nera e si apre sui controlli di riproduzione e su una mensola di screenshot; avvia una sessione di Claude Code e il notch la segue: uno spinner mentre lavora e Clawd che sfreccia da parte a parte quando un turno finisce",
+  "work.notch.how": "Un NSPanel ancorato in cima a ogni Spazio, un notch che si espande al passaggio del cursore. Riproduzione in corso via l'API privata MediaRemote, sei barre reattive all'audio da un process tap CoreAudio, screenshot tramite il monitoraggio di una cartella, e sessioni di Claude Code ricostruite dagli eventi dei hook accodati in un file",
   "work.notch.builton": "Swift, SwiftUI e AppKit",
   "work.notch.why": "Le alternative open source non mi convincevano, così ho deciso di farmene una mia",
 
