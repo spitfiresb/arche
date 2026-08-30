@@ -214,10 +214,13 @@ Things to remember when touching it:
   so nearest-centre is the only possible test, and it's honest about its
   limits: it names the area whose centre is closest, which at a boundary can
   be the next area over. Of a node's `name`/`short_name`/`alt_name` the
-  shortest wins ("South of Market" renders as "SoMa"). Towns with no place
-  nodes get no hint (`:empty` collapses it), an Overpass outage on a pin
-  lookup gets none either, and the stutter guard drops an area the venue
-  name already contains. The `area` column postdates the `place` table —
+  shortest wins ("South of Market" renders as "SoMa"). `AREA_CITIES` gates
+  the whole thing to cities where a neighbourhood orients rather than
+  pinpoints — currently San Francisco only; in a town the size of
+  Pleasanton, "Hacienda" narrows things down more than the corner should.
+  Towns outside the gate or with no place nodes get no hint (`:empty`
+  collapses it), an Overpass outage on a pin lookup gets none either, and
+  the stutter guard drops an area the venue name already contains. The `area` column postdates the `place` table —
   see the ALTER note in schema.sql before deploying this anywhere.
 - **Rank beats distance when choosing which name to publish.** Nearest-wins
   picks embarrassing names: at Berkeley Public Library the library is a mapped

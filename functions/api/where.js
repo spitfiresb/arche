@@ -43,6 +43,15 @@ const OVERPASS = "https://overpass-api.de/api/interpreter";
 // half a kilometre from most of the people standing in it.
 const NEARBY_M = 50;
 
+// Cities big enough that a neighbourhood adds orientation instead of
+// precision. In SF, "South Beach" narrows eight hundred thousand people's
+// city down to a district; in Pleasanton, "Hacienda" narrows a town down to
+// a couple of blocks, which is more than a corner of my home page should
+// say. An allowlist, like everything else here that decides what the
+// internet gets to know: a new city earns its hints by being added on
+// purpose, and everywhere else the hint simply doesn't exist.
+const AREA_CITIES = ["San Francisco"];
+
 // How far to look for a neighbourhood label node. Neighbourhoods in OSM are
 // mostly place=* *nodes* — a pin near the area's centre, not a polygon — so
 // unlike venues there is no geometry to measure to and no is_in to ask;
@@ -371,7 +380,10 @@ out center tags;`;
     const m = metres(lat, lon, el.lat, el.lon);
     if (!area || m < area.m) area = { m, name: areaName(tags) };
   }
-  area = area ? area.name : null;
+  // Gated on the city the fix actually falls in — see AREA_CITIES. The
+  // derived city rather than a pin's, because the gate is about where I
+  // physically am, not about what label the venue happens to carry.
+  area = area && AREA_CITIES.includes(city) ? area.name : null;
 
   // Everything still standing is either within NEARBY_M of me or contains me
   // outright, so distance ranks candidates but never excludes them.
