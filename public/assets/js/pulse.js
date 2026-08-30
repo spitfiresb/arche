@@ -114,6 +114,7 @@
   const whereat = document.querySelector('.whereat');
   const placeEl = whereat && whereat.querySelector('.whereat-place');
   const cityEl = whereat && whereat.querySelector('.whereat-city');
+  const areaEl = whereat && whereat.querySelector('.whereat-hint');
 
   /* And the third: what's on Spotify, bottom-left. Same response, same
      rules — either corner can be present, absent, or down alone. */
@@ -168,17 +169,44 @@
     const city = place.city ? ` in ${place.city}` : '';
     // Rewriting identical text every 30s would restart the fade for nothing,
     // and the rendered strings are exactly what "changed" means here.
-    const key = `${place.label}|${city}`;
+    const key = `${place.label}|${city}|${place.area || ''}`;
     if (key === placeShown) return;
     placeShown = key;
 
     placeEl.textContent = place.label;
-    if (cityEl) cityEl.textContent = city;
-
-    if (whereat.hidden) {
-      whereat.hidden = false;
-      requestAnimationFrame(() => whereat.classList.add('is-live'));
+    // The city name gets a span of its own so the hint below can find it:
+    // the hint sits tabbed in under "San Francisco", not under the "in".
+    let cityName = null;
+    if (cityEl) {
+      cityEl.textContent = place.city ? ' in ' : '';
+      if (place.city) {
+        cityName = document.createElement('span');
+        cityName.textContent = place.city;
+        cityEl.appendChild(cityName);
+      }
     }
+    // The hover hint: the neighbourhood, one step finer than the sentence.
+    // Empty collapses the hint entirely (see .whereat-hint:empty), so a
+    // town with no mapped neighbourhoods has nothing to open.
+    if (areaEl) areaEl.textContent = place.area || '';
+
+    if (whereat.hidden) whereat.hidden = false;
+
+    // Indent the hint to a tab past where the city (or, citiless, the
+    // venue) begins. Measured, not styled: only layout knows where in the
+    // sentence that is. offsetLeft is relative to the fixed corner itself,
+    // which is the box the hint's margin counts from — and it has to be
+    // read after the corner is unhidden, since inside display:none every
+    // offset is zero. If the measurement comes back zero anyway, leave the
+    // stylesheet's fallback indent standing.
+    if (areaEl && place.area) {
+      const anchor = cityName || placeEl;
+      areaEl.style.marginLeft = anchor.offsetLeft
+        ? `${anchor.offsetLeft + 15}px`
+        : '';
+    }
+
+    requestAnimationFrame(() => whereat.classList.add('is-live'));
   }
 
   /* "3 hours ago", at the coarsest unit that isn't zero. The server sends an

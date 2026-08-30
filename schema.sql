@@ -90,5 +90,17 @@ CREATE TABLE IF NOT EXISTS place (
   label TEXT NOT NULL,                       -- 'Farmers Union Coffee Roasters'
   city  TEXT,                                -- 'Eugene', for readers far away;
                                              -- NULL when it'd repeat the label
+  area  TEXT,                                -- 'South Beach': the neighbourhood,
+                                             -- for the hover hint; NULL where
+                                             -- OSM maps none (most towns)
   seen  INTEGER NOT NULL                     -- unix seconds
 );
+
+-- area arrived after the table did, and CREATE IF NOT EXISTS won't add a
+-- column to a database that already has the table. Databases created before
+-- it need, once:
+--   npx wrangler d1 execute zainsaeed-pulse --remote \
+--     --command "ALTER TABLE place ADD COLUMN area TEXT"
+-- (and the same with --local). Not in this file because SQLite has no ADD
+-- COLUMN IF NOT EXISTS, and a statement that fails on rerun would cost this
+-- file its idempotence.

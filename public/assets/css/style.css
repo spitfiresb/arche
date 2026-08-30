@@ -2116,12 +2116,6 @@ body.home main {
   top: 1.15rem;             /* level with the language switcher opposite */
   left: 1.25rem;
   z-index: 60;              /* the layer the other fixed corner pieces sit on */
-  /* One line, always. Venue names are arbitrary text from OpenStreetMap,
-     so the guard against a pathological one is an ellipsis at the
-     viewport's edge rather than a wrap. */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   max-width: calc(100vw - 6rem);   /* stays clear of the flag opposite */
   line-height: 1.4;
   /* Chrome, not content, like the corners below: arrow cursor, nothing to
@@ -2131,6 +2125,19 @@ body.home main {
   user-select: none;
   opacity: 0;
   transition: opacity 0.6s ease;
+}
+
+/* One line, always. Venue names are arbitrary text from OpenStreetMap, so
+   the guard against a pathological one is an ellipsis at the viewport's
+   edge rather than a wrap. On the line, not the corner — same reason as
+   .listening-line: the hint below is a block of its own, and text-overflow
+   set on the parent stops applying the moment there's more than the one
+   line inside. */
+.whereat-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .whereat.is-live {
@@ -2181,8 +2188,50 @@ body.home main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .whereat {
+  .whereat,
+  .whereat-hint {
     transition: none;
+  }
+}
+
+/* The hover hint: the neighbourhood the venue sits in ("South Beach"),
+   in the family of the music corner's hint below — tracked capitals in
+   grey, a size smaller still — set on its own line under the sentence and
+   indented a step, so it reads as a sub-entry of the place above it. This
+   corner is anchored by its top edge, so unlike .listening-hint (which
+   opens upward into the bottom margin) this one grows down into the page,
+   and nothing shifts beneath the cursor. Empty means no hint at all —
+   most towns have no mapped neighbourhoods — and :empty is what keeps the
+   always-on touch-screen state from reserving a blank band. */
+.whereat-hint {
+  display: block;
+  /* Fallback only: pulse.js measures where the city name starts in the
+     sentence above and overrides this, so the hint sits tabbed in under
+     "San Francisco" itself. This holds for the frame before that
+     measurement, or if it ever comes back zero. */
+  margin-left: 2em;
+  font-size: 0.625rem;      /* 10px, a step below the hints elsewhere */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.whereat-hint:empty {
+  display: none;
+}
+
+@media (hover: hover) {
+  .whereat-hint {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .whereat:hover .whereat-hint {
+    max-height: 1.2rem;
+    opacity: 1;
   }
 }
 
