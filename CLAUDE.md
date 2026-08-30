@@ -205,6 +205,20 @@ Things to remember when touching it:
   anything with area — Golden Gate Park's centroid is half a kilometre from
   most of the people standing in it. The JS distance is a *ranking* key only,
   never a filter.
+- **The neighbourhood is a hover hint, not part of the sentence.** The same
+  Overpass round trip also fetches `place=neighbourhood|quarter|suburb`
+  nodes within 1500m; the nearest of any tier becomes `place.area`, drawn
+  under the line by `pulse.js` the way the music corner's hint opens — the
+  sentence keeps "in San Francisco" for the faraway reader, the hint says
+  "South Beach" for the local. Place nodes are label points, not polygons,
+  so nearest-centre is the only possible test, and it's honest about its
+  limits: it names the area whose centre is closest, which at a boundary can
+  be the next area over. Of a node's `name`/`short_name`/`alt_name` the
+  shortest wins ("South of Market" renders as "SoMa"). Towns with no place
+  nodes get no hint (`:empty` collapses it), an Overpass outage on a pin
+  lookup gets none either, and the stutter guard drops an area the venue
+  name already contains. The `area` column postdates the `place` table —
+  see the ALTER note in schema.sql before deploying this anywhere.
 - **Rank beats distance when choosing which name to publish.** Nearest-wins
   picks embarrassing names: at Berkeley Public Library the library is a mapped
   footprint 30m off and its second-hand bookshop is a pin at 20m, so distance

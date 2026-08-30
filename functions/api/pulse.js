@@ -125,7 +125,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // becoming a monument to the last time I left the house.
     at.place = stmts.push(
       db.prepare(
-        `SELECT label, city, unixepoch() - seen AS ago FROM place
+        `SELECT label, city, area, unixepoch() - seen AS ago FROM place
           WHERE id = 1 AND seen > unixepoch() - ?1`,
       ).bind(PLACE_TTL),
     ) - 1;
@@ -153,7 +153,8 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // reconcile against its own clock and no date to mis-parse — and so the
     // wording around it stays a rendering decision.
     const place = row
-      ? { label: row.label, city: row.city || null, ago: Math.max(row.ago, 0) }
+      ? { label: row.label, city: row.city || null, area: row.area || null,
+          ago: Math.max(row.ago, 0) }
       : null;
 
     // The cached track goes out as-is — even when stale, because a song from

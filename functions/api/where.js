@@ -43,6 +43,15 @@ const OVERPASS = "https://overpass-api.de/api/interpreter";
 // half a kilometre from most of the people standing in it.
 const NEARBY_M = 50;
 
+// How far to look for a neighbourhood label node. Neighbourhoods in OSM are
+// mostly place=* *nodes* — a pin near the area's centre, not a polygon — so
+// unlike venues there is no geometry to measure to and no is_in to ask;
+// nearest-centre is the only test there is. The radius has to reach a big
+// district's centre from its edge (SoMa's node sits 700m from South Park)
+// without being so wide that a town with no neighbourhoods borrows one from
+// the city next door.
+const AREA_M = 1500;
+
 // One attempt, and then the whole lookup.
 //
 // Overpass sits behind its own CDN, and that CDN intermittently answers 521
@@ -230,18 +239,26 @@ export async function onRequestPost({ request, env }) {
       found.city && !venue.toLowerCase().includes(found.city.toLowerCase())
         ? found.city
         : null;
+    // Same stutter guard for the area: "Blue Bottle Coffee" hinting "South
+    // Beach" earns its keep; "South Park Cafe" hinting "South Park" doesn't.
+    const area =
+      found.area && !venue.toLowerCase().includes(found.area.toLowerCase())
+        ? found.area
+        : null;
 
     await db
       .prepare(
-        `INSERT INTO place (id, label, city, seen) VALUES (1, ?1, ?2, unixepoch())
+        `INSERT INTO place (id, label, city, area, seen)
+           VALUES (1, ?1, ?2, ?3, unixepoch())
            ON CONFLICT(id) DO UPDATE SET label = excluded.label,
                                          city  = excluded.city,
+                                         area  = excluded.area,
                                          seen  = excluded.seen`,
       )
-      .bind(venue, city)
+      .bind(venue, city, area)
       .run();
 
-    return json({ published: true, label: venue, city }, 200);
+    return json({ published: true, label: venue, city, area }, 200);
   } catch (error) {
     console.error("Where Error:", error);
     return json({ error: "Internal Server Error" }, 500);
@@ -279,11 +296,17 @@ async function resolve(lat, lon) {
   // how the code below tells "this contains me" from "this is near me" —
   // Overpass has no other way to say it, and the difference decides which
   // name gets published when several are in range.
+  // The neighbourhood label, in the same round trip. place=suburb is a big
+  // city's named quarters (SoMa, the Mission), place=neighbourhood and
+  // place=quarter the finer grain inside them (South Beach, Rincon Hill).
+  // All three tiers are asked for and the nearest node of any tier wins —
+  // see the selection below for why.
   const query = `[out:json][timeout:20];
 is_in(${lat},${lon});
 out tags;
 (
   ${near}
+  node(around:${AREA_M},${lat},${lon})["name"]["place"~"^(neighbourhood|quarter|suburb)$"];
 );
 out center tags;`;
 
@@ -316,9 +339,9 @@ out center tags;`;
   // gives a faraway reader their bearings is sitting in the response we
   // already paid for. admin_level 8 is a municipality in most of the world;
   // the fallback down to 6 catches the places (Dublin, much of Asia) where
-  // the city sits at a coarser level. Nothing finer than 8 is considered:
-  // a neighbourhood narrows down where I am, which is the label's job, not
-  // this one's.
+  // the city sits at a coarser level. Anything finer comes from the district
+  // pass below, not from admin boundaries — most cities don't map their
+  // quarters as boundaries at all.
   let city = null;
   let cityLevel = 0;
   for (const el of elements) {
@@ -330,6 +353,25 @@ out center tags;`;
       cityLevel = lvl;
     }
   }
+
+  // The neighbourhood, when the city is big enough to have them. "Blue
+  // Bottle Coffee in San Francisco" is true of half a dozen cafes; "South
+  // Beach" is what narrows it down, and it feeds the hover hint rather than
+  // the sentence — the city keeps orienting the faraway reader, the hint
+  // answers the local's "which one". Nearest label node of any tier wins:
+  // the tiers nest (South Beach sits inside SoMa), so the nearest node is
+  // simply the finest area whose centre the fix is close to, and a town
+  // with no place nodes at all gets no hint rather than a guess. See
+  // AREA_M for why proximity is the only available test.
+  let area = null;
+  for (const el of elements) {
+    const tags = el.tags || {};
+    if (!tags.place || !tags.name) continue;
+    if (!Number.isFinite(el.lat) || !Number.isFinite(el.lon)) continue;
+    const m = metres(lat, lon, el.lat, el.lon);
+    if (!area || m < area.m) area = { m, name: areaName(tags) };
+  }
+  area = area ? area.name : null;
 
   // Everything still standing is either within NEARBY_M of me or contains me
   // outright, so distance ranks candidates but never excludes them.
@@ -357,14 +399,20 @@ out center tags;`;
   // kinds of OSM evidence against each other, and a pin isn't OSM evidence
   // — it's me stating a fact the map lacks. See the note on PINS for why it
   // outranks even a closer OSM candidate. The derived city still fills in
-  // when the pin doesn't carry its own.
+  // when the pin doesn't carry its own, and the area rides along the same
+  // way it does for an OSM venue.
   if (pin) {
-    return { ok: true, venue: pin.name, city: pin.city || city };
+    return { ok: true, venue: pin.name, city: pin.city || city, area };
   }
 
-  // The city rides along only when there's a venue to anchor it — a city on
-  // its own would turn "nothing worth saying" into a permanent coarse tracker.
-  return { ok: true, venue: best ? best.name : null, city: best ? city : null };
+  // The city and area ride along only when there's a venue to anchor them —
+  // on their own they'd turn "nothing worth saying" into a coarse tracker.
+  return {
+    ok: true,
+    venue: best ? best.name : null,
+    city: best ? city : null,
+    area: best ? area : null,
+  };
 }
 
 // The query, asked until it's answered or the budget runs out. Returns the
@@ -430,6 +478,20 @@ function rank(contains, type) {
   if (contains) return 0;                   // inside beats everything
   if (type !== "node") return 1;            // a footprint beats a pin
   return 2;
+}
+
+// What to call an area. OSM's formal name is often longer than anything
+// a person says — SoMa's node is name="South of Market", alt_name="SoMa" —
+// so of the names the node offers, the shortest wins. old_name stays
+// excluded on purpose: it's the one field that holds names nobody uses
+// anymore.
+function areaName(tags) {
+  const names = [tags.name, tags.short_name, tags.alt_name]
+    .filter(Boolean)
+    .flatMap((n) => n.split(";"))
+    .map((n) => n.trim())
+    .filter(Boolean);
+  return names.reduce((a, b) => (b.length < a.length ? b : a));
 }
 
 function allowed(tags = {}) {

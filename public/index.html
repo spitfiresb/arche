@@ -199,12 +199,18 @@
     <!-- One line, top-left: "Last seen at <venue> [in <city>]". No
          timestamp — the sentence holds whatever the last public place
          was, and the city appears only when the venue name doesn't
-         already contain it. pulse.js fills the gaps. -->
+         already contain it. The indented hint under the line is the
+         neighbourhood ("South Beach"), opening on hover the way the music
+         corner's hint does; empty when OSM maps none. pulse.js fills the
+         gaps. -->
     <aside class="whereat" hidden>
-      <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span class="whereat-lede" data-i18n="where.lede">Last seen</span>
-      <span class="whereat-lede" data-i18n="where.at">at</span>
-      <span class="whereat-place"></span><span class="whereat-city"></span>
+      <span class="whereat-line">
+        <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span class="whereat-lede" data-i18n="where.lede">Last seen</span>
+        <span class="whereat-lede" data-i18n="where.at">at</span>
+        <span class="whereat-place"></span><span class="whereat-city"></span>
+      </span>
+      <span class="whereat-hint"></span>
     </aside>
 
     <!-- Bottom-left: what's on Spotify, from the same /api/pulse response.
