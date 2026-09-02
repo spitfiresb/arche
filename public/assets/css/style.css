@@ -274,7 +274,9 @@ a:focus-visible > .pill-border path {
   body.home main {
     width: auto;
     max-width: none;
-    padding: 10vh 1.5rem 4rem;
+    /* no corners on phones (see the stats strip), so the bottom is just
+       air under the last work item rather than room reserved for a strip */
+    padding: 10vh 1.5rem 2.5rem;
     /* small viewport units: the phone browser chrome collapsing and
        expanding doesn't reflow the centered layout */
     min-height: 100svh;
@@ -1904,26 +1906,19 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
    many are here now. The first is measured in the browser, the other two
    come from /api/pulse. All of it is wired up in pulse.js.
 
-   One corner of four: About top-left, language top-right, last-seen
+   One corner of four: last-seen top-left, language top-right, music
    bottom-left, and this one bottom-right. */
-
-/* The strip is out of the flow either way, so it costs the column no height:
-   the home page is tuned to fit a single screen, with the work grid's auto
-   margins doing that arithmetic, and anything added to the flow down here
-   would push a laptop window past 100vh and bring the scrollbar back.
-
-   This anchors the narrow-screen case at the foot of the page; on wider ones
-   the strip is fixed to the window and ignores it. */
-body.home main {
-  position: relative;
-}
 
 .pulse {
   /* Fixed to the window, not to the 48rem text column: this is corner chrome,
-     like the About link and the language switcher, and it belongs on the edge of
-     the screen rather than lined up with the last work column. The home page
-     is a single screen, so there is nothing for it to scroll over. (Phones
-     are the exception — see the narrow-screen block below.) */
+     like the language switcher, and it belongs on the edge of the screen
+     rather than lined up with the last work column. Out of the flow, so it
+     costs the column no height: the home page is tuned to fit a single
+     screen, with the work grid's auto margins doing that arithmetic, and
+     anything added to the flow down here would push a laptop window past
+     100vh and bring the scrollbar back. So there is nothing for it to scroll
+     over — phones, where the page does scroll, don't draw it at all (see the
+     narrow-screen block below). */
   position: fixed;
   right: 1.5rem;
   bottom: 1.25rem;
@@ -2075,16 +2070,20 @@ body.home main {
   }
 }
 
-/* Phones are the one place the home page genuinely scrolls — the three work
-   columns stack into a long single column. A fixed strip would ride along on
-   top of that the whole way down, so here it goes back into the page and
-   comes to rest at the bottom of it, inside the 4rem of padding the narrow
-   layout already carries. */
+/* Phones don't get the corners at all — not this strip, not the music
+   line, not the location line. Phones are the one place the home page
+   genuinely scrolls, and a fixed strip would ride along on top of the
+   stacked work list the whole way down; laid in the flow instead, with no
+   hover to hold the labels back, it was a seven-line block of readouts
+   under a portfolio. The corners are chrome for a screen that has spare
+   corners; a phone doesn't.
+
+   Only the drawing goes. pulse.js still beats to /api/pulse on every
+   page load, so phone visits count the same as any other — the strip
+   just isn't there to show the number. */
 @media (max-width: 40rem) {
   .pulse {
-    position: absolute;
-    bottom: 1.5rem;
-    z-index: auto;
+    display: none;
   }
 }
 
@@ -2103,8 +2102,8 @@ body.home main {
 
 /* ---- Last seen at -----------------------------------------------------
 
-   The bottom-left corner, opposite the stats strip: the last public place I
-   was at. It rides in on the same /api/pulse response the numbers do, so it
+   The top-left corner, across from the language switcher: the last public
+   place I was at. It rides in on the same /api/pulse response the numbers do, so it
    costs no extra request, and it's drawn by the same script.
 
    The two corners are deliberately not symmetrical in kind. The right-hand
@@ -2176,14 +2175,12 @@ body.home main {
   color: var(--faint);
 }
 
-/* Phones: the line keeps its top-left corner (the language flag keeps
-   top-right), just tucked in with the tighter margins the small screen
-   uses, and capped so it ellipsizes before reaching the flag. */
+/* Phones: hidden, with the other corners — see the stats strip's
+   narrow-screen block. (It used to stay, capped to ellipsize before the
+   language flag, which at 393px cut the city to "San Fr…".) */
 @media (max-width: 40rem) {
   .whereat {
-    top: 0.95rem;
-    left: 0.9rem;
-    max-width: calc(100vw - 5rem);
+    display: none;
   }
 }
 
@@ -2336,17 +2333,11 @@ body.home main {
   color: var(--faint);
 }
 
+/* Phones: hidden, with the other corners — see the stats strip's
+   narrow-screen block. */
 @media (max-width: 40rem) {
   .listening {
-    /* The stats strip goes absolute on phones so it sits at the bottom of
-       the page rather than floating over it; this line follows for the same
-       reason, and sits a step above the strip since the two corners can't
-       share a row on a narrow screen. */
-    position: absolute;
-    z-index: auto;
-    bottom: 4.5rem;
-    left: 0.9rem;
-    max-width: calc(100vw - 2rem);
+    display: none;
   }
 }
 

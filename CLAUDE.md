@@ -41,8 +41,21 @@ presence rows inside the online window, so people are deduplicated by country
 before they ever reach the browser, and the client turns each two-letter code
 into an emoji by shifting its letters into the regional-indicator block.
 
-Three things to remember when touching it:
+Things to remember when touching it:
 
+- **Narrow screens don't draw any of the corners.** Below 40rem the stats
+  strip, the music corner and the location line are all `display: none`
+  — three blocks in `style.css`, one per corner, each cross-referencing
+  the strip's. It's a width gate, not a device test: a phone in landscape
+  is wider than 40rem and gets the desktop corners, labels open, because
+  touch has no hover to hold them back. The beacon still beats, so those
+  visits still count; only the drawing goes. Hiding is CSS-only on
+  purpose — the response carries all three anyway, and filling hidden
+  elements is free, with one catch: the location hint's indent is
+  measured from layout, and inside `display: none` every offset is
+  zero. `indentHint` in `pulse.js` retries until it gets a real
+  number, and again the moment the viewport crosses the breakpoint, so a
+  rotate to landscape doesn't surface a hint at the fallback indent.
 - **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
   Without it, the visitor hashes are a plain hash of an IP, which is
   enumerable over the whole IPv4 space and therefore not anonymous at all.
@@ -61,6 +74,8 @@ Three things to remember when touching it:
   and then the webfont, and nothing else.
 
 ## The music corner
+
+Hidden below 40rem with the other corners — see the stats strip above.
 
 The bottom-left of the home page: "<note icon> <track> by <artist>" — no
 lede, nothing clickable, the "by <artist>" pair a step smaller and greyer
@@ -164,7 +179,9 @@ being one.
 
 ## The location corner
 
-The bottom-left of the home page: "Last seen at <venue>". A LaunchAgent on my
+Hidden below 40rem with the other corners — see the stats strip above.
+
+The top-left of the home page: "Last seen at <venue>". A LaunchAgent on my
 Mac (`tools/where/`) takes a coarse CoreLocation fix every three minutes and
 posts it to `POST /api/where`, which asks OpenStreetMap what's there and
 writes a venue name only if it clears an allowlist. The result rides back on
