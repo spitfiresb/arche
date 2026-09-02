@@ -154,6 +154,33 @@
      "Last seen at" holds whether the reading is a minute or a day old,
      and the server's cutoff is what keeps it from getting ancient. */
   let placeShown = null;
+
+  /* The hint's indent is a tab past where the city (or, citiless, the
+     venue) begins. Measured, not styled: only layout knows where in the
+     sentence that is, and offsetLeft is relative to the fixed corner
+     itself, which is the box the hint's margin counts from.
+
+     It can only be read while the corner has a layout box, and on phones
+     it doesn't: below 40rem the stylesheet hides the corner outright, so
+     clearing the [hidden] attribute changes nothing and every offset is
+     zero. So the measurement isn't tied to the text. A zero leaves the
+     stylesheet's fallback indent standing and is retried on every beat,
+     and retried at once when the viewport crosses the breakpoint — a phone
+     turned to landscape is wider than 40rem, and the corner appears there
+     with whatever indent was last measured. Without the retry it would
+     appear with the fallback and keep it until the venue changed. */
+  let hintAnchor = null;   // the span the hint tabs in under; null when no hint
+  let hintIndented = false;
+  function indentHint() {
+    if (!areaEl || !hintAnchor || hintIndented) return;
+    const x = hintAnchor.offsetLeft;
+    if (!x) return;
+    areaEl.style.marginLeft = `${x + 15}px`;
+    hintIndented = true;
+  }
+  const narrow = matchMedia('(max-width: 40rem)');
+  if (narrow.addEventListener) narrow.addEventListener('change', indentHint);
+
   function paintPlace(place) {
     if (!whereat) return;
 
@@ -170,7 +197,10 @@
     // Rewriting identical text every 30s would restart the fade for nothing,
     // and the rendered strings are exactly what "changed" means here.
     const key = `${place.label}|${city}|${place.area || ''}`;
-    if (key === placeShown) return;
+    if (key === placeShown) {
+      indentHint();   // a no-op once it has succeeded
+      return;
+    }
     placeShown = key;
 
     placeEl.textContent = place.label;
@@ -192,19 +222,13 @@
 
     if (whereat.hidden) whereat.hidden = false;
 
-    // Indent the hint to a tab past where the city (or, citiless, the
-    // venue) begins. Measured, not styled: only layout knows where in the
-    // sentence that is. offsetLeft is relative to the fixed corner itself,
-    // which is the box the hint's margin counts from — and it has to be
-    // read after the corner is unhidden, since inside display:none every
-    // offset is zero. If the measurement comes back zero anyway, leave the
-    // stylesheet's fallback indent standing.
-    if (areaEl && place.area) {
-      const anchor = cityName || placeEl;
-      areaEl.style.marginLeft = anchor.offsetLeft
-        ? `${anchor.offsetLeft + 15}px`
-        : '';
-    }
+    // New text, new measurement: the anchor is the city span when there is
+    // one, else the venue. Read after the corner is unhidden, since inside
+    // display:none every offset is zero (see indentHint).
+    hintAnchor = place.area ? (cityName || placeEl) : null;
+    hintIndented = false;
+    if (areaEl) areaEl.style.marginLeft = '';
+    indentHint();
 
     requestAnimationFrame(() => whereat.classList.add('is-live'));
   }
