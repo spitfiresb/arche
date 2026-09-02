@@ -41,8 +41,14 @@ presence rows inside the online window, so people are deduplicated by country
 before they ever reach the browser, and the client turns each two-letter code
 into an emoji by shifting its letters into the regional-indicator block.
 
-Three things to remember when touching it:
+Things to remember when touching it:
 
+- **Phones don't draw any of the corners.** Below 40rem the stats strip,
+  the music corner and the location line are all `display: none`
+  (`style.css`, the strip's narrow-screen block). The beacon still
+  beats, so phone visits still count; only the drawing goes. Hiding is
+  CSS-only on purpose — the response carries all three anyway, and the
+  script filling hidden elements costs nothing.
 - **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
   Without it, the visitor hashes are a plain hash of an IP, which is
   enumerable over the whole IPv4 space and therefore not anonymous at all.

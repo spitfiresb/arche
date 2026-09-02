@@ -274,7 +274,9 @@ a:focus-visible > .pill-border path {
   body.home main {
     width: auto;
     max-width: none;
-    padding: 10vh 1.5rem 4rem;
+    /* no corners on phones (see the stats strip), so the bottom is just
+       air under the last work item rather than room reserved for a strip */
+    padding: 10vh 1.5rem 2.5rem;
     /* small viewport units: the phone browser chrome collapsing and
        expanding doesn't reflow the centered layout */
     min-height: 100svh;
@@ -2075,16 +2077,20 @@ body.home main {
   }
 }
 
-/* Phones are the one place the home page genuinely scrolls — the three work
-   columns stack into a long single column. A fixed strip would ride along on
-   top of that the whole way down, so here it goes back into the page and
-   comes to rest at the bottom of it, inside the 4rem of padding the narrow
-   layout already carries. */
+/* Phones don't get the corners at all — not this strip, not the music
+   line, not the location line. Phones are the one place the home page
+   genuinely scrolls, and a fixed strip would ride along on top of the
+   stacked work list the whole way down; laid in the flow instead, with no
+   hover to hold the labels back, it was a seven-line block of readouts
+   under a portfolio. The corners are chrome for a screen that has spare
+   corners; a phone doesn't.
+
+   Only the drawing goes. pulse.js still beats to /api/pulse on every
+   page load, so phone visits count the same as any other — the strip
+   just isn't there to show the number. */
 @media (max-width: 40rem) {
   .pulse {
-    position: absolute;
-    bottom: 1.5rem;
-    z-index: auto;
+    display: none;
   }
 }
 
@@ -2176,14 +2182,12 @@ body.home main {
   color: var(--faint);
 }
 
-/* Phones: the line keeps its top-left corner (the language flag keeps
-   top-right), just tucked in with the tighter margins the small screen
-   uses, and capped so it ellipsizes before reaching the flag. */
+/* Phones: hidden, with the other corners — see the stats strip's
+   narrow-screen block. (It used to stay, capped to ellipsize before the
+   language flag, which at 393px cut the city to "San Fr…".) */
 @media (max-width: 40rem) {
   .whereat {
-    top: 0.95rem;
-    left: 0.9rem;
-    max-width: calc(100vw - 5rem);
+    display: none;
   }
 }
 
@@ -2336,17 +2340,11 @@ body.home main {
   color: var(--faint);
 }
 
+/* Phones: hidden, with the other corners — see the stats strip's
+   narrow-screen block. */
 @media (max-width: 40rem) {
   .listening {
-    /* The stats strip goes absolute on phones so it sits at the bottom of
-       the page rather than floating over it; this line follows for the same
-       reason, and sits a step above the strip since the two corners can't
-       share a row on a narrow screen. */
-    position: absolute;
-    z-index: auto;
-    bottom: 4.5rem;
-    left: 0.9rem;
-    max-width: calc(100vw - 2rem);
+    display: none;
   }
 }
 
