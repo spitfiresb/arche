@@ -12,12 +12,16 @@ pushing to `main` changes nothing on the live site. After pushing, deploy
 manually:
 
 ```sh
-npx wrangler pages deploy
+tools/deploy.sh            # stamp the commit row, then wrangler pages deploy
+tools/deploy.sh --dry-run  # show what would be stamped, deploy nothing
 ```
 
-No arguments: `wrangler.toml` declares both `pages_build_output_dir` and the
-project name. (The old form, `pages deploy public --project-name zainsaeed`,
-predates that file.)
+The script refuses a dirty tree, works out the last commit's diff stat,
+timestamp and URL from git, writes them into the commit row in
+`public/index.html`, runs `npx wrangler pages deploy`, and restores the file
+on exit whatever happens. Running `npx wrangler pages deploy` by hand still
+works (`wrangler.toml` declares the output directory and project name) but
+ships the placeholder commit row.
 
 Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
 `/work/contract` redirect).
@@ -38,9 +42,13 @@ markup that draws the result. Counts are stored in the `zainsaeed-pulse` D1
 database (`schema.sql`).
 
 The commit row is static: "+142 −16" in GitHub's green and red, the whole
-row a link to the commit, and its timestamp in `data-committed` — currently
-hand-stamped (a mockup), meant to be written by the deploy step. Only its
-age is computed, in the browser, for the hover label.
+row a link, and its timestamp in `data-committed`. `tools/deploy.sh` stamps
+all three from HEAD at deploy time; the values in git are placeholders. Only
+the age is computed, in the browser, for the hover label. The link is the
+commit when the repo is public and the commit is pushed, and the GitHub
+profile otherwise — a private repo's commit page is a 404 to everyone but
+its owner, so the row links to the one page guaranteed to open. The check
+is one `gh repo view` call on the deploying machine, never at request time.
 
 Hovering a number opens its label; hovering the live count opens one flag per
 country currently reading. The flags are `SELECT DISTINCT country` over the

@@ -241,12 +241,13 @@
            in green, lines removed in red, and nothing else. Hovering opens
            "last commit · 7 hours ago" (or "18 min ago") the way its neighbours open their
            labels (pulse.js keeps the age current from data-committed), and
-           clicking goes to that commit on GitHub. MOCKUP: the numbers, the
-           timestamp and the link are baked in by hand from HEAD at the time
-           of writing. The real thing would have the deploy step stamp them
-           here (git show --shortstat, git log -1 --format=%cI) right before
-           `wrangler pages deploy`, so the row is always the commit that is
-           actually live. -->
+           clicking goes to that commit on GitHub. The numbers, the timestamp
+           and the link are placeholders here: tools/deploy.sh stamps the
+           real ones from HEAD right before `wrangler pages deploy` and puts
+           this file back afterwards, so the row is always the commit that
+           is actually live and this copy never changes. The link goes to
+           the profile instead when the repo is private or the commit isn't
+           pushed, since the commit page would 404 for every visitor. -->
       <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener" data-committed="2026-09-06T15:28:08-07:00">
         <span class="pulse-label"><span data-i18n="pulse.commit">last commit</span> · <span class="pulse-age"></span></span>
         <span class="pulse-num pulse-add"><span class="pulse-sign">+</span>142</span><span class="pulse-num pulse-del"><span class="pulse-sign">&minus;</span>16</span>
