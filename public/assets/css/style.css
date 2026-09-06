@@ -1928,10 +1928,11 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 /* ---- Stats strip ------------------------------------------------------
 
-   Three live numbers in the bottom-right corner of the home page: how long
-   the page took to load, how many people came in the last 30 days, and how
-   many are here now. The first is measured in the browser, the other two
-   come from /api/pulse. All of it is wired up in pulse.js.
+   Three live numbers in the bottom-right corner of the home page: what the
+   last commit to the site did, how many people came in the last 30 days,
+   and how many are here now. The first is stamped into the page at deploy
+   time (its age is worked out in the browser), the other two come from
+   /api/pulse. All of it is wired up in pulse.js.
 
    One corner of four: last-seen top-left, language top-right, music
    bottom-left, and this one bottom-right. */
@@ -2064,13 +2065,13 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 /* ---- The commit row ---------------------------------------------------
 
-   The top row of the strip: the last commit's diff stat, "+142 −16" and
-   GitHub's five-square summary after it, in GitHub's own dark-theme
-   greens and reds so it reads as the thing it is quoting. It's the one
-   row that is a link — the whole row goes to the commit — so it gets the
-   pointer the rest of the readout deliberately withholds, and a hover
-   lifts the two numbers rather than underlining them: an underline under
-   a "+" and a "−" is just clutter. */
+   The top row of the strip: what the last commit did, "+142 −16", in
+   GitHub's dark-theme green and red. Two numbers set exactly like the ones
+   below them — same face, same size, same tabular digits — with colour the
+   only thing that marks them out. It's the one row that is a link (the
+   whole row goes to the commit), so it gets the pointer the rest of the
+   readout deliberately withholds, and a hover dims the numbers rather than
+   underlining them: an underline under a "+" and a "−" is just clutter. */
 .pulse-commit {
   display: block;
   text-decoration: none;
@@ -2078,54 +2079,20 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   color: inherit;
 }
 
-.pulse-diff {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.45em;
-  font-size: 1rem;          /* same size as the other numbers */
+.pulse-commit .pulse-num {
   transition: opacity 0.2s ease;
 }
 
-.pulse-add { color: #3fb950; }   /* GitHub dark: success-fg  */
-.pulse-del { color: #f85149; }   /* GitHub dark: danger-fg   */
+.pulse-commit .pulse-num + .pulse-num {
+  margin-left: 0.4em;
+}
 
-.pulse-commit:hover .pulse-diff,
-.pulse-commit:focus-visible .pulse-diff {
+.pulse-add { color: #3fb950; }   /* GitHub dark: success-fg */
+.pulse-del { color: #f85149; }   /* GitHub dark: danger-fg  */
+
+.pulse-commit:hover .pulse-num,
+.pulse-commit:focus-visible .pulse-num {
   opacity: 0.8;
-}
-
-/* The five squares GitHub draws beside every diff stat, filled in
-   proportion: four green and one red for a 142/16 change. Empty squares
-   would be `.is-none` (a hairline outline) — not needed for this commit. */
-.pulse-blocks {
-  display: inline-flex;
-  gap: 2px;
-  margin-left: 0.15em;
-  /* centre against the x-height of the digits, like the live dot */
-  vertical-align: 0.05em;
-  align-self: center;
-}
-
-.pulse-blocks i {
-  display: block;
-  width: 7px;
-  height: 7px;
-  border-radius: 1.5px;
-  background: #3fb950;
-}
-
-.pulse-blocks .is-del  { background: #f85149; }
-.pulse-blocks .is-none { background: none; box-shadow: inset 0 0 0 1px var(--faint); }
-
-/* A hash is a hash, not a heading: it keeps its case and its own letter
-   spacing inside the uppercased label, and it's set in the monospace
-   face so it reads as something you could paste. */
-.pulse-sha {
-  text-transform: none;
-  letter-spacing: 0.02em;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 0.6875rem;
-  color: var(--fg);
 }
 
 /* Where there's a pointer, the strip is three bare numbers and nothing else.

@@ -103,7 +103,7 @@
   "work.lg.how": "Una lente rifrattiva sopra una riga di schede: pillola SDF, rifrazione dei bordi secondo la legge di Snell con dispersione per canale, fresnel e riflessi in LCH, movimento guidato da molle",
   "work.lg.builton": "WebGL e JavaScript",
 
-  "pulse.load": "tempo di caricamento",
+  "pulse.commit": "ultimo commit",
   "pulse.visits": "visite (30 g)",
   "pulse.online": "online"
 }

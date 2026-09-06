@@ -103,7 +103,7 @@
   "work.lg.how": "Eine brechende Linse über einer Tab-Leiste: SDF-Pille, Kantenbrechung nach dem Snellius-Gesetz mit Dispersion pro Farbkanal, LCH-Fresnel und Glanzlichter, federgetriebene Bewegung",
   "work.lg.builton": "WebGL und JavaScript",
 
-  "pulse.load": "Ladezeit",
+  "pulse.commit": "letzter Commit",
   "pulse.visits": "Besuche (30 T)",
   "pulse.online": "online"
 }

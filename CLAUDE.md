@@ -30,10 +30,17 @@ hit `/work/contract.html` directly. For the Pages Functions, use
 
 ## The stats strip
 
-The three numbers in the bottom-right of the home page. `pulse.js` runs on
-every page and beats to `POST /api/pulse` on load and every 30s while the tab
-is visible; only `index.html` contains the `.pulse` markup that draws the
-result. Counts are stored in the `zainsaeed-pulse` D1 database (`schema.sql`).
+The three numbers in the bottom-right of the home page: the last commit's
+diff stat, visits in the last 30 days, and how many people are reading now.
+`pulse.js` runs on every page and beats to `POST /api/pulse` on load and
+every 30s while the tab is visible; only `index.html` contains the `.pulse`
+markup that draws the result. Counts are stored in the `zainsaeed-pulse` D1
+database (`schema.sql`).
+
+The commit row is static: "+142 −16" in GitHub's green and red, the whole
+row a link to the commit, and its timestamp in `data-committed` — currently
+hand-stamped (a mockup), meant to be written by the deploy step. Only its
+age is computed, in the browser, for the hover label.
 
 Hovering a number opens its label; hovering the live count opens one flag per
 country currently reading. The flags are `SELECT DISTINCT country` over the

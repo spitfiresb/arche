@@ -2,9 +2,10 @@
 
    Two of the numbers come from the site itself, over /api/pulse: how many
    distinct people have visited in the last 30 days, and how many are reading
-   right now. The third, load time, is measured here and never leaves the
-   browser. The same response also carries the last public place I was seen
-   at, drawn in the opposite corner — one request feeds both.
+   right now. The third, the last commit's diff stat, is baked into the page
+   at deploy time; only its age is worked out here. The same response also
+   carries the last public place I was seen at, drawn in the opposite corner
+   — one request feeds both.
 
    This script runs on every page but only draws on the one that has the
    strip in it, so the counts cover the whole site while the corner stays
@@ -289,7 +290,7 @@
 
   // Digits are held at a fixed width so the strip never re-lays out under a
   // number that grows — the padding is the layout, not decoration.
-  const PAD = { visits: 6, online: 3, load: 4 };
+  const PAD = { visits: 6, online: 3 };
   const shown = {};
 
   function write(key, value) {
@@ -372,19 +373,20 @@
   beat(firstBeat);
   schedule();
 
-  /* ---- Load time -------------------------------------------------------
-     Wall-clock from navigation start to the load event, which is what a
-     reader actually waited through. Read after load has fired, or the entry's
-     end timestamps are still zero. */
-  if ('load' in fields) {
-    addEventListener('load', () => {
-      // one turn later: loadEventEnd is only written once the handler returns
-      setTimeout(() => {
-        const nav = performance.getEntriesByType('navigation')[0];
-        if (!nav) return;
-        const ms = Math.max(Math.round(nav.loadEventEnd - nav.startTime), 0);
-        if (ms > 0) tick('load', ms);
-      }, 0);
-    });
+  /* ---- The commit row --------------------------------------------------
+     The diff stat itself is static — stamped into the markup at deploy time,
+     since the page can't know what commit it is — but its age is a clock
+     reading, so it's written here from the commit's timestamp and refreshed
+     on every beat: an open hover saying "2 hours ago" at hour three is the
+     kind of wrong a live corner can't afford. */
+  const commitEl = strip && strip.querySelector('[data-committed]');
+  const ageEl = commitEl && commitEl.querySelector('.pulse-age');
+  function paintAge() {
+    if (!ageEl) return;
+    const at = Date.parse(commitEl.dataset.committed);
+    if (Number.isNaN(at)) return;
+    ageEl.textContent = since(Math.max((Date.now() - at) / 1000, 0));
   }
+  paintAge();
+  setInterval(paintAge, BEAT_MS);
 })();

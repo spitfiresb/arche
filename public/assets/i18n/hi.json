@@ -103,7 +103,7 @@
   "work.lg.how": "Tab row के ऊपर एक refractive lens: SDF pill, per-channel dispersion के साथ Snell-law edge refraction, LCH fresnel और glare, spring-driven motion",
   "work.lg.builton": "WebGL और JavaScript",
 
-  "pulse.load": "लोड समय",
+  "pulse.commit": "अंतिम कमिट",
   "pulse.visits": "विज़िट (30 दिन)",
   "pulse.online": "ऑनलाइन"
 }

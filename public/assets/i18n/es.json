@@ -103,7 +103,7 @@
   "work.lg.how": "Una lente refractiva sobre una fila de pestañas: píldora SDF, refracción en los bordes según la ley de Snell con dispersión por canal, fresnel y destellos en LCH, y movimiento animado con resortes",
   "work.lg.builton": "WebGL y JavaScript",
 
-  "pulse.load": "tiempo de carga",
+  "pulse.commit": "último commit",
   "pulse.visits": "visitas (30 d)",
   "pulse.online": "en línea"
 }
