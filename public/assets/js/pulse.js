@@ -385,7 +385,12 @@
     if (!ageEl) return;
     const at = Date.parse(commitEl.dataset.committed);
     if (Number.isNaN(at)) return;
-    ageEl.textContent = since(Math.max((Date.now() - at) / 1000, 0));
+    // "18 min ago", not "18 minutes ago": the label is uppercased and
+    // letter-spaced, and the long form runs wider than the strip. Hours
+    // and days keep their full word — they're short enough already. Only
+    // this label; the music corner's hint says "minutes" and stays that way.
+    ageEl.textContent = since(Math.max((Date.now() - at) / 1000, 0))
+      .replace(/ minutes? /, ' min ');
   }
   paintAge();
   setInterval(paintAge, BEAT_MS);
