@@ -232,6 +232,24 @@
     </aside>
 
     <footer class="pulse" hidden>
+      <!-- The newest row, and the only one that goes anywhere: what the
+           last commit to this site did, written the way GitHub writes it —
+           lines added in green, lines removed in red, the five-square
+           diffstat after them. Hovering opens the commit's short hash the
+           way the rows below open their labels, and clicking goes to that
+           commit on GitHub. MOCKUP: the numbers and hash are baked in by
+           hand from HEAD at the time of writing. The real thing would have
+           the deploy step stamp them here (git show --shortstat) right
+           before `wrangler pages deploy`, so the row is always the commit
+           that is actually live. -->
+      <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener">
+        <span class="pulse-label"><span data-i18n="pulse.commit">last commit</span> · <span class="pulse-sha">0d599cf</span></span>
+        <span class="pulse-diff">
+          <span class="pulse-add">+142</span>
+          <span class="pulse-del">&minus;16</span>
+          <span class="pulse-blocks" aria-hidden="true"><i class="is-add"></i><i class="is-add"></i><i class="is-add"></i><i class="is-add"></i><i class="is-del"></i></span>
+        </span>
+      </a>
       <div class="pulse-stat">
         <span class="pulse-label" data-i18n="pulse.load">load time</span>
         <span class="pulse-num" data-pulse="load">0000</span><span class="pulse-unit">ms</span>

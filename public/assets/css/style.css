@@ -2062,6 +2062,72 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   vertical-align: 0.06em;
 }
 
+/* ---- The commit row ---------------------------------------------------
+
+   The top row of the strip: the last commit's diff stat, "+142 −16" and
+   GitHub's five-square summary after it, in GitHub's own dark-theme
+   greens and reds so it reads as the thing it is quoting. It's the one
+   row that is a link — the whole row goes to the commit — so it gets the
+   pointer the rest of the readout deliberately withholds, and a hover
+   lifts the two numbers rather than underlining them: an underline under
+   a "+" and a "−" is just clutter. */
+.pulse-commit {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.pulse-diff {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45em;
+  font-size: 1rem;          /* same size as the other numbers */
+  transition: opacity 0.2s ease;
+}
+
+.pulse-add { color: #3fb950; }   /* GitHub dark: success-fg  */
+.pulse-del { color: #f85149; }   /* GitHub dark: danger-fg   */
+
+.pulse-commit:hover .pulse-diff,
+.pulse-commit:focus-visible .pulse-diff {
+  opacity: 0.8;
+}
+
+/* The five squares GitHub draws beside every diff stat, filled in
+   proportion: four green and one red for a 142/16 change. Empty squares
+   would be `.is-none` (a hairline outline) — not needed for this commit. */
+.pulse-blocks {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 0.15em;
+  /* centre against the x-height of the digits, like the live dot */
+  vertical-align: 0.05em;
+  align-self: center;
+}
+
+.pulse-blocks i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 1.5px;
+  background: #3fb950;
+}
+
+.pulse-blocks .is-del  { background: #f85149; }
+.pulse-blocks .is-none { background: none; box-shadow: inset 0 0 0 1px var(--faint); }
+
+/* A hash is a hash, not a heading: it keeps its case and its own letter
+   spacing inside the uppercased label, and it's set in the monospace
+   face so it reads as something you could paste. */
+.pulse-sha {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.6875rem;
+  color: var(--fg);
+}
+
 /* Where there's a pointer, the strip is three bare numbers and nothing else.
    Each one answers for itself: hovering a number brings up its own label and
    leaves the other two alone, so the corner is only ever as busy as the one

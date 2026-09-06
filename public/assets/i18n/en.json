@@ -104,6 +104,7 @@
   "work.lg.how": "A refractive lens over a tab row: SDF pill, Snell-law edge refraction with per-channel dispersion, LCH fresnel and glare, spring-driven motion",
   "work.lg.builton": "WebGL and JavaScript",
 
+  "pulse.commit": "last commit",
   "pulse.load": "load time",
   "pulse.visits": "visits (30d)",
   "pulse.online": "online",
