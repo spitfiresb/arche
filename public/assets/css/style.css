@@ -2095,6 +2095,9 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 .pulse-sign {
   font-size: 0.75rem;       /* 12px, same as .pulse-unit */
   margin-right: 0.08em;
+  /* a smaller glyph on the baseline sits with its middle below the digits'
+     middle; lift it so the two centres meet */
+  vertical-align: 0.15em;
 }
 
 .pulse-add { color: #3fb950; }   /* GitHub dark: success-fg */
