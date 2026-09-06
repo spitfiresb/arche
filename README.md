@@ -28,12 +28,18 @@ page, not a screenshot.
 
 ## Live numbers
 
-The home page carries three of them in its bottom-right corner: how long the
-page took to load, how many people have visited in the last 30 days, and how
-many are reading right now.
+The home page carries three of them in its bottom-right corner: how many
+people have visited in the last 30 days, what the last commit to the site
+did, and how many are reading right now.
 
-The first is measured in the browser and never leaves it. The other two come
-from a Cloudflare D1 database, one row per person per day and one row per open
+The commit row is "+115 −13" in GitHub's green and red, and clicking it opens
+the commit. The page can't know that about itself, so the deploy script
+stamps the numbers, the timestamp and the link from `HEAD` right before
+uploading, and puts the file back afterwards — the values in this repo are
+placeholders. Hovering says how long ago that was, worked out in the
+browser. If the repo is private, or the commit isn't pushed, the row links to
+my GitHub profile instead: the commit page would be a 404 for everyone but
+me. The other two numbers come from a Cloudflare D1 database, one row per person per day and one row per open
 tab. A visitor is a salted hash of the day and the IP, so the same person
 counts once however many times they reload, and the table can't be walked
 backwards to an address — the IP is never written down, and the identifier a
@@ -65,8 +71,8 @@ Every page beats to `/api/pulse`; only the home page draws the answer.
 ├── functions/api/    # the Cloudflare Pages Functions
 ├── wrangler.toml     # project name, output dir, D1 binding
 ├── schema.sql        # the three tables behind the two live corners
-└── tools/            # dev server, in-place text editing, vendor rebase,
-                      # and where/ — the macOS location reporter
+└── tools/            # deploy script, dev server, in-place text editing,
+                      # vendor rebase, and where/ — the macOS location reporter
 ```
 
 ## Running it
@@ -83,6 +89,19 @@ hashes, and `WHERE_TOKEN` for the location reporter — the last two are any
 long random string, and `openssl rand -hex 32` produces a good one. All of
 them also have to exist in the Pages dashboard under Settings → Environment
 variables for the live site to work.
+
+## Deploying
+
+The site doesn't deploy itself — the Pages project has no git integration,
+so pushing to `main` changes nothing until this runs:
+
+```sh
+tools/deploy.sh              # stamp the commit row, then wrangler pages deploy
+tools/deploy.sh --dry-run    # show what would be stamped, deploy nothing
+```
+
+It refuses a dirty tree, so what's live is always a commit. `gh` has to be
+signed in, for the one call that checks whether the repo is public.
 
 ## The location corner
 
