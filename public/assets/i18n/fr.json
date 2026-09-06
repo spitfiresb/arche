@@ -103,7 +103,7 @@
   "work.lg.how": "Une lentille réfractive au-dessus d'une rangée d'onglets : pilule en SDF, réfraction des bords selon la loi de Snell avec dispersion par canal, fresnel et reflets en LCH, animation par ressorts",
   "work.lg.builton": "WebGL et JavaScript",
 
-  "pulse.load": "temps de chargement",
+  "pulse.commit": "dernier commit",
   "pulse.visits": "visites (30 j)",
   "pulse.online": "en ligne"
 }

@@ -103,7 +103,7 @@
   "work.lg.how": "Uma lente refrativa sobre uma fileira de abas: pílula em SDF, refração de bordas pela lei de Snell com dispersão por canal, fresnel e brilho em LCH, movimento guiado por molas",
   "work.lg.builton": "WebGL e JavaScript",
 
-  "pulse.load": "tempo de carregamento",
+  "pulse.commit": "último commit",
   "pulse.visits": "visitas (30 d)",
   "pulse.online": "online"
 }

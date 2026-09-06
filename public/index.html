@@ -185,8 +185,8 @@
       </section>
     </div>
 
-    <!-- Live numbers in the last empty corner: how long this page took to
-         load, how many people came in the last 30 days, and how many are
+    <!-- Live numbers in the last empty corner: how many people came in the
+         last 30 days, what the last commit to the site did, and how many are
          here right now. Hidden until the first response lands, so a counter
          that's down shows nothing rather than a row of zeros. The labels are
          held back until hover; the zeros are placeholders that also fix the
@@ -233,13 +233,25 @@
 
     <footer class="pulse" hidden>
       <div class="pulse-stat">
-        <span class="pulse-label" data-i18n="pulse.load">load time</span>
-        <span class="pulse-num" data-pulse="load">0000</span><span class="pulse-unit">ms</span>
-      </div>
-      <div class="pulse-stat">
         <span class="pulse-label" data-i18n="pulse.visits">visits (30d)</span>
         <span class="pulse-num" data-pulse="visits">000000</span>
       </div>
+      <!-- The middle row, and the only one that goes anywhere: what the last
+           commit to this site did, the way GitHub writes it — lines added
+           in green, lines removed in red, and nothing else. Hovering opens
+           "last commit · 7 hours ago" (or "18 min ago") the way its neighbours open their
+           labels (pulse.js keeps the age current from data-committed), and
+           clicking goes to that commit on GitHub. The numbers, the timestamp
+           and the link are placeholders here: tools/deploy.sh stamps the
+           real ones from HEAD right before `wrangler pages deploy` and puts
+           this file back afterwards, so the row is always the commit that
+           is actually live and this copy never changes. The link goes to
+           the profile instead when the repo is private or the commit isn't
+           pushed, since the commit page would 404 for every visitor. -->
+      <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener" data-committed="2026-09-06T15:28:08-07:00">
+        <span class="pulse-label"><span data-i18n="pulse.commit">last commit</span> · <span class="pulse-age"></span></span>
+        <span class="pulse-num pulse-add"><span class="pulse-sign">+</span>142</span><span class="pulse-num pulse-del"><span class="pulse-sign">&minus;</span>16</span>
+      </a>
       <!-- The live one already says what it is, so instead of a label it
            opens a flag per country currently reading, filled in by pulse.js.
            Decorative: the count beside it is what carries the meaning, so

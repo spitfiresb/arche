@@ -103,7 +103,7 @@
   "work.lg.how": "탭 행 위에 얹힌 굴절 렌즈: SDF 알약 형태, 채널별 분산을 적용한 스넬 법칙 가장자리 굴절, LCH 프레넬과 글레어, 스프링 기반 모션",
   "work.lg.builton": "WebGL과 JavaScript",
 
-  "pulse.load": "로딩 시간",
+  "pulse.commit": "최근 커밋",
   "pulse.visits": "방문 (30일)",
   "pulse.online": "접속 중"
 }

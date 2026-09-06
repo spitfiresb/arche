@@ -1928,10 +1928,11 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 /* ---- Stats strip ------------------------------------------------------
 
-   Three live numbers in the bottom-right corner of the home page: how long
-   the page took to load, how many people came in the last 30 days, and how
-   many are here now. The first is measured in the browser, the other two
-   come from /api/pulse. All of it is wired up in pulse.js.
+   Three live numbers in the bottom-right corner of the home page: how many
+   people came in the last 30 days, what the last commit to the site did,
+   and how many are here now. The middle one is stamped into the page at
+   deploy time (its age is worked out in the browser), the other two come
+   from /api/pulse. All of it is wired up in pulse.js.
 
    One corner of four: last-seen top-left, language top-right, music
    bottom-left, and this one bottom-right. */
@@ -2060,6 +2061,51 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   /* an empty inline-block sits its bottom edge on the baseline, so it needs
      lifting to centre against the x-height of the digits beside it */
   vertical-align: 0.06em;
+}
+
+/* ---- The commit row ---------------------------------------------------
+
+   The middle row of the strip: what the last commit did, "+142 −16", in
+   GitHub's dark-theme green and red. Two numbers set exactly like the ones
+   below them — same face, same size, same tabular digits — with colour the
+   only thing that marks them out. It's the one row that is a link (the
+   whole row goes to the commit), so it gets the pointer the rest of the
+   readout deliberately withholds, and a hover dims the numbers rather than
+   underlining them: an underline under a "+" and a "−" is just clutter.
+
+   The signs are set at the unit size, the way GitHub sets them: Inter's
+   "+" and "−" are drawn at digit height and wider than a tabular digit,
+   so at full size they outweigh the numbers they're attached to. Smaller,
+   they read as a mark on the number rather than a glyph beside it. */
+.pulse-commit {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.pulse-commit .pulse-num {
+  transition: opacity 0.2s ease;
+}
+
+.pulse-commit .pulse-num + .pulse-num {
+  margin-left: 0.4em;
+}
+
+.pulse-sign {
+  font-size: 0.75rem;       /* 12px, same as .pulse-unit */
+  margin-right: 0.08em;
+  /* a smaller glyph on the baseline sits with its middle below the digits'
+     middle; lift it so the two centres meet */
+  vertical-align: 0.15em;
+}
+
+.pulse-add { color: #3fb950; }   /* GitHub dark: success-fg */
+.pulse-del { color: #f85149; }   /* GitHub dark: danger-fg  */
+
+.pulse-commit:hover .pulse-num,
+.pulse-commit:focus-visible .pulse-num {
+  opacity: 0.8;
 }
 
 /* Where there's a pointer, the strip is three bare numbers and nothing else.
