@@ -2071,7 +2071,12 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
    only thing that marks them out. It's the one row that is a link (the
    whole row goes to the commit), so it gets the pointer the rest of the
    readout deliberately withholds, and a hover dims the numbers rather than
-   underlining them: an underline under a "+" and a "−" is just clutter. */
+   underlining them: an underline under a "+" and a "−" is just clutter.
+
+   The signs are set at the unit size, the way GitHub sets them: Inter's
+   "+" and "−" are drawn at digit height and wider than a tabular digit,
+   so at full size they outweigh the numbers they're attached to. Smaller,
+   they read as a mark on the number rather than a glyph beside it. */
 .pulse-commit {
   display: block;
   text-decoration: none;
@@ -2085,6 +2090,11 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 .pulse-commit .pulse-num + .pulse-num {
   margin-left: 0.4em;
+}
+
+.pulse-sign {
+  font-size: 0.75rem;       /* 12px, same as .pulse-unit */
+  margin-right: 0.08em;
 }
 
 .pulse-add { color: #3fb950; }   /* GitHub dark: success-fg */
