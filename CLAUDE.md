@@ -254,6 +254,13 @@ Things to remember when touching it:
   collapses it), an Overpass outage on a pin lookup gets none either, and
   the stutter guard drops an area the venue name already contains. The `area` column postdates the `place` table —
   see the ALTER note in schema.sql before deploying this anywhere.
+- **The venue never expires; only its age does.** `/api/pulse` always
+  returns the `place` row, however old. `PLACE_AGE_TTL` (5 days) decides
+  whether `ago` rides along: under it the hover hint reads "South Beach ·
+  2 days ago", past it `ago` is null and the hint drops to the
+  neighbourhood alone, so the corner says "Last seen at Blue Bottle" with no
+  clock on it rather than "Last seen at Blue Bottle · 3 weeks ago". The
+  sentence itself never carries the age.
 - **Rank beats distance when choosing which name to publish.** Nearest-wins
   picks embarrassing names: at Berkeley Public Library the library is a mapped
   footprint 30m off and its second-hand bookshop is a pin at 20m, so distance
