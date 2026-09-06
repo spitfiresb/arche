@@ -1928,11 +1928,11 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 /* ---- Stats strip ------------------------------------------------------
 
-   Three live numbers in the bottom-right corner of the home page: what the
-   last commit to the site did, how many people came in the last 30 days,
-   and how many are here now. The first is stamped into the page at deploy
-   time (its age is worked out in the browser), the other two come from
-   /api/pulse. All of it is wired up in pulse.js.
+   Three live numbers in the bottom-right corner of the home page: how many
+   people came in the last 30 days, what the last commit to the site did,
+   and how many are here now. The middle one is stamped into the page at
+   deploy time (its age is worked out in the browser), the other two come
+   from /api/pulse. All of it is wired up in pulse.js.
 
    One corner of four: last-seen top-left, language top-right, music
    bottom-left, and this one bottom-right. */
@@ -2065,7 +2065,7 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 /* ---- The commit row ---------------------------------------------------
 
-   The top row of the strip: what the last commit did, "+142 −16", in
+   The middle row of the strip: what the last commit did, "+142 −16", in
    GitHub's dark-theme green and red. Two numbers set exactly like the ones
    below them — same face, same size, same tabular digits — with colour the
    only thing that marks them out. It's the one row that is a link (the

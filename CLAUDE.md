@@ -30,8 +30,8 @@ hit `/work/contract.html` directly. For the Pages Functions, use
 
 ## The stats strip
 
-The three numbers in the bottom-right of the home page: the last commit's
-diff stat, visits in the last 30 days, and how many people are reading now.
+The three numbers in the bottom-right of the home page: visits in the last
+30 days, the last commit's diff stat, and how many people are reading now.
 `pulse.js` runs on every page and beats to `POST /api/pulse` on load and
 every 30s while the tab is visible; only `index.html` contains the `.pulse`
 markup that draws the result. Counts are stored in the `zainsaeed-pulse` D1
