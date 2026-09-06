@@ -148,12 +148,12 @@
     flagRow.textContent = (list || []).map(flagOf).join(' ');
   }
 
-  /* Absent is a real state here, and the common one: no venue means the
-     corner is empty rather than showing a placeholder. The server has
-     already dropped anything past its window, so "nothing to say" arrives
-     as a null and this hides the whole thing. No timestamp on purpose —
-     "Last seen at" holds whether the reading is a minute or a day old,
-     and the server's cutoff is what keeps it from getting ancient. */
+  /* Absent is a real state here: no venue means the corner is empty rather
+     than showing a placeholder. The sentence itself carries no timestamp —
+     "Last seen at" holds whether the reading is a minute or a month old.
+     The age lives in the hover hint, next to the neighbourhood, and only
+     while the server still sends one: past five days `ago` arrives null
+     and the hint says just the neighbourhood, or nothing at all. */
   let placeShown = null;
 
   /* The hint's indent is a tab past where the city (or, citiless, the
@@ -182,6 +182,23 @@
   const narrow = matchMedia('(max-width: 40rem)');
   if (narrow.addEventListener) narrow.addEventListener('change', indentHint);
 
+  /* The hover hint under the sentence: "South Beach · 2 days ago". The
+     neighbourhood is one step finer than the sentence, the age one step
+     more honest about it. Either half may be missing — a town with no
+     mapped neighbourhoods, or a place seen so long ago the server has
+     stopped sending its age — and an empty string collapses the hint
+     entirely (see .whereat-hint:empty), so there's nothing to open. */
+  function placeHint(place) {
+    return [place.area, place.ago != null ? since(place.ago) : null]
+      .filter(Boolean).join(' · ');
+  }
+
+  function paintPlaceHint(place) {
+    if (!areaEl) return;
+    const text = placeHint(place);
+    if (areaEl.textContent !== text) areaEl.textContent = text;
+  }
+
   function paintPlace(place) {
     if (!whereat) return;
 
@@ -199,7 +216,8 @@
     // and the rendered strings are exactly what "changed" means here.
     const key = `${place.label}|${city}|${place.area || ''}`;
     if (key === placeShown) {
-      indentHint();   // a no-op once it has succeeded
+      paintPlaceHint(place);   // the age moves even when the place doesn't
+      indentHint();            // a no-op once it has succeeded
       return;
     }
     placeShown = key;
@@ -216,17 +234,14 @@
         cityEl.appendChild(cityName);
       }
     }
-    // The hover hint: the neighbourhood, one step finer than the sentence.
-    // Empty collapses the hint entirely (see .whereat-hint:empty), so a
-    // town with no mapped neighbourhoods has nothing to open.
-    if (areaEl) areaEl.textContent = place.area || '';
+    paintPlaceHint(place);
 
     if (whereat.hidden) whereat.hidden = false;
 
     // New text, new measurement: the anchor is the city span when there is
     // one, else the venue. Read after the corner is unhidden, since inside
     // display:none every offset is zero (see indentHint).
-    hintAnchor = place.area ? (cityName || placeEl) : null;
+    hintAnchor = placeHint(place) ? (cityName || placeEl) : null;
     hintIndented = false;
     if (areaEl) areaEl.style.marginLeft = '';
     indentHint();

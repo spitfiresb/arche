@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personal - Zain Saeed</title>
-<meta name="description" content="Projects I built for myself: Unpak, Steward AI, and FloorSense, with live demos.">
+<meta name="description" content="Projects I built for myself: Steward AI, Unpak, and FloorSense, with live demos.">
 <meta property="og:title" content="Personal - Zain Saeed">
-<meta property="og:description" content="Projects I built for myself: Unpak, Steward AI, and FloorSense, with live demos.">
+<meta property="og:description" content="Projects I built for myself: Steward AI, Unpak, and FloorSense, with live demos.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zsaeed.com/work/personal">
 <meta property="og:site_name" content="Zain Saeed">
@@ -54,63 +54,6 @@
     </header>
 
     <ul class="bands">
-      <li id="unpak-system">
-        <div class="band-artifact">
-          <figure class="ld-thumb" data-diagram
-          tabindex="0" role="button"
-          aria-label="Expand the Unpak system map to fullscreen">
-            <img src="/assets/img/unpak/system-preview.svg"
-            alt="A flow chart of the Unpak system: the capture agent on the employee machine uploading to Cloudflare R2, Modal running the processing and analysis pipelines, with the model each stage uses">
-          </figure>
-        </div>
-        <div class="band-prose">
-          <div class="band-head">
-            <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.system">System</span><time class="band-date" datetime="2026-04">April 2026</time></h2>
-            <a class="repo-link" href="https://github.com/spitfiresb/unpak"
-            target="_blank" rel="noopener">
-              <span data-i18n="common.viewrepo">View repo</span>
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
-              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-              aria-hidden="true">
-                <path d="M5 11 L11 5"/>
-                <path d="M6 5 H11 V10"/>
-              </svg>
-            </a>
-          </div>
-          <p data-i18n="work.unpaksys.p1">The capture and processing core of Unpak. A Rust agent on each
-          machine reads the focused window through AX Tree and OCR capture, and
-          scrubs PII's on device. After
-          storage, a pipeline then distills that raw activity down in stages:
-          individual actions get grouped into tasks, and tasks into workflows.
-          Cheaper models handle the high-volume grouping and smarter models
-          handle the complicated reasoning sections. A nightly pass clusters recurring
-          workflows across the workforce into families, so variations of the
-          same workflow can still be deterministically grouped together</p>
-
-          <p data-i18n="work.unpaksys.p2">The idea: a worker's day is made up of various workflows, each a
-          generally set list of tasks. If you can map those workflows and
-          build a picture of how a company actually does its work, down to the
-          smallest step, then you can pinpoint where an AI solution plugs in
-          most effectively and compute, down to the minute, how much time it
-          would save</p>
-
-          <div class="band-spec">
-            <h3 data-i18n="spec.title">Technical specifications</h3>
-            <dl>
-              <div>
-                <dt data-i18n="spec.builton">Built on</dt>
-                <dd data-i18n="work.unpaksys.builton">Rust for the agent, Swift for the macOS client, Python for
-                the pipeline. SQLite on the device, Neon Postgres upstream</dd>
-              </div>
-              <div>
-                <dt data-i18n="spec.hosting">Hosting</dt>
-                <dd data-i18n="work.unpaksys.hosting">Modal for the pipeline, Cloudflare R2 for storage</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </li>
-
       <li id="steward-ai">
         <div class="band-artifact">
           <figure class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html"
@@ -175,6 +118,141 @@
         </div>
       </li>
 
+      <li id="unpak-system">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-diagram
+          tabindex="0" role="button"
+          aria-label="Expand the Unpak system map to fullscreen">
+            <img src="/assets/img/unpak/system-preview.svg"
+            alt="A flow chart of the Unpak system: the capture agent on the employee machine uploading to Cloudflare R2, Modal running the processing and analysis pipelines, with the model each stage uses">
+          </figure>
+        </div>
+        <div class="band-prose">
+          <div class="band-head">
+            <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.system">System</span><time class="band-date" datetime="2026-04">April 2026</time></h2>
+            <a class="repo-link" href="https://github.com/spitfiresb/unpak"
+            target="_blank" rel="noopener">
+              <span data-i18n="common.viewrepo">View repo</span>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+                <path d="M5 11 L11 5"/>
+                <path d="M6 5 H11 V10"/>
+              </svg>
+            </a>
+          </div>
+          <p data-i18n="work.unpaksys.p1">The capture and processing core of Unpak. A Rust agent on each
+          machine reads the focused window through AX Tree and OCR capture, and
+          scrubs PII's on device. After
+          storage, a pipeline then distills that raw activity down in stages:
+          individual actions get grouped into tasks, and tasks into workflows.
+          Cheaper models handle the high-volume grouping and smarter models
+          handle the complicated reasoning sections. A nightly pass clusters recurring
+          workflows across the workforce into families, so variations of the
+          same workflow can still be deterministically grouped together</p>
+
+          <p data-i18n="work.unpaksys.p2">The idea: a worker's day is made up of various workflows, each a
+          generally set list of tasks. If you can map those workflows and
+          build a picture of how a company actually does its work, down to the
+          smallest step, then you can pinpoint where an AI solution plugs in
+          most effectively and compute, down to the minute, how much time it
+          would save</p>
+
+          <div class="band-spec">
+            <h3 data-i18n="spec.title">Technical specifications</h3>
+            <dl>
+              <div>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.unpaksys.builton">Rust for the agent, Swift for the macOS client, Python for
+                the pipeline. SQLite on the device, Neon Postgres upstream</dd>
+              </div>
+              <div>
+                <dt data-i18n="spec.hosting">Hosting</dt>
+                <dd data-i18n="work.unpaksys.hosting">Modal for the pipeline, Cloudflare R2 for storage</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+
+      <li id="unpak-dashboard">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/unpak-dashboard/"
+          data-bg="#FCFCFB" data-title="Unpak dashboard - live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Unpak dashboard live demo to fullscreen">
+            <img src="/assets/img/unpak/dashboard-preview.png"
+            alt="The Unpak dashboard overview: a composition ring of work areas, AI adoption dials, and ranked bars of where the hours are going">
+          </figure>
+        </div>
+        <div class="band-prose">
+          <div class="band-head">
+            <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.dashboard">Dashboard</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
+            <a class="repo-link" href="https://github.com/spitfiresb/unpak/tree/main/cloudflare/dashboard"
+            target="_blank" rel="noopener">
+              <span data-i18n="common.viewrepo">View repo</span>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+                <path d="M5 11 L11 5"/>
+                <path d="M6 5 H11 V10"/>
+              </svg>
+            </a>
+          </div>
+          <p data-i18n="work.unpakdash.p1">Unpak's dashboard. It shows the customer the workflows their
+          workforce repeats, where the hours go, and where AI has already
+          shown up in the work</p>
+
+          <div class="band-spec">
+            <h3 data-i18n="spec.title">Technical specifications</h3>
+            <dl>
+              <div>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.unpakdash.builton">Astro, with the data connected to a Neon Postgres
+                database</dd>
+              </div>
+              <div>
+                <dt data-i18n="spec.hosting">Hosting</dt>
+                <dd>Cloudflare Pages</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+
+      <li id="unpak-website">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/unpak-site/"
+          data-ready="canvas" data-bg="#FCFCFB" data-mobile="native"
+          data-title="Unpak website - live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Unpak website live demo to fullscreen">
+            <img src="/assets/img/unpak/site-preview.png"
+            alt="The Unpak website landing page: the headline What can AI do for your agency over a soft rippling canvas">
+          </figure>
+        </div>
+        <div class="band-prose">
+          <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.website">Website</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
+          <p data-i18n="work.unpaksite.p1">The main website for Unpak. One of my most polished pieces of
+          work</p>
+
+          <div class="band-spec">
+            <h3 data-i18n="spec.title">Technical specifications</h3>
+            <dl>
+              <div>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.unpaksite.builton">Astro, Tailwind, and JavaScript for the diagrams and the
+                WebGL ripple shader</dd>
+              </div>
+              <div>
+                <dt data-i18n="spec.hosting">Hosting</dt>
+                <dd>Cloudflare Pages</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+
       <li id="floorsense">
         <div class="band-artifact">
           <figure class="ld-thumb" data-live-demo="/demos/floorsense/?embed=1"
@@ -225,84 +303,6 @@
                 <dt data-i18n="spec.hosting">Hosting</dt>
                 <dd data-i18n="work.floorsense.hosting">Website hosted on Vercel, YOLO model hosted on
                 Roboflow</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </li>
-
-      <li id="unpak-website">
-        <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/unpak-site/"
-          data-ready="canvas" data-bg="#FCFCFB" data-mobile="native"
-          data-title="Unpak website - live demo"
-          tabindex="0" role="button"
-          aria-label="Expand the Unpak website live demo to fullscreen">
-            <img src="/assets/img/unpak/site-preview.png"
-            alt="The Unpak website landing page: the headline What can AI do for your agency over a soft rippling canvas">
-          </figure>
-        </div>
-        <div class="band-prose">
-          <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.website">Website</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
-          <p data-i18n="work.unpaksite.p1">The main website for Unpak. One of my most polished pieces of
-          work</p>
-
-          <div class="band-spec">
-            <h3 data-i18n="spec.title">Technical specifications</h3>
-            <dl>
-              <div>
-                <dt data-i18n="spec.builton">Built on</dt>
-                <dd data-i18n="work.unpaksite.builton">Astro, Tailwind, and JavaScript for the diagrams and the
-                WebGL ripple shader</dd>
-              </div>
-              <div>
-                <dt data-i18n="spec.hosting">Hosting</dt>
-                <dd>Cloudflare Pages</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </li>
-
-      <li id="unpak-dashboard">
-        <div class="band-artifact">
-          <figure class="ld-thumb" data-live-demo="/demos/unpak-dashboard/"
-          data-bg="#FCFCFB" data-title="Unpak dashboard - live demo"
-          tabindex="0" role="button"
-          aria-label="Expand the Unpak dashboard live demo to fullscreen">
-            <img src="/assets/img/unpak/dashboard-preview.png"
-            alt="The Unpak dashboard overview: a composition ring of work areas, AI adoption dials, and ranked bars of where the hours are going">
-          </figure>
-        </div>
-        <div class="band-prose">
-          <div class="band-head">
-            <h2 class="band-title">Unpak <span class="band-part" data-i18n="part.dashboard">Dashboard</span><time class="band-date" datetime="2026-07">July 2026</time></h2>
-            <a class="repo-link" href="https://github.com/spitfiresb/unpak/tree/main/cloudflare/dashboard"
-            target="_blank" rel="noopener">
-              <span data-i18n="common.viewrepo">View repo</span>
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
-              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-              aria-hidden="true">
-                <path d="M5 11 L11 5"/>
-                <path d="M6 5 H11 V10"/>
-              </svg>
-            </a>
-          </div>
-          <p data-i18n="work.unpakdash.p1">Unpak's dashboard. It shows the customer the workflows their
-          workforce repeats, where the hours go, and where AI has already
-          shown up in the work</p>
-
-          <div class="band-spec">
-            <h3 data-i18n="spec.title">Technical specifications</h3>
-            <dl>
-              <div>
-                <dt data-i18n="spec.builton">Built on</dt>
-                <dd data-i18n="work.unpakdash.builton">Astro, with the data connected to a Neon Postgres
-                database</dd>
-              </div>
-              <div>
-                <dt data-i18n="spec.hosting">Hosting</dt>
-                <dd>Cloudflare Pages</dd>
               </div>
             </dl>
           </div>

@@ -25,7 +25,7 @@ const RETAIN_DAYS = 60;      // how long day-rows are kept before being swept
 const ONLINE_SECONDS = 70;   // a tab counts as online this long after a beat
 const PRESENCE_TTL = 600;    // and its row is deleted this long after one
 const MAX_FLAGS = 10;        // distinct countries returned; see countryOf below
-const PLACE_TTL = 259200;    // 3 days; after that the corner says nothing at all
+const PLACE_AGE_TTL = 432000; // 5 days; after that the corner keeps the venue but drops the age
 
 // The client beats every 30s, so 70 tolerates exactly one dropped beat before
 // someone blinks out — a laptop lid closing shouldn't take two minutes to
@@ -119,15 +119,16 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // already beating here every 30s, so the widget costs one statement on a
     // query that was happening anyway instead of a second request per tab.
     //
-    // The cutoff is enforced here rather than in the browser so a stale row
-    // never leaves the database at all. Three days lets "2 days ago" ride
-    // out a quiet weekend; past that the corner goes silent rather than
-    // becoming a monument to the last time I left the house.
+    // No cutoff: the last public place stays on the page however old it is.
+    // What expires is the age. Under five days the response carries `ago`
+    // and the hover hint says "2 days ago"; past that `ago` is null and the
+    // corner reads as a plain "Last seen at" with no clock on it, rather
+    // than becoming a monument to the last time I left the house.
     at.place = stmts.push(
       db.prepare(
         `SELECT label, city, area, unixepoch() - seen AS ago FROM place
-          WHERE id = 1 AND seen > unixepoch() - ?1`,
-      ).bind(PLACE_TTL),
+          WHERE id = 1`,
+      ),
     ) - 1;
     // The music line in the third corner. Same deal as place: it rides the
     // batch that was happening anyway. Only the cache is read here — Spotify
@@ -154,7 +155,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // wording around it stays a rendering decision.
     const place = row
       ? { label: row.label, city: row.city || null, area: row.area || null,
-          ago: Math.max(row.ago, 0) }
+          ago: row.ago < PLACE_AGE_TTL ? Math.max(row.ago, 0) : null }
       : null;
 
     // The cached track goes out as-is — even when stale, because a song from
