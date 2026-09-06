@@ -1,12 +1,39 @@
 /* Type:
-   --font-sans   Söhne (a licensed Klim face). It isn't hosted here, so when
-                 it isn't installed we fall to Helvetica Neue, the neo-
-                 grotesque Söhne descends from and reads almost identically,
-                 then to Inter as a hosted web-font backstop for other OSes.
-   --font-serif  Newsreader italic, for emphasized lead-ins.
-   Both web fonts load from Google Fonts via <link> tags in each page's
-   head (with preconnect), so the fetch starts alongside this stylesheet
-   instead of being serialized behind it. */
+   --font-sans   Inter, self-hosted as one variable file (weights 100-900)
+                 so every visitor renders the same face. It used to ask for
+                 Söhne and Helvetica Neue first, which meant a Mac drew the
+                 site in one font and Windows in another. "Inter Fallback"
+                 is Arial with its metrics overridden to Inter's, so text
+                 laid out before the file lands wraps in the same places and
+                 nothing moves when the swap happens.
+   --font-serif  Newsreader italic, for emphasized lead-ins. Loads from
+                 Google Fonts via a <link> in each page's head (with
+                 preconnect), so the fetch starts alongside this stylesheet
+                 instead of being serialized behind it. Inter is preloaded
+                 the same way. */
+
+@font-face {
+  font-family: "InterVariable";
+  src: url("/assets/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterVariable";
+  src: url("/assets/fonts/InterVariable-Italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  size-adjust: 107.4%;
+}
 
 :root {
   /* Dark theme + greys */
@@ -22,7 +49,7 @@
                                single knob: the thumb and inline embed read it
                                directly, and live-demo.js reads it to scale the
                                parked live app's corner to match */
-  --font-sans: "Sohne", "Helvetica Neue", "Inter", -apple-system,
+  --font-sans: "InterVariable", "Inter Fallback", -apple-system,
     BlinkMacSystemFont, Helvetica, Arial, sans-serif;
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
 }
