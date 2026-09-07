@@ -1,8 +1,8 @@
 /* The home page, second edition: one narrow column of prose on an
    off-white page, a dated list of work under it, and a hairline footer
    carrying the live bits. Everything is 14px Inter at weight 460 in
-   near-black, with the secondary text at 40% black; the only colour on
-   the page is the "New" tag. The work pages still load style.css. */
+   near-black, with the secondary text at 40% black. The work pages still
+   load style.css. */
 
 @font-face {
   font-family: "InterVariable";
@@ -45,7 +45,6 @@
   --rule: #ededed;
   --underline: #d9d9d9;
   --underline-hover: #666;
-  --accent: rgb(255, 0, 170);
   --live: #3fb950;
   --column: 36.375rem;
   --font-sans: "InterVariable", "Inter Fallback", -apple-system,
@@ -287,11 +286,6 @@ h1, h2, h3 {
 }
 .work > ul > li > ul > li:first-child > .row time .year {
   visibility: visible;
-}
-
-.work .tag {
-  color: var(--accent);
-  font-size: 0.75rem;
 }
 
 /* Hovering anywhere over the list dims every row but the one under the
