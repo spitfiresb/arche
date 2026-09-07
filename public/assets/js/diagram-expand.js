@@ -50,7 +50,10 @@
     var overlay = document.createElement('div');
     overlay.className = 'ld-overlay';
     overlay.style.position = 'fixed';
-    overlay.style.background = '#1a1a1a';
+    // The page colour, so a diagram drawn on the page background zooms
+    // without a slab appearing around it.
+    overlay.style.background = getComputedStyle(document.documentElement)
+      .getPropertyValue('--bg').trim() || '#1a1a1a';
     overlay.hidden = true;
 
     var big = document.createElement('img');

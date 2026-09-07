@@ -47,100 +47,99 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/style.css">
-<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="/assets/css/site.css">
 <script src="/assets/js/transition.js"></script>
-<script src="/assets/js/i18n.js" defer></script>
 </head>
-<body class="page" data-i18n-page="about">
-  <a class="back" href="/" aria-label="Back">
-    <svg class="back-mark" viewBox="0 0 40 40" width="36" height="36" fill="none" stroke="currentColor" aria-hidden="true">
+<body class="story">
+  <a class="back" href="/" aria-label="Back to the home page">
+    <svg class="back-mark" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true">
       <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
       <path class="back-chevron" d="M24 14 L16 20 L24 26" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </a>
-  <main>
-    <p class="kicker" data-i18n="about.kicker">my story.</p>
+  <main class="page">
+    <article class="article">
+      <header>
+        <h1>My story</h1>
+        <div class="meta"><time datetime="2022-09">September 2022 to now</time></div>
+      </header>
 
-    <ul class="timeline">
-      <li>
-        <span class="date" data-i18n-date="2022-09">September 2022</span>
-        <h2 class="entry-title" data-i18n="about.e1.title">Started at University of Oregon</h2>
-        <p data-i18n="about.e1.body">Double majored in Computer Science &amp; Data Science.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2023-03">March 2023</span>
-        <h2 class="entry-title" data-i18n="about.e2.title">Co-founded Oregon Software Consulting</h2>
-        <p data-i18n="about.e2.body">Oregon's first student software development club. Ran the club's
-        first recruitment cycle and managed a team of five developers. We built
-        software for local businesses.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2023-09">September 2023</span>
-        <h2 class="entry-title" data-i18n="about.e3.title">Tutoring Mathematics</h2>
-        <p data-i18n="about.e3.body">Started tutoring mathematics at the University of Oregon, my most
-        fulfilling role to date. Would continue this till graduation.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2024-07">July 2024</span>
-        <h2 class="entry-title" data-i18n="about.e4.title">Genomics Data Analyst, Rohlfs Evolutionary Genomics Lab</h2>
-        <p data-i18n="about.e4.body">My first research role. Analyzed primate genome sequences studying
-        tandem repeats, identifying markers of evolution using code.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2024-08">August 2024</span>
-        <h2 class="entry-title" data-i18n="about.e5.title">Data Engineering @ Expertflow</h2>
-        <p data-i18n="about.e5.body">Built and optimized data pipelines. My first internship, first stand
-        ups, first PR review, first look at legacy code (ouch). Amazing summer.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2025-07">July 2025</span>
-        <h2 class="entry-title" data-i18n="about.e6.title">Data/ML Engineering @ Trimble</h2>
-        <p data-i18n="about.e6.body">My second internship. Spent the summer creating and deploying machine
-        learning software and untangling legacy deployment pipelines. Learned
-        from some amazing people, an unforgettable experience.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2025-09">September 2025</span>
-        <h2 class="entry-title" data-i18n="about.e7.title">Joined the AI Club</h2>
-        <p data-i18n="about.e7.body">Joined my university's AI Club. Created software for all kinds of
-        clients, from regional businesses to Fortune 100 enterprises. The first
-        time I had deployed software at scale, across multiple timezones. Met
-        some amazing people here, and made memories that will last a lifetime.</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2026-01">January 2026</span>
-        <h2 class="entry-title" data-i18n="about.e8.title">NexHacks '26</h2>
-        <p data-i18n="about.e8.body">First hackathon win! Flew out to Carnegie Mellon University and built
-        Steward AI, a desktop application that lets businesses understand their
-        AI usage in the workplace. The amount of caffeine consumed during this
-        probably took a couple years off my life...but worth the memories!</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2026-01">January 2026</span>
-        <h2 class="entry-title" data-i18n="about.e9.title">Co-founder at Unpak</h2>
-        <p data-i18n="about.e9.body">Created a startup with some friends! Built a piece of software that
-        mapped workflows at a company, and improved them using AI. Late nights,
-        early mornings, late nights that turned into early mornings (startups are
-        awesome).</p>
-      </li>
-      <li>
-        <span class="date" data-i18n-date="2026-06">June 2026</span>
-        <h2 class="entry-title" data-i18n="about.e10.title">Graduated</h2>
-        <p data-i18n="about.e10.body">Bachelors of Science, Computer Science &amp; Data Science, University
-        of Oregon. Now looking for the next cool idea to build.</p>
-      </li>
-    </ul>
+      <p>Everything below happened at or around the University of Oregon, oldest
+      first. The short version is on the <a class="link" href="/">home page</a>.</p>
 
-    <svg class="stickman" width="68" height="88" viewBox="-34 0 68 88" aria-hidden="true"></svg>
-
-    <svg class="rope" width="160" height="150" viewBox="0 0 160 150" aria-hidden="true">
-      <path d="M1 0 L1 149" fill="none" stroke="#f2f2f2" stroke-width="2"/>
-    </svg>
-
+      <ol class="timeline">
+        <li>
+          <h2>Started at University of Oregon</h2>
+          <time datetime="2022-09">September 2022</time>
+          <p>Double majored in Computer Science &amp; Data Science.</p>
+        </li>
+        <li>
+          <h2>Co-founded Oregon Software Consulting</h2>
+          <time datetime="2023-03">March 2023</time>
+          <p>Oregon's first student software development club. Ran the club's
+          first recruitment cycle and managed a team of five developers. We built
+          software for local businesses.</p>
+        </li>
+        <li>
+          <h2>Tutoring Mathematics</h2>
+          <time datetime="2023-09">September 2023</time>
+          <p>Started tutoring mathematics at the University of Oregon, my most
+          fulfilling role to date. Would continue this till graduation.</p>
+        </li>
+        <li>
+          <h2>Genomics Data Analyst, Rohlfs Evolutionary Genomics Lab</h2>
+          <time datetime="2024-07">July 2024</time>
+          <p>My first research role. Analyzed primate genome sequences studying
+          tandem repeats, identifying markers of evolution using code.</p>
+        </li>
+        <li>
+          <h2>Data Engineering at Expertflow</h2>
+          <time datetime="2024-08">August 2024</time>
+          <p>Built and optimized data pipelines. My first internship, first stand
+          ups, first PR review, first look at legacy code (ouch). Amazing summer.</p>
+        </li>
+        <li>
+          <h2>Data/ML Engineering at Trimble</h2>
+          <time datetime="2025-07">July 2025</time>
+          <p>My second internship. Spent the summer creating and deploying machine
+          learning software and untangling legacy deployment pipelines. Learned
+          from some amazing people, an unforgettable experience.</p>
+        </li>
+        <li>
+          <h2>Joined the AI Club</h2>
+          <time datetime="2025-09">September 2025</time>
+          <p>Joined my university's AI Club. Created software for all kinds of
+          clients, from regional businesses to Fortune 100 enterprises. The first
+          time I had deployed software at scale, across multiple timezones. Met
+          some amazing people here, and made memories that will last a lifetime.</p>
+        </li>
+        <li>
+          <h2>NexHacks '26</h2>
+          <time datetime="2026-01">January 2026</time>
+          <p>First hackathon win! Flew out to Carnegie Mellon University and built
+          <a class="link" href="/work/steward-ai">Steward AI</a>, a desktop
+          application that lets businesses understand their AI usage in the
+          workplace. The amount of caffeine consumed during this probably took a
+          couple years off my life...but worth the memories!</p>
+        </li>
+        <li>
+          <h2>Co-founder at Unpak</h2>
+          <time datetime="2026-01">January 2026</time>
+          <p>Created a startup with some friends! Built
+          <a class="link" href="/work/unpak-system">a piece of software</a> that
+          mapped workflows at a company, and improved them using AI. Late nights,
+          early mornings, late nights that turned into early mornings (startups are
+          awesome).</p>
+        </li>
+        <li>
+          <h2>Graduated</h2>
+          <time datetime="2026-06">June 2026</time>
+          <p>Bachelors of Science, Computer Science &amp; Data Science, University
+          of Oregon. Now looking for the next cool idea to build.</p>
+        </li>
+      </ol>
+    </article>
   </main>
-  <script src="/assets/js/car-art.js"></script>
-  <script src="/assets/js/about.js"></script>
   <script src="/assets/js/pulse.js" defer></script>
 </body>
 </html>

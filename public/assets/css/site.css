@@ -1,8 +1,9 @@
-/* The home page, second edition: one narrow column of prose on an
-   off-white page, a dated list of work under it, and a hairline footer
-   carrying the live bits. Everything is 14px Inter at weight 460 in
-   near-black, with the secondary text at 40% black. The work pages still
-   load style.css. */
+/* The site, second edition: one narrow column of prose on an off-white
+   page. The home page is a bio, a dated list of work and a hairline
+   footer carrying the live bits; each project is an article in the same
+   column with its demo up top; About is a timeline. Everything is 14px
+   Inter at weight 460 in near-black, with the secondary text at 40%
+   black. style.css is the previous edition and nothing loads it now. */
 
 @font-face {
   font-family: "InterVariable";
@@ -46,7 +47,11 @@
   --underline: #d9d9d9;
   --underline-hover: #666;
   --live: #3fb950;
+  --link: #2480ed;
+  --link-hover: #74b1fd;
+  --faint: rgba(0, 0, 0, 0.3);
   --column: 36.375rem;
+  --ld-corner: 12px;      /* the demo previews' corner; live-demo.js reads it */
   --font-sans: "InterVariable", "Inter Fallback", -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Newsreader", "Times New Roman", Times, serif;
@@ -134,6 +139,10 @@ h1, h2, h3 {
 @media (max-width: 48rem) {
   .page {
     padding: 2rem 1.5rem 2.5rem;
+  }
+  /* Pages with the back control keep clear of it. */
+  .back ~ .page {
+    padding-top: 5rem;
   }
   .page::before {
     height: 2.5rem;
@@ -491,4 +500,379 @@ h1, h2, h3 {
   .bio > :nth-child(n + 7) { animation-delay: 0.3s; }
   .work { animation: rise 0.5s ease 0.4s both; }
   .foot { animation: rise 0.5s ease 0.5s both; }
+}
+
+/* ---- Project pages --------------------------------------------------- */
+
+/* The back control: the site's ring-and-chevron mark on a small white
+   disc pinned to the top-left corner. The live-demo overlay rebuilds the
+   same mark inside its own .ld-back, so the mark's classes are shared. */
+.back {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--muted);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.back:hover,
+.back:focus-visible {
+  color: var(--soft);
+  transform: scale(1.05);
+}
+.back:active {
+  transform: scale(0.95);
+}
+.back-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.back-chevron {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* The ring draws itself closed on hover: one dash the length of the
+   circle, parked out of sight at rest. */
+.back-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-dasharray: 98 200;
+  stroke-dashoffset: 98;
+  transition: stroke-dashoffset 0.32s cubic-bezier(0.55, 0, 0.85, 0.2);
+}
+.back:hover .back-ring,
+.back:focus-visible .back-ring {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.article > header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+.article > header h1 {
+  font-weight: 500;
+  text-wrap: balance;
+}
+.article > header time,
+.article > header .note {
+  color: var(--muted);
+}
+.article > header .note::before {
+  content: "· ";
+}
+.article > header .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* The row of outbound links under the title: "View repo ↗", in blue. */
+.article .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  padding-top: 0.75rem;
+}
+.styled-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--link);
+  transition: color 0.2s ease;
+}
+.styled-link svg {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+.styled-link:hover {
+  color: var(--link-hover);
+}
+.styled-link:hover svg {
+  transform: translate(1px, -2px);
+}
+.styled-link.is-internal:hover svg {
+  transform: translate(2px, -1px);
+}
+
+.article > p {
+  padding-top: 1rem;
+}
+.article > h2 {
+  font-weight: 560;
+  padding-top: 2.25rem;
+}
+.article > h2 + p {
+  padding-top: 0.5rem;
+}
+.article em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 430;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01rem;
+  font-variation-settings: "opsz" 10;
+  color: #000;
+}
+.article strong {
+  font-weight: 600;
+}
+.article p.soft {
+  color: var(--muted);
+}
+
+/* The demo. A hairline frame with a rounded corner; the thumbnail inside
+   is the screenshot until the app parks its live miniature over it. */
+.article .artifact {
+  padding-top: 1.5rem;
+}
+.article .ld-thumb {
+  margin: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--ld-corner);
+  background: var(--line);
+}
+.article .ld-thumb.plain {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.article .ld-thumb.plain img {
+  aspect-ratio: auto;
+}
+.article .ld-inline {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--rule);
+  border-radius: var(--ld-corner);
+  background: #fcfcfb;
+}
+.article .ld-inline-box {
+  overflow: clip;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--rule);
+  border-radius: var(--ld-corner);
+  background: #fcfcfb;
+}
+.article .ld-inline-box .ld-inline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border: none;
+  border-radius: 0;
+}
+/* Notch is a lit screen on a dark desk; a pale boot colour would flash. */
+.article .ld-inline.dark,
+.article .ld-inline-box:has(.ld-inline.dark) {
+  background: #1b1c2b;
+}
+.article figcaption {
+  padding-top: 0.625rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-align: center;
+}
+/* live-demo.css sizes its overlay for the old stylesheet's 0.9 zoom;
+   this edition isn't zoomed. */
+@media (min-width: 40.0625rem) {
+  .ld-overlay {
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+
+/* Specifications: label on the left, value on the right, one pair a row. */
+.article .spec {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.75rem 1.5rem;
+  padding-top: 2.25rem;
+}
+.article .spec dt {
+  color: var(--muted);
+}
+.article .spec dd {
+  margin: 0;
+}
+@media (max-width: 32.5rem) {
+  .article .spec {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .article .spec dd {
+    padding-bottom: 0.75rem;
+  }
+}
+
+/* Previous / next project, under a short rule. */
+.neighbours {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  position: relative;
+}
+.neighbours::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 3.125rem;
+  background: var(--rule);
+}
+.neighbours a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  color: var(--fg);
+  transition: opacity 0.15s ease;
+}
+.neighbours a:hover {
+  opacity: 0.6;
+}
+.neighbours a small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.neighbours .next {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* ---- The story (About) ---------------------------------------------- */
+
+.timeline {
+  --left: -1.75rem;
+  --dot: 9px;
+  --gap: 2.25rem;
+  position: relative;
+  list-style: none;
+  margin-top: 2rem;
+  margin-left: 1.75rem;
+}
+.timeline li {
+  position: relative;
+}
+.timeline li + li {
+  margin-top: var(--gap);
+}
+.timeline li h2 {
+  position: relative;
+  font-weight: 500;
+}
+.timeline li h2::before {
+  content: "";
+  position: absolute;
+  left: var(--left);
+  top: calc((1.25rem - var(--dot)) / 2);
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.12);
+  transform: translateX(-50%);
+  z-index: 1;
+}
+.timeline li:first-child h2::before {
+  width: calc(var(--dot) + 4px);
+  height: calc(var(--dot) + 4px);
+  top: calc((1.25rem - var(--dot) - 4px) / 2);
+}
+.timeline li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: var(--left);
+  top: calc((1.25rem + var(--dot)) / 2 + 6px);
+  height: calc(100% + var(--gap) - var(--dot) - 12px);
+  width: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  transform: translateX(-50%);
+}
+.timeline li:first-child:not(:last-child)::after {
+  top: calc((1.25rem + var(--dot) + 4px) / 2 + 6px);
+}
+.timeline time {
+  display: block;
+  padding-top: 0.125rem;
+  font-size: 0.6875rem;
+  color: rgba(0, 0, 0, 0.32);
+}
+.timeline p {
+  padding-top: 0.5rem;
+}
+@media (max-width: 32.5rem) {
+  .timeline {
+    margin-left: 1.25rem;
+    --left: -1.25rem;
+  }
+}
+
+/* ---- Source pages ---------------------------------------------------- */
+
+/* code.css was written for the dark edition; these are its knobs, relit. */
+.source {
+  --code-bg: #f8f8f8;
+  --code-gutter: #b3b3b3;
+  --code-warm: #9a5b2f;
+  --code-cool: #2a5d8f;
+  --line: var(--rule);
+}
+.source .page {
+  max-width: 58rem;
+}
+.source .article > header {
+  max-width: var(--column);
+}
+.source .code-file:first-of-type {
+  margin-top: 2rem;
+}
+
+/* ---- Entrance, for the inner pages ---------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .article > * {
+    animation: rise 0.5s ease both;
+  }
+  .article > :nth-child(1) { animation-delay: 0s; }
+  .article > :nth-child(2) { animation-delay: 0.05s; }
+  .article > :nth-child(3) { animation-delay: 0.1s; }
+  .article > :nth-child(4) { animation-delay: 0.15s; }
+  .article > :nth-child(5) { animation-delay: 0.2s; }
+  .article > :nth-child(6) { animation-delay: 0.25s; }
+  .article > :nth-child(n + 7) { animation-delay: 0.3s; }
+  .neighbours { animation: rise 0.5s ease 0.4s both; }
+  .timeline li { animation: rise 0.5s ease both; }
+  .timeline li:nth-child(2) { animation-delay: 0.05s; }
+  .timeline li:nth-child(3) { animation-delay: 0.1s; }
+  .timeline li:nth-child(4) { animation-delay: 0.15s; }
+  .timeline li:nth-child(5) { animation-delay: 0.2s; }
+  .timeline li:nth-child(6) { animation-delay: 0.25s; }
+  .timeline li:nth-child(n + 7) { animation-delay: 0.3s; }
 }

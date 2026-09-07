@@ -63,10 +63,11 @@ Every page beats to `/api/pulse`; only the home page draws the answer.
 
 ```
 ├── public/           # the deployed site, served as-is
-│   ├── index.html    # landing
-│   ├── about.html    # timeline
-│   ├── work/         # personal, contract, cool, liquid-glass source
-│   ├── assets/       # css, js, images, and i18n strings
+│   ├── index.html    # bio, the Work list, the live footer
+│   ├── about.html    # the story, as a timeline
+│   ├── work/         # one page per project (tools/build-work.py), and
+│   │                 # the Liquid Glass source
+│   ├── assets/       # css, js, images
 │   └── demos/        # one self-contained app per folder
 ├── functions/api/    # the Cloudflare Pages Functions
 ├── wrangler.toml     # project name, output dir, D1 binding

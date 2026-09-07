@@ -1,0 +1,9 @@
+# The previous edition grouped projects three to a page under /work/personal,
+# /work/contract and /work/cool, each project an anchor. Every project now
+# has a page of its own; these send the old section URLs to the project
+# that led each section. Fragments never reach the server, so an old
+# deep link like /work/cool#liquid-glass lands on the section's first
+# project rather than on Liquid Glass itself.
+/work/personal  /work/steward-ai  301
+/work/contract  /work/ai-sales-agent  301
+/work/cool      /work/notch  301

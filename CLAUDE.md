@@ -28,14 +28,40 @@ Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
 
 ## Local preview
 
-Any static server over `public/` works, but it won't rewrite clean URLs —
-hit `/work/contract.html` directly. For the Pages Functions, use
-`npx wrangler pages dev` (needs `.dev.vars`, see README).
+`tools/serve.py` serves `public/` with Cloudflare's clean-URL rule, so
+`/work/notch` resolves the way it does live. Any other static server works
+but needs the `.html`. Neither runs the Pages Functions, so the live footer
+stays empty; for that use `npx wrangler pages dev` (needs `.dev.vars`, see
+README).
+
+## The pages
+
+One stylesheet, `site.css`, and one shape: a 36.375rem column of 14px
+Inter at weight 460, near-black on off-white, secondary text at 40% black,
+in the manner of benji.org. The home page is a bio in prose, a Work list
+grouped by year, and a footer; each project is an article at
+`/work/<slug>` with its demo up top, prose, a label/value spec list and
+previous/next links; `/about` is the same column as a timeline. The
+project pages are generated: `tools/build-work.py` holds one dict per
+project and writes the nine files, and the output is committed, so edit
+the script, run it, commit both. The home page's Work list is hand-written
+and has to be kept in step with it. `_redirects` sends the previous
+edition's section URLs (`/work/personal`, `/work/contract`, `/work/cool`)
+to a project page each.
+
+The demos are unchanged from the previous edition (`live-demo.js`,
+`live-demo.css`, `diagram-expand.js`); `site.css` re-frames them for the
+narrow column (`--ld-corner` is 12px here, and the overlay height override
+in `site.css` exists because `live-demo.css` still compensates for a page
+zoom this edition doesn't apply). The Unpak system map has a light copy,
+`system-preview-light.svg`, made from the dark original by remapping its
+greys; the original is kept.
 
 ## The stats strip
 
-The three numbers in the bottom-right of the home page: visits in the last
-30 days, the last commit's diff stat, and how many people are reading now.
+The three numbers on the right of the home page's footer: visits in the
+last 30 days, the last commit's diff stat, and how many people are reading
+now.
 `pulse.js` runs on every page and beats to `POST /api/pulse` on load and
 every 30s while the tab is visible; only `index.html` contains the `.pulse`
 markup that draws the result. Counts are stored in the `zainsaeed-pulse` D1
@@ -58,19 +84,12 @@ into an emoji by shifting its letters into the regional-indicator block.
 
 Things to remember when touching it:
 
-- **Narrow screens don't draw any of the corners.** Below 40rem the stats
-  strip, the music corner and the location line are all `display: none`
-  — three blocks in `style.css`, one per corner, each cross-referencing
-  the strip's. It's a width gate, not a device test: a phone in landscape
-  is wider than 40rem and gets the desktop corners, labels open, because
-  touch has no hover to hold them back. The beacon still beats, so those
-  visits still count; only the drawing goes. Hiding is CSS-only on
-  purpose — the response carries all three anyway, and filling hidden
-  elements is free, with one catch: the location hint's indent is
-  measured from layout, and inside `display: none` every offset is
-  zero. `indentHint` in `pulse.js` retries until it gets a real
-  number, and again the moment the viewport crosses the breakpoint, so a
-  rotate to landscape doesn't surface a hint at the fallback indent.
+- **The corners are footer rows now, on every width.** The previous
+  edition pinned them to the window's corners and hid all three below
+  40rem; this one puts the strip, the location line and the music line in
+  the footer's flow, so nothing is hidden by width and `indentHint` in
+  `pulse.js` (which measured the location hint's indent from layout) is
+  vestigial: the hint is a trailing span in the sentence here.
 - **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
   Without it, the visitor hashes are a plain hash of an IP, which is
   enumerable over the whole IPv4 space and therefore not anonymous at all.
@@ -90,13 +109,10 @@ Things to remember when touching it:
 
 ## The music corner
 
-Hidden below 40rem with the other corners — see the stats strip above.
-
-The bottom-left of the home page: "<note icon> <track> by <artist>" — no
-lede, nothing clickable, the "by <artist>" pair a step smaller and greyer
-than the title. Hovering opens a small grey hint above it, the same way
-the stats opposite open their labels: "Now Playing" while something is
-live, "Last Played · 3 hours ago" once it isn't. No reporter anywhere —
+A row of the home page's footer: "<note icon> <track> by <artist>" — no
+lede, nothing clickable. The hint follows the sentence as a trailing
+span: "Now Playing" while something is live, "Last Played · 3 hours ago"
+once it isn't. No reporter anywhere —
 Spotify's own servers know what's playing, so `/api/pulse` pulls it and
 the result rides back on the response every page is already fetching,
 same as the venue. `pulse.js` draws it.
@@ -194,9 +210,7 @@ being one.
 
 ## The location corner
 
-Hidden below 40rem with the other corners — see the stats strip above.
-
-The top-left of the home page: "Last seen at <venue>". A LaunchAgent on my
+A row of the home page's footer: "Last seen at <venue>". A LaunchAgent on my
 Mac (`tools/where/`) takes a coarse CoreLocation fix every three minutes and
 posts it to `POST /api/where`, which asks OpenStreetMap what's there and
 writes a venue name only if it clears an allowlist. The result rides back on
@@ -240,7 +254,7 @@ Things to remember when touching it:
 - **The neighbourhood is a hover hint, not part of the sentence.** The same
   Overpass round trip also fetches `place=neighbourhood|quarter|suburb`
   nodes within 1500m; the nearest of any tier becomes `place.area`, drawn
-  under the line by `pulse.js` the way the music corner's hint opens — the
+  by `pulse.js` as the trailing span after the sentence — the
   sentence keeps "in San Francisco" for the faraway reader, the hint says
   "South Beach" for the local. Place nodes are label points, not polygons,
   so nearest-centre is the only possible test, and it's honest about its
