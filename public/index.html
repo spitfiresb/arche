@@ -69,201 +69,152 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/home.css">
 <script src="/assets/js/transition.js"></script>
-<script src="/assets/js/i18n.js" defer></script>
 </head>
-<body class="home" data-i18n-page="home">
-  <main>
-    <h1 class="greeting" data-i18n="home.greeting">Hi, my name is Zain Saeed, welcome to my website!</h1>
+<body class="home">
+  <main class="page">
+    <article class="bio">
+      <!-- The date is the last commit's, read from the footer's commit row
+           (which tools/deploy.sh stamps at deploy time) by the script at
+           the bottom of the page. The text here is the placeholder. -->
+      <header>
+        <h1>Zain Saeed</h1>
+        <time class="updated" datetime="">Updated recently</time>
+      </header>
 
-    <div class="intro">
-      <p data-i18n-html="home.intro">Some of the things I love: traveling somewhere new, meeting
-      interesting people, eating great food, working on my car, camping in remote locations, building amazing
-      things, and most importantly, <span class="stress">solving hard
-      problems.</span></p>
-    </div>
+      <p>I live in the San Francisco Bay Area. I graduated from the
+      <a class="link" href="https://www.uoregon.edu" target="_blank" rel="noopener">University of Oregon</a>
+      in June 2026 with a degree in Computer Science and Data Science.</p>
 
-    <section class="elsewhere">
-      <ul class="links">
-        <li class="socials">
-          <ul class="social-row">
-            <li class="li-hover">
-              <a href="https://www.linkedin.com/in/zain-saeed24/" target="_blank" rel="noopener" class="li-link" aria-label="LinkedIn">
-              <img class="li-logo" src="/assets/img/li-logo.svg" alt="">
-              <div class="li-hover-reveal">
-                <div class="li-hover-card li-card" aria-hidden="true">
-                  <div class="li-card-inner">
-                    <img class="li-banner" src="/assets/img/li-banner.jpeg" alt="">
-                    <img class="li-avatar" src="/assets/img/li-avatar.jpeg" alt="">
-                    <div class="li-info">
-                      <p class="li-name">Zain Saeed</p>
-                      <p class="li-headline">CS &amp; Data Science | Prev @Trimble</p>
-                      <p class="li-meta">San Francisco Bay Area</p>
-                      <p class="li-connections">500+ connections</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              </a>
-            </li>
-            <li class="li-hover gh">
-              <a href="https://github.com/spitfiresb" target="_blank" rel="noopener" class="li-link" aria-label="GitHub">
-              <img class="li-logo" src="/assets/img/gh-logo.svg" alt="">
-              <div class="li-hover-reveal">
-                <div class="li-hover-card gh-card" aria-hidden="true">
-                  <div class="li-card-inner gh-inner">
-                    <div class="gh-head">
-                      <img class="gh-avatar" src="https://github.com/spitfiresb.png?size=96" alt="">
-                      <div>
-                        <p class="gh-name">Zain Saeed</p>
-                        <p class="gh-login">spitfiresb</p>
-                      </div>
-                      <p class="gh-total"></p>
-                    </div>
-                    <div class="gh-graph"></div>
-                  </div>
-                </div>
-              </div>
-              </a>
-            </li>
+      <p>I co-founded <a class="link" href="/work/personal#unpak-system">Unpak</a>, a startup that
+      maps how a company actually does its work, down to the smallest step, and
+      works out where AI plugs in most effectively. I am currently looking for the
+      next cool idea to build.</p>
+
+      <p>Previously, I spent a summer doing data and ML engineering at
+      <a class="link" href="https://www.trimble.com" target="_blank" rel="noopener">Trimble</a>
+      and another building data pipelines at
+      <a class="link" href="https://www.expertflow.com" target="_blank" rel="noopener">Expertflow</a>.
+      At Oregon I co-founded Oregon Software Consulting, the university's first
+      student software development club, tutored mathematics for three years, and
+      analyzed primate genomes at the Rohlfs Evolutionary Genomics Lab.</p>
+
+      <p>I enjoy building things for myself, such as
+      <a class="link" href="/work/cool#notch">Notch</a>, a macOS utility that lives
+      in the display notch, <a class="link" href="/work/cool#liquid-glass">Liquid Glass</a>,
+      my take on Apple's material, and
+      <a class="link" href="/work/personal#steward-ai">Steward AI</a>, which won
+      NexHacks '26. I have also built software under contract for an
+      <a class="link" href="/work/contract#ag-analytics">equipment dealer</a> and a
+      <a class="link" href="/work/contract#ai-sales-agent">distribution company</a>.</p>
+
+      <p>Away from a keyboard I like traveling somewhere new, working on my car,
+      and camping in remote places. Most of all, I like <em>solving hard problems</em>.</p>
+
+      <p>You can find me on
+      <a class="link" href="https://www.linkedin.com/in/zain-saeed24/" target="_blank" rel="noopener">LinkedIn</a>
+      and <a class="link" href="https://github.com/spitfiresb" target="_blank" rel="noopener">GitHub</a>,
+      or read <a class="link" href="/about">my story</a>.</p>
+    </article>
+
+    <!-- Everything I've built, newest first, grouped by year. The year is
+         drawn once per group in the left gutter (CSS hides it on the
+         other rows); the month stays beside the title. -->
+    <section class="work">
+      <h2>Work</h2>
+      <ul>
+        <li>
+          <ul>
+            <li><a class="row" href="/work/personal#unpak-dashboard"><h3>Unpak Dashboard <span class="tag">New</span></h3><time datetime="2026-07"><span>Jul</span><span class="year">2026</span></time></a></li>
+            <li><a class="row" href="/work/cool#liquid-glass"><h3>Liquid Glass</h3><time datetime="2026-07"><span>Jul</span><span class="year">2026</span></time></a></li>
+            <li><a class="row" href="/work/cool#notch"><h3>Notch</h3><time datetime="2026-05"><span>May</span><span class="year">2026</span></time></a></li>
+            <li><a class="row" href="/work/personal#unpak-system"><h3>Unpak System</h3><time datetime="2026-04"><span>Apr</span><span class="year">2026</span></time></a></li>
+            <li><a class="row" href="/work/contract#ai-sales-agent"><h3>AI Sales Agent</h3><time datetime="2026-04"><span>Apr</span><span class="year">2026</span></time></a></li>
+            <li><a class="row" href="/work/personal#steward-ai"><h3>Steward AI</h3><time datetime="2026-01"><span>Jan</span><span class="year">2026</span></time></a></li>
+          </ul>
+        </li>
+        <li>
+          <ul>
+            <li><a class="row" href="/work/personal#floorsense"><h3>FloorSense</h3><time datetime="2025-11"><span>Nov</span><span class="year">2025</span></time></a></li>
+            <li><a class="row" href="/work/contract#ag-analytics"><h3>Agricultural Analytics Platform</h3><time datetime="2025-11"><span>Nov</span><span class="year">2025</span></time></a></li>
           </ul>
         </li>
       </ul>
-      <!-- The way into the About page. The brackets are CSS (see
-           .about-more), so translations swap the words without eating
-           them. A real navigation — the fixed corners on this page must
-           die with it (see the .pulse notes below). -->
-      <a class="about-more" href="/about" data-i18n="nav.about">more about me</a>
     </section>
 
-    <div class="work-grid">
-      <section class="col">
-        <h2><a href="/work/personal"><span data-i18n="nav.personal">Personal</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
-        <ul class="stack">
-          <li>
-            <a class="item-title" href="/work/personal#steward-ai">Steward AI</a>
-            <span class="item-desc" data-i18n="home.steward.desc">Lets businesses understand their employees' AI usage.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/personal#unpak-system">Unpak</a>
-            <span class="item-desc" data-i18n="home.unpak.desc">Co-founded a startup that helps enterprises with their AI transformation.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/personal#floorsense">FloorSense</a>
-            <span class="item-desc" data-i18n="home.floorsense.desc">Computer vision that reads architectural floorplans.</span>
-          </li>
-        </ul>
-      </section>
-
-      <section class="col">
-        <h2><a href="/work/contract"><span data-i18n="nav.contract">Contract</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
-        <ul class="stack">
-          <li>
-            <a class="item-title" href="/work/contract#ai-sales-agent" data-i18n="work.salesagent.title">AI Sales Agent</a>
-            <span class="item-desc" data-i18n="home.salesagent.desc">Chat agent that lets a company query their ERP using natural language.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/contract#ag-analytics" data-i18n="work.agdash.title">Agricultural Analytics Platform</a>
-            <span class="item-desc" data-i18n="home.agdash.desc">Geospatial analytics for a 1,500-person equipment dealer.</span>
-          </li>
-        </ul>
-      </section>
-
-      <section class="col">
-        <h2><a href="/work/cool"><span data-i18n="nav.extra">Extra</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
-        <ul class="stack">
-          <li>
-            <a class="item-title" href="/work/cool#notch">Notch</a>
-            <span class="item-desc" data-i18n="home.notch.desc">A macOS utility that lives in the display notch.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/cool#liquid-glass">Liquid Glass</a>
-            <span class="item-desc" data-i18n="home.liquidglass.desc">My attempt at Apple's liquid glass.</span>
-          </li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- Live numbers in the last empty corner: how many people came in the
-         last 30 days, what the last commit to the site did, and how many are
-         here right now. Hidden until the first response lands, so a counter
-         that's down shows nothing rather than a row of zeros. The labels are
-         held back until hover; the zeros are placeholders that also fix the
-         width, so no number can shuffle the layout as it grows. -->
-    <!-- The opposite corner: the last public place I was seen at, written by
-         a launchd job on my Mac and filtered down to somewhere worth saying
-         out loud before it ever reaches the database (functions/api/where.js).
-         It arrives on the same beat as the numbers on the right, so this
-         costs no extra request. Absent entirely when there's nothing to say,
-         which is most evenings. -->
-    <!-- One line, top-left: "Last seen at <venue> [in <city>]". No
-         timestamp in the sentence — it holds whatever the last public
-         place was, and the city appears only when the venue name doesn't
-         already contain it. The indented hint under the line is the
-         neighbourhood and the age ("South Beach · 2 days ago"), opening
-         on hover the way the music corner's hint does; the age drops out
-         after five days, and the hint is empty when neither half applies.
-         pulse.js fills the gaps. -->
-    <aside class="whereat" hidden>
-      <span class="whereat-line">
-        <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span class="whereat-lede" data-i18n="where.lede">Last seen</span>
-        <span class="whereat-lede" data-i18n="where.at">at</span>
-        <span class="whereat-place"></span><span class="whereat-city"></span>
-      </span>
-      <span class="whereat-hint"></span>
-    </aside>
-
-    <!-- Bottom-left: what's on Spotify, from the same /api/pulse response.
-         Just "<note> <song> by <artist>", plain text — nothing here is a
-         link. Hovering opens the hint above it — "Now Playing", or
-         "Last Played · 3 hours ago" — the same way the stats opposite open
-         their labels. Absent until the first response lands, and stays
-         absent if the Spotify connection is down: no placeholder, same as
-         the corner above it. -->
-    <aside class="listening" hidden>
-      <span class="listening-hint" aria-hidden="true"></span>
-      <span class="listening-line">
-        <svg class="listening-note" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        <span class="listening-track"></span>
-        <span class="listening-by" data-i18n="music.by">by</span>
-        <span class="listening-artist"></span>
-      </span>
-    </aside>
-
-    <footer class="pulse" hidden>
-      <div class="pulse-stat">
-        <span class="pulse-label" data-i18n="pulse.visits">visits (30d)</span>
-        <span class="pulse-num" data-pulse="visits">000000</span>
+    <!-- The footer: a short rule, then the live bits from /api/pulse. Left
+         is the local time where I am; right is the stats strip: visits in
+         the last 30 days, the last commit's diff stat (a link, stamped by
+         tools/deploy.sh; the markup it matches must not change), and how
+         many people are reading now, with a flag per country on hover.
+         Under that, where I was last seen and what's playing, each one
+         grey sentence. pulse.js fills all of it in and keeps the elements
+         hidden until the first response lands. -->
+    <footer class="foot">
+      <div class="row">
+        <p class="clock"><span class="clock-time">--:--</span> in the Bay Area</p>
+        <div class="pulse" hidden>
+          <div class="pulse-stat">
+            <span class="pulse-label">visits, last 30 days</span>
+            <span class="pulse-num" data-pulse="visits">0</span><span>visits</span>
+          </div>
+          <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener" data-committed="2026-09-06T15:28:08-07:00">
+            <span class="pulse-label">last commit · <span class="pulse-age"></span></span>
+            <span class="pulse-num pulse-add"><span class="pulse-sign">+</span>142</span><span class="pulse-num pulse-del"><span class="pulse-sign">&minus;</span>16</span>
+          </a>
+          <div class="pulse-stat">
+            <span class="pulse-flags" aria-hidden="true"></span>
+            <span class="pulse-dot" aria-hidden="true"></span><span class="pulse-num" data-pulse="online">0</span><span>online</span>
+          </div>
+        </div>
       </div>
-      <!-- The middle row, and the only one that goes anywhere: what the last
-           commit to this site did, the way GitHub writes it — lines added
-           in green, lines removed in red, and nothing else. Hovering opens
-           "last commit · 7 hours ago" (or "18 min ago") the way its neighbours open their
-           labels (pulse.js keeps the age current from data-committed), and
-           clicking goes to that commit on GitHub. The numbers, the timestamp
-           and the link are placeholders here: tools/deploy.sh stamps the
-           real ones from HEAD right before `wrangler pages deploy` and puts
-           this file back afterwards, so the row is always the commit that
-           is actually live and this copy never changes. The link goes to
-           the profile instead when the repo is private or the commit isn't
-           pushed, since the commit page would 404 for every visitor. -->
-      <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener" data-committed="2026-09-06T15:28:08-07:00">
-        <span class="pulse-label"><span data-i18n="pulse.commit">last commit</span> · <span class="pulse-age"></span></span>
-        <span class="pulse-num pulse-add"><span class="pulse-sign">+</span>142</span><span class="pulse-num pulse-del"><span class="pulse-sign">&minus;</span>16</span>
-      </a>
-      <!-- The live one already says what it is, so instead of a label it
-           opens a flag per country currently reading, filled in by pulse.js.
-           Decorative: the count beside it is what carries the meaning, so
-           screen readers are spared a row of unlabelled emoji. -->
-      <div class="pulse-stat">
-        <span class="pulse-flags" aria-hidden="true"></span>
-        <span class="pulse-dot" aria-hidden="true"></span><span class="pulse-num" data-pulse="online">000</span><span class="pulse-unit" data-i18n="pulse.online">online</span>
+      <div class="row">
+        <aside class="whereat" hidden>
+          <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="whereat-lede">Last seen at</span>
+          <span class="whereat-place"></span><span class="whereat-city"></span>
+          <span class="whereat-hint"></span>
+        </aside>
+      </div>
+      <div class="row">
+        <aside class="listening" hidden>
+          <svg class="listening-note" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span class="listening-track"></span>
+          <span class="listening-by">by</span>
+          <span class="listening-artist"></span>
+          <span class="listening-hint" aria-hidden="true"></span>
+        </aside>
       </div>
     </footer>
   </main>
-  <script src="/assets/js/landing.js"></script>
+  <script>
+    /* The clock in the footer, kept on Pacific time whatever the reader's
+       zone, and the "Updated" date under the name, taken from the commit
+       row so both come from the same deploy stamp. */
+    (() => {
+      const timeEl = document.querySelector('.clock-time');
+      const fmt = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZone: 'America/Los_Angeles',
+      });
+      function tick() {
+        timeEl.textContent = fmt.format(new Date()).toLowerCase().replace(' ', '');
+      }
+      tick();
+      setInterval(tick, 15000);
+
+      const commit = document.querySelector('.pulse-commit');
+      const updated = document.querySelector('.updated');
+      const at = commit && Date.parse(commit.dataset.committed);
+      if (updated && at && !Number.isNaN(at)) {
+        updated.dateTime = commit.dataset.committed;
+        updated.textContent = 'Updated ' + new Intl.DateTimeFormat('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric',
+        }).format(new Date(at));
+      }
+    })();
+  </script>
   <script src="/assets/js/pulse.js" defer></script>
 </body>
 </html>

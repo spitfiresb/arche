@@ -1,0 +1,500 @@
+/* The home page, second edition: one narrow column of prose on an
+   off-white page, a dated list of work under it, and a hairline footer
+   carrying the live bits. Everything is 14px Inter at weight 460 in
+   near-black, with the secondary text at 40% black; the only colour on
+   the page is the "New" tag. The work pages still load style.css. */
+
+@font-face {
+  font-family: "InterVariable";
+  src: url("/assets/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterVariable";
+  src: url("/assets/fonts/InterVariable-Italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+/* Flag glyphs for platforms that don't draw them (Windows). Apple's own
+   emoji font goes first so a Mac downloads nothing; never add Segoe UI
+   Emoji here, it "has" the range as boxed capitals and blocks the fallback. */
+@font-face {
+  font-family: "Twemoji Country Flags";
+  src: url("/assets/fonts/TwemojiCountryFlags.woff2") format("woff2");
+  unicode-range: U+1F1E6-1F1FF;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  size-adjust: 107.4%;
+}
+
+:root {
+  --bg: #fdfdfc;
+  --fg: #111;
+  --muted: rgba(0, 0, 0, 0.4);
+  --soft: rgba(0, 0, 0, 0.65);
+  --line: #f2f2f2;
+  --rule: #ededed;
+  --underline: #d9d9d9;
+  --underline-hover: #666;
+  --accent: rgb(255, 0, 170);
+  --live: #3fb950;
+  --column: 36.375rem;
+  --font-sans: "InterVariable", "Inter Fallback", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Newsreader", "Times New Roman", Times, serif;
+  --font-mono: "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 460;
+  line-height: 1.25rem;
+  letter-spacing: -0.00563rem;
+  font-feature-settings: "cv01", "ss03";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  color: var(--fg);
+  background: var(--rule);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3 {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* ---- The column ------------------------------------------------------ */
+
+.page {
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: 5rem 1rem 2.5rem;
+}
+
+/* A white fade pinned to the top of the window, so scrolled text dissolves
+   into the page edge rather than being cut by it. */
+.page::before {
+  content: "";
+  pointer-events: none;
+  z-index: 9;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8rem;
+  background: linear-gradient(
+    180deg,
+    var(--bg) 0,
+    rgba(253, 253, 252, 0.74) 19%,
+    rgba(253, 253, 252, 0.54) 34%,
+    rgba(253, 253, 252, 0.38) 47%,
+    rgba(253, 253, 252, 0.28) 56.5%,
+    rgba(253, 253, 252, 0.19) 65%,
+    rgba(253, 253, 252, 0.13) 73%,
+    rgba(253, 253, 252, 0.075) 80%,
+    rgba(253, 253, 252, 0.04) 86%,
+    rgba(253, 253, 252, 0.02) 91%,
+    rgba(253, 253, 252, 0.008) 95%,
+    rgba(253, 253, 252, 0)
+  );
+}
+
+@media (max-width: 48rem) {
+  .page {
+    padding: 2rem 1.5rem 2.5rem;
+  }
+  .page::before {
+    height: 2.5rem;
+  }
+}
+
+/* ---- The bio --------------------------------------------------------- */
+
+.bio > header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.bio > header h1 {
+  font-weight: 500;
+}
+
+.bio > header time {
+  color: var(--muted);
+}
+
+.bio > p {
+  padding-top: 1rem;
+}
+
+.bio em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 430;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01rem;
+  font-variation-settings: "opsz" 10;
+  color: #000;
+}
+
+/* An inline link is a word with a hairline under it, darkening on hover. */
+.link {
+  position: relative;
+  display: inline;
+  transition: all 0.2s ease;
+}
+.link::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 2px;
+  background: var(--underline);
+  transition: inherit;
+}
+.link:hover::before {
+  background: var(--underline-hover);
+}
+.link:focus-visible {
+  border-radius: 2px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  transition: none;
+  outline: 2px solid rgba(0, 122, 255, 0.5);
+}
+
+/* ---- The work list --------------------------------------------------- */
+
+.work {
+  padding-top: 3rem;
+}
+
+.work > h2 {
+  color: var(--muted);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.work ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+/* One <li> per year, each holding its own list; the year label is drawn
+   once, on the first row of the group, in the gutter on the left. */
+.work > ul > li {
+  border-bottom: 1px solid var(--line);
+}
+.work > ul > li:last-child {
+  border-bottom: none;
+}
+
+.work .row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.735rem 0 0.735rem 6.75rem;
+}
+.work .row::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 6.75rem;
+  right: 0;
+  border-bottom: 1px solid var(--line);
+}
+.work > ul > li > ul > li:last-child > .row::after {
+  display: none;
+}
+
+.work .row h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--fg);
+  transition: opacity 0.14s ease;
+}
+.work .row h3::after {
+  content: "";
+  width: 0.375rem;
+  height: 0.375rem;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  opacity: 0;
+  transform: rotate(45deg);
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+.work .row:hover h3::after {
+  opacity: 0.5;
+  transform: translateX(0.25rem) rotate(45deg);
+}
+
+.work .row time {
+  color: var(--muted);
+  line-height: normal;
+}
+.work .row time span {
+  display: inline-block;
+  transition: opacity 0.14s ease;
+}
+/* The year sits in the left gutter and is only visible on the first row
+   of its group; the month stays on the right, opposite the title. */
+.work .row time .year {
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+}
+.work > ul > li > ul > li:first-child > .row time .year {
+  visibility: visible;
+}
+
+.work .tag {
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+/* Hovering anywhere over the list dims every row but the one under the
+   cursor; the year labels stay put so the groups keep their shape. */
+@media (min-width: 32.5rem) {
+  .work > ul:hover .row h3,
+  .work > ul:hover .row time span {
+    opacity: 0.3;
+  }
+  .work > ul:hover .row time .year {
+    opacity: 1;
+  }
+  .work > ul:hover .row:hover h3,
+  .work > ul:hover .row:hover time span {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 32.5rem) {
+  .work .row {
+    padding-left: 3rem;
+  }
+  .work .row::after {
+    left: 3rem;
+  }
+}
+
+/* ---- The footer ------------------------------------------------------ */
+
+.foot {
+  padding: 2.5rem 0 5rem;
+}
+.foot::before {
+  content: "";
+  display: block;
+  height: 1px;
+  width: 3.125rem;
+  background: var(--rule);
+  margin-bottom: 2.375rem;
+}
+
+.foot,
+.foot p,
+.foot a {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  letter-spacing: -0.0025rem;
+}
+
+.foot .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 1.25rem;
+}
+.foot .row + .row {
+  margin-top: 0.75rem;
+}
+
+.foot .clock {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The live pieces fade in once their first response lands. */
+.pulse,
+.whereat,
+.listening {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.pulse.is-live,
+.whereat.is-live,
+.listening.is-live {
+  opacity: 1;
+}
+
+.pulse {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.pulse-stat {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: color 0.15s ease;
+}
+.pulse-stat:hover {
+  color: var(--soft);
+}
+.pulse-label {
+  position: absolute;
+  bottom: calc(100% + 0.375rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.pulse-stat:hover .pulse-label,
+.pulse-stat:focus-visible .pulse-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.pulse-add {
+  color: #1a7f37;
+}
+.pulse-del {
+  color: #cf222e;
+  margin-left: 0.25rem;
+}
+.pulse-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.5);
+  animation: throb 2.4s ease-out infinite;
+}
+@keyframes throb {
+  0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.45); }
+  70% { box-shadow: 0 0 0 0.375rem rgba(63, 185, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+}
+.pulse-flags {
+  position: absolute;
+  bottom: calc(100% + 0.375rem);
+  right: 0;
+  white-space: nowrap;
+  letter-spacing: 0.125rem;
+  font-family: "Apple Color Emoji", "Twemoji Country Flags";
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.pulse-stat:hover .pulse-flags {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* The two grey lines under the numbers: where I was last seen, and what
+   is or was playing. Each is one sentence; the hint that opens on hover
+   in the old corners is a plain trailing span here. */
+.whereat,
+.listening {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.whereat[hidden],
+.listening[hidden],
+.pulse[hidden] {
+  display: none;
+}
+.whereat-pin,
+.listening-note {
+  width: 0.75rem;
+  height: 0.75rem;
+  align-self: center;
+  flex: none;
+}
+.whereat-place,
+.listening-track {
+  color: var(--soft);
+}
+.whereat-hint,
+.listening-hint {
+  margin-left: 0.25rem;
+}
+.whereat-hint:empty,
+.listening-hint:empty {
+  display: none;
+}
+.whereat-hint::before,
+.listening-hint::before {
+  content: "· ";
+}
+
+/* ---- Entrance -------------------------------------------------------- */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bio > * {
+    animation: rise 0.5s ease both;
+  }
+  .bio > :nth-child(1) { animation-delay: 0s; }
+  .bio > :nth-child(2) { animation-delay: 0.05s; }
+  .bio > :nth-child(3) { animation-delay: 0.1s; }
+  .bio > :nth-child(4) { animation-delay: 0.15s; }
+  .bio > :nth-child(5) { animation-delay: 0.2s; }
+  .bio > :nth-child(6) { animation-delay: 0.25s; }
+  .bio > :nth-child(n + 7) { animation-delay: 0.3s; }
+  .work { animation: rise 0.5s ease 0.4s both; }
+  .foot { animation: rise 0.5s ease 0.5s both; }
+}
