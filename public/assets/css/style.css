@@ -45,6 +45,12 @@
   --head-size: 0.9375rem;   /* 15px: page title and its description, one size */
   --content-width: 48rem;   /* content column width (768px) */
   --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
+  /* the glacier valley along the bottom of the home page (home-scene.js):
+     main keeps this clear. This is the first-paint value; the script
+     then sets it to whatever the window has left under the columns,
+     between about a quarter and 42% of the height, so the skyline sits
+     just under the last work item on any window that fits the page */
+  --valley-h: 38vh;
   --ld-corner: 40px;        /* rounded corner on the demo preview boxes; the
                                single knob: the thumb and inline embed read it
                                directly, and live-demo.js reads it to scale the
@@ -119,11 +125,26 @@ body.home main {
      hold it off the bottom edge whenever the window has slack, so this
      padding only shows on a short window - where 4rem of it was enough to
      push the page past 100vh and make a laptop screen scroll */
-  padding: 20vh 1.5rem 1.5rem;
-  font-size: 1.0625rem;   /* 17px body */
+  /* the valley (home-scene.js) takes the bottom of the window, so the
+     top is shallow and the bottom keeps the whole band clear: the columns
+     sit in the sky above the skyline, never over the drawing. The type
+     below is a step smaller than the site's 17px for the same reason. */
+  padding: 6vh 1.5rem calc(var(--valley-h) + 1rem);
+  font-size: 0.9375rem;   /* 15px body */
   line-height: 1.5;
   display: flex;
   flex-direction: column;
+}
+
+/* tighter spacing to go with the smaller type, desktop only: phones keep
+   the site's usual sizes (no valley there, see .valley) */
+@media (min-width: 40.0625rem) {
+  body.home .intro p { margin-top: 0.8rem; }
+  body.home .elsewhere { padding-top: 1.4rem; }
+  body.home .work-grid { padding-top: 1.4rem; gap: 1.6rem; }
+  body.home .col ul.stack li { margin-bottom: 0.85rem; }
+  body.home .item-desc { font-size: 0.84375rem; }   /* 13.5px */
+  body.home .col > h2 { font-size: 0.75rem; }
 }
 
 /* The page opens on the greeting and goes straight into the links */
@@ -2202,32 +2223,26 @@ html.light .pulse-del { color: #cf222e; }   /* GitHub light: danger-fg  */
   display: none;
 }
 
-/* ---- The backdrop and the sun ------------------------------------------
+/* ---- The valley and the sun --------------------------------------------
 
-   The home page's scenery (home-scene.js): a mountain range with a river
-   out of the middle of it, one fixed svg the size of the window under
-   everything on the page, drawn in the text colour at low opacity so
-   the columns read straight over it. The sun, top right in the sky, is
-   the theme switch; it's a real button, so it lives outside the svg on
-   the corners' layer. */
-.scene {
+   The home page's scenery (home-scene.js): a glacier valley drawn on a
+   canvas the size of the window, fixed under everything, occupying the
+   bottom --valley-h of it; body.home main reserves that band in its
+   bottom padding so the page's columns stay in the sky above it. The
+   sun, top right in the sky, is the theme switch; it's a real button, so
+   it lives on the corners' layer. */
+.valley {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   z-index: 0;                 /* under main, which is stacked above it */
-  color: var(--fg);
   pointer-events: none;
 }
 
 body.home main {
   position: relative;
   z-index: 1;
-}
-
-/* stars only come out in the dark */
-html.light .scene-stars {
-  display: none;
 }
 
 .sky-toggle {
@@ -2301,13 +2316,12 @@ html.light .sky-toggle .moon {
 /* the page turns over rather than snaps: the colours cross-fade for the
    moment after a click, and only then, so a fresh load never fades in */
 html.theme-turning,
-html.theme-turning body,
-html.theme-turning .scene {
+html.theme-turning body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 @media (max-width: 40rem) {
-  .scene {
+  .valley {
     display: none;
   }
   /* no sky to sit in: the sun moves in beside the flag, at its size */
@@ -2325,8 +2339,7 @@ html.theme-turning .scene {
   .sky-toggle .moon,
   .sky-toggle .sun-rays,
   html.theme-turning,
-  html.theme-turning body,
-  html.theme-turning .scene {
+  html.theme-turning body {
     transition: none;
   }
 }

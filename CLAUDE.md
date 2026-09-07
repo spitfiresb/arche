@@ -162,31 +162,51 @@ Things to remember when touching it:
   `played_at` stays behind; the browser gets a distance from now, never a
   clock time.
 
-## The backdrop and the theme
+## The valley and the theme
 
-The home page's background: a mountain range with a river coming out of
-the middle of it, drawn by `home-scene.js` in the About page's ink
-language (thin round strokes in the text colour, shapes filled with the
-page colour so a nearer ridge hides the one behind). One fixed svg the
-size of the window, under `main`, redrawn on resize; stroke opacities
-are kept low because the columns read straight over it. Hidden below
-40rem with the corners. `camp.js` still holds About's meadow (shared
-drawing code); the home page doesn't use it.
+The home page's background: a glacier valley seen from its mouth,
+looking up its length — the river braiding out of the ice at the head,
+the walls rising either side to a broken skyline, a lateral moraine
+along each foot, pines in the meadow nearest us. `home-scene.js` lays
+it out in three dimensions and draws every mark as a stroke through
+projected points on a canvas the size of the window, fixed under the
+page; it is not an image and not an SVG, and a resize is a redraw. The
+ink is About's (thin strokes in the text colour, faces filled with the
+page colour so a nearer wall hides what's behind). `camp.js` still
+holds About's meadow; the home page doesn't use it.
+
+- **The columns never sit over the drawing.** The valley takes the
+  bottom `--valley-h` of the window and `body.home main` reserves that
+  in its bottom padding. The script measures where the work grid ends
+  and writes `--valley-h` back as the space left under it, held between
+  about a quarter and 42% of the height, so the skyline tucks under the
+  last item on any window that fits the page. The home page's type is a
+  step smaller than the rest of the site (15px, desktop only) to leave
+  that room. Don't size the band in `vh` and read it back: `vh` ignores
+  the desktop `zoom: 0.9`, which is how the first version came out a
+  tenth too short.
+- **We stand at the valley's mouth, where the walls have fallen away.**
+  `near(z)` scales the crest height down towards the viewer so the
+  nearest walls are slopes and the peaks are further in. Without it the
+  near walls loom up the sides of the window and into the columns on
+  anything narrower than about 1300px.
+- **Hidden below 40rem** with the corners; nothing is drawn while it is.
 
 The sun in the sky, top right, is the dark/light switch. The site is
 dark by default; clicking puts `html.light` on and remembers `theme` in
 localStorage, and `theme.js` — loaded synchronously in every page's head
 — puts the class back before first paint so nothing flashes dark on the
-way in. In the dark the sun is a moon and the scene has stars.
+way in. In the dark the sun is a moon and the valley has stars.
 
 - **Colours go through the variables.** The light palette is one
   `html.light` block in `style.css` overriding `--bg`/`--fg`/`--muted`/
-  `--faint`/`--line`; the drawings (`about.js`, `camp.js`,
-  `home-scene.js`) use `currentColor` and `var(--bg)` for the same
-  reason. A hard-coded grey is a thing that stays dark in the light —
-  the few that remain are deliberate (the LinkedIn and GitHub cards
-  match their sites' dark themes; the phone back button floats over
-  demo content) or have an `html.light` override beside them.
+  `--faint`/`--line`; the drawings (`about.js`, `camp.js`) use
+  `currentColor` and `var(--bg)`, and the canvas reads the two
+  variables and redraws on a click. A hard-coded grey is a thing that
+  stays dark in the light — the few that remain are deliberate (the
+  LinkedIn and GitHub cards match their sites' dark themes; the phone
+  back button floats over demo content) or have an `html.light`
+  override beside them.
 - **Default is dark, not the OS setting.** The site was designed dark;
   the light palette is an offer, not a mirror of `prefers-color-scheme`.
 
