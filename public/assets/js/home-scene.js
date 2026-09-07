@@ -253,9 +253,16 @@
     // ---- the crest of each wall along z: how far out, how high
     const crestOut = (z, s) => WF + 2.3 + 1.3 * sn(Math.log(z) * 4, s) + 0.3 * sn(Math.log(z) * 13, s + 3);
     const crestY = (z, s) => {
-      const spike = sn(Math.log(z) * 9, s + 11);
-      return floorY(z) + 3.2 + 1.0 * sn(Math.log(z) * 5, s + 7)
-        + (spike > 0.62 ? (spike - 0.62) * 4.5 : 0) + 0.15 * fn(Math.log(z) * 40 + s);
+      const spike = sn(Math.log(z) * 4.5, s + 11);
+      return floorY(z) + 3.6 + 0.9 * sn(Math.log(z) * 5, s + 7) + 0.25 * sn(Math.log(z) * 21, s + 9)
+        + (spike > 0.6 ? (spike - 0.6) * 2.6 : 0);
+    };
+    // a second, higher range standing behind each wall
+    const backOut = (z, s) => crestOut(z, s) + 3.2 + 1.5 * sn(Math.log(z) * 3, s + 31);
+    const backY = (z, s) => {
+      const spike = sn(Math.log(z) * 4, s + 37);
+      return floorY(z) + 4.6 + 1.3 * sn(Math.log(z) * 4, s + 33) + 0.3 * sn(Math.log(z) * 17, s + 35)
+        + (spike > 0.6 ? (spike - 0.6) * 3.5 : 0);
     };
 
     // ---- the glacier: the floor from the head down to the snout is
@@ -374,12 +381,38 @@
 
     // ---- the walls, each side: a filled face from the skyline down to
     // the foot, benches stepping across it, crags under the peaks
+    // the walls' detail stays inside the band: a crag or ridge line that
+    // would poke above the skyline is clipped rather than drawn into the
+    // sky beside the columns; the skylines themselves are not clipped
+    const clipBand = () => { ctx.save(); ctx.beginPath(); ctx.rect(0, yb, W, Vh); ctx.clip(); };
     for (const side of [-1, 1]) {
       const s = side < 0 ? 0 : 50;
       const zc = zs(160, zn * 0.45, zf * 1.3);
       const crest = zc.map(z => [axis(z) + side * crestOut(z, s), crestY(z, s), z]);
       const foot = zc.map(z => [axis(z) + side * WF, floorY(z), z]);
+      // the range behind: its skyline, faced down to well below the
+      // wall's crest so the wall paints over its lower part
+      const zb = zc.filter(z => z > zn * 2.4);
+      const back = zb.map(z => [axis(z) + side * backOut(z, s), backY(z, s), z]);
+      face(proj(back.concat(zb.slice().reverse().map(z => [axis(z) + side * backOut(z, s), floorY(z) - 2, z]))), back.length, 1.1);
+      // off each of its summits, a ridge runs along the range towards us
+      // and one down its face, the way a mountain's own lines go
+      clipBand();
+      for (let i = 4; i < back.length - 4; i += 1) {
+        const [x0, y0, z0] = back[i];
+        if (!(y0 > back[i - 3][1] && y0 > back[i + 3][1])) continue;
+        const along = [], down = [];
+        for (let q = 0; q <= 8; q++) {
+          const t = q / 8;
+          along.push([x0 + side * 0.4 * t, y0 - (0.6 + 0.5 * fn(i + s)) * t - 0.2 * Math.sin(Math.PI * t), z0 * (1 - 0.22 * t)]);
+          down.push([x0 - side * (0.9 + 0.4 * fn(i * 3 + s)) * t, y0 - (1.2 + 0.6 * fn(i * 5 + s)) * t, z0 * (1 - 0.06 * t)]);
+        }
+        smoothPath(proj(along)); stroke(0.8);
+        smoothPath(proj(down)); stroke(0.8);
+      }
+      ctx.restore();
       face(proj(crest.concat(foot.slice().reverse())), crest.length, 1.3);
+      clipBand();
       // the foot: where the slope meets the floor
       smoothPath(proj(foot.filter(p => p[2] < zg * 1.05)));
       stroke(1);
@@ -397,9 +430,9 @@
       }
       // spurs: from a high point, a shoulder runs down the face towards
       // us and bends to meet the foot
-      for (let i = 6; i < crest.length - 6; i += 7) {
+      for (let i = 3; i < crest.length - 3; i += 1) {
         const [x0, y0, z0] = crest[i];
-        if (z0 < zn * 1.6 || z0 > zg || fn(i * 13 + s) < 0.35) continue;
+        if (z0 < zn * 1.6 || z0 > zg * 1.3 || !(y0 > crest[i - 3][1] && y0 > crest[i + 3][1])) continue;
         const pts = [], z1 = z0 * (0.86 - 0.08 * fn(i + s));
         for (let k = 0; k <= 10; k++) {
           const t = k / 10;
@@ -424,29 +457,39 @@
         // a second, shorter line beside it
         path(proj(pts.slice(2, 7).map(p => [p[0] - side * 0.25, p[1] - 0.15, p[2]]))); stroke(0.7);
       }
+      ctx.restore();
     }
+
 
     // ---- the forest: pines thick on the floor and up the lower
     // slopes, thinning to the meadow nearest us; every tree the meadow's
     // pine, drawn far to near so each hides what stands behind it
     const trees = [];
-    for (let i = 0; i < 1100; i++) {
+    for (let i = 0; i < 2600; i++) {
       const z = zn * 0.5 * Math.pow(zg * 0.98 / (zn * 0.5), fn(i * 3 + 1));
-      let x = (fn(i * 5 + 2) - 0.5) * 2 * (WF + 2.3);
+      let x = (fn(i * 5 + 2) - 0.5) * 2 * (WF + 3.2);
       const out = Math.abs(x) - WF;            // how far up the slope
-      const y = out > 0 ? floorY(z) + out * SLOPE : floorY(z);
+      const side = x < 0 ? -1 : 1, ss = side < 0 ? 0 : 50;
+      // the slope runs up to the crest; nothing stands above it
+      const cy = crestY(z, ss) - floorY(z), co = crestOut(z, ss) - WF;
+      if (out > co - 0.25) continue;
+      const y = out > 0 ? floorY(z) + Math.min(out * SLOPE, cy - 0.3) : floorY(z);
       // none in the water, on the bars, or in the meadow right at our feet
       const r = x - (rmid(z) - axis(z));
       if (Math.abs(r) < rhw(z) + 0.8) continue;
       if (z < zn * 1.1 && fn(i * 7) < 0.7) continue;
-      if (out > 0 && fn(i * 11) < Math.pow(out / 2.3, 0.7)) continue;
+      if (z > zn * 4 && fn(i * 17) < 0.55) continue;
+      // the treeline: thick on the lower slope, thinning to bare rock
+      // near the ridge, and thicker everywhere close to us
+      const up = out > 0 ? out / co : 0;
+      if (out > 0 && fn(i * 11) < Math.pow(up, z < zn * 3 ? 2.2 : 1.1)) continue;
       trees.push({ x: axis(z) + x, y, z, h: 0.36 + fn(i * 13 + 4) * 0.26, s: i });
     }
     trees.sort((a, b) => b.z - a.z);
     for (const t of trees) {
       const [px, py] = P(t.x, t.y, t.z);
       const h = f * t.h / t.z;
-      if (h < 4) continue;
+      if (h < 5) continue;
       pine(px, py, h, t.s);
     }
 

@@ -197,6 +197,12 @@ meadow; the home page doesn't use it.
   is what a floor-level camera did. Ground-level detail — benches,
   spurs, crags — is gated by z so nothing gets drawn at arm's length
   where a step of one unit is a hundred pixels.
+- **The sides are forest, and there's a range behind each wall.** Pines
+  climb the slopes to the ridge (thick low and near, bare rock near the
+  crest), which is what fills the band edge to edge; a second, higher
+  skyline stands behind each wall from a few units in, with ridge lines
+  running along and down from its summits. Crest noise is smooth on
+  purpose — a one-sample spike projects as a steeple.
 - **Full-strength ink, no hatching.** Every mark is a deliberate shape
   at full opacity like the meadow's; the earlier faint, random ticks
   read as a sketch, and the whole point is that it doesn't.
