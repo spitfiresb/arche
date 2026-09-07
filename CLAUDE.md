@@ -164,16 +164,21 @@ Things to remember when touching it:
 
 ## The valley and the theme
 
-The home page's background: a glacier valley seen from its mouth,
-looking up its length — the river braiding out of the ice at the head,
-the walls rising either side to a broken skyline, a lateral moraine
-along each foot, pines in the meadow nearest us. `home-scene.js` lays
-it out in three dimensions and draws every mark as a stroke through
-projected points on a canvas the size of the window, fixed under the
-page; it is not an image and not an SVG, and a resize is a redraw. The
-ink is About's (thin strokes in the text colour, faces filled with the
-page colour so a nearer wall hides what's behind). `camp.js` still
-holds About's meadow; the home page doesn't use it.
+The home page's background: a glacier valley from a viewpoint high on
+its shoulder, looking down its length — the river braiding out of the
+ice at the head and meandering down between forest, gravel bars and
+boulders; the walls stepping up in benches to a broken skyline, with
+spurs, crags and a waterfall; pines thick on the floor and climbing the
+lower slopes, thinning to the meadow, bushes and rocks nearest us.
+`home-scene.js` lays it out in three dimensions (the valley *winds* —
+`axis(z)` offsets everything across) and draws every mark as a stroke
+through projected points on a canvas the size of the window, fixed
+under the page; it is not an image and not an SVG, and a resize is a
+redraw. The ink and the shapes are About's meadow's: `pine`, `bush`,
+`rock` and `tuft` are the camp.js drawings ported to canvas, filled with
+the page colour and stroked in the text colour, drawn far to near so
+each hides what stands behind it. `camp.js` itself still holds About's
+meadow; the home page doesn't use it.
 
 - **The columns never sit over the drawing.** The valley takes the
   bottom `--valley-h` of the window and `body.home main` reserves that
@@ -183,13 +188,18 @@ holds About's meadow; the home page doesn't use it.
   last item on any window that fits the page. The home page's type is a
   step smaller than the rest of the site (15px, desktop only) to leave
   that room. Don't size the band in `vh` and read it back: `vh` ignores
-  the desktop `zoom: 0.9`, which is how the first version came out a
+  the desktop `zoom: 0.9`, which is how an earlier version came out a
   tenth too short.
-- **We stand at the valley's mouth, where the walls have fallen away.**
-  `near(z)` scales the crest height down towards the viewer so the
-  nearest walls are slopes and the peaks are further in. Without it the
-  near walls loom up the sides of the window and into the columns on
-  anything narrower than about 1300px.
+- **The viewpoint is high on purpose.** The camera stands above the
+  near crests (`camY` over the wall heights), so the nearest walls
+  project *below* eye level and the skyline sits at the band's top
+  rather than climbing the sides of the window into the columns, which
+  is what a floor-level camera did. Ground-level detail — benches,
+  spurs, crags — is gated by z so nothing gets drawn at arm's length
+  where a step of one unit is a hundred pixels.
+- **Full-strength ink, no hatching.** Every mark is a deliberate shape
+  at full opacity like the meadow's; the earlier faint, random ticks
+  read as a sketch, and the whole point is that it doesn't.
 - **Hidden below 40rem** with the corners; nothing is drawn while it is.
 
 The sun in the sky, top right, is the dark/light switch. The site is
