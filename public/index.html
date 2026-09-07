@@ -69,83 +69,136 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/site.css?v=compact-work">
+<link rel="stylesheet" href="/assets/css/home-socials.css">
 <script src="/assets/js/transition.js"></script>
 </head>
 <body class="home">
   <main class="page">
     <article class="bio">
-      <!-- The date is the last commit's, read from the footer's commit row
-           (which tools/deploy.sh stamps at deploy time) by the script at
-           the bottom of the page. The text here is the placeholder. -->
       <header>
-        <h1>Zain Saeed</h1>
-        <time class="updated" datetime="">Updated recently</time>
+        <h1>Hi, my name is Zain Saeed, welcome to my website!</h1>
       </header>
 
-      <p>I live in the San Francisco Bay Area. I graduated from the
-      <a class="link" href="https://www.uoregon.edu" target="_blank" rel="noopener">University of Oregon</a>
-      in June 2026 with a degree in Computer Science and Data Science.</p>
+      <p>Some of the things I love: traveling somewhere new, meeting
+      interesting people, eating great food, working on my car, camping in remote
+      locations, building amazing things, and most importantly,
+      <span class="stress">solving hard problems.</span></p>
 
-      <p>I co-founded <a class="link" href="/work/unpak-system">Unpak</a>, a startup that
-      maps how a company actually does its work, down to the smallest step, and
-      works out where AI plugs in most effectively. I am currently looking for the
-      next cool idea to build.</p>
-
-      <p>Previously, I spent a summer doing data and ML engineering at
-      <a class="link" href="https://www.trimble.com" target="_blank" rel="noopener">Trimble</a>
-      and another building data pipelines at
-      <a class="link" href="https://www.expertflow.com" target="_blank" rel="noopener">Expertflow</a>.
-      At Oregon I co-founded Oregon Software Consulting, the university's first
-      student software development club, tutored mathematics for three years, and
-      analyzed primate genomes at the Rohlfs Evolutionary Genomics Lab.</p>
-
-      <p>I enjoy building things for myself, such as
-      <a class="link" href="/work/notch">Notch</a>, a macOS utility that lives
-      in the display notch, <a class="link" href="/work/liquid-glass">Liquid Glass</a>,
-      my take on Apple's material, and
-      <a class="link" href="/work/steward-ai">Steward AI</a>, which won
-      NexHacks '26. I have also built software under contract for an
-      <a class="link" href="/work/ag-analytics">equipment dealer</a> and a
-      <a class="link" href="/work/ai-sales-agent">distribution company</a>.</p>
-
-      <p>Away from a keyboard I like traveling somewhere new, working on my car,
-      and camping in remote places. Most of all, I like <em>solving hard problems</em>.</p>
-
-      <p>You can find me on
-      <a class="link" href="https://www.linkedin.com/in/zain-saeed24/" target="_blank" rel="noopener">LinkedIn</a>
-      and <a class="link" href="https://github.com/spitfiresb" target="_blank" rel="noopener">GitHub</a>,
-      or read <a class="link" href="/about">my story</a>.</p>
+      <section class="elsewhere">
+        <ul class="links">
+          <li class="socials">
+            <ul class="social-row">
+              <li class="li-hover">
+                <a href="https://www.linkedin.com/in/zain-saeed24/" target="_blank" rel="noopener" class="li-link" aria-label="LinkedIn">
+                <img class="li-logo" src="/assets/img/li-logo.svg" alt="">
+                <div class="li-hover-reveal">
+                  <div class="li-hover-card li-card" aria-hidden="true">
+                    <div class="li-card-inner">
+                      <img class="li-banner" src="/assets/img/li-banner.jpeg" alt="">
+                      <img class="li-avatar" src="/assets/img/li-avatar.jpeg" alt="">
+                      <div class="li-info">
+                        <p class="li-name">Zain Saeed</p>
+                        <p class="li-headline">CS &amp; Data Science | Prev @Trimble</p>
+                        <p class="li-meta">San Francisco Bay Area</p>
+                        <p class="li-connections">500+ connections</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                </a>
+              </li>
+              <li class="li-hover gh">
+                <a href="https://github.com/spitfiresb" target="_blank" rel="noopener" class="li-link" aria-label="GitHub">
+                <img class="li-logo" src="/assets/img/gh-logo.svg" alt="">
+                <div class="li-hover-reveal">
+                  <div class="li-hover-card gh-card" aria-hidden="true">
+                    <div class="li-card-inner gh-inner">
+                      <div class="gh-head">
+                        <img class="gh-avatar" src="https://github.com/spitfiresb.png?size=96" alt="">
+                        <div>
+                          <p class="gh-name">Zain Saeed</p>
+                          <p class="gh-login">spitfiresb</p>
+                        </div>
+                        <p class="gh-total"></p>
+                      </div>
+                      <div class="gh-graph"></div>
+                    </div>
+                  </div>
+                </div>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </section>
     </article>
 
-    <!-- Everything I've built, newest first, grouped by year. The year is
-         drawn once per group in the left gutter (CSS hides it on the
-         other rows); the month stays beside the title. -->
-    <section class="work">
-      <h2>Work</h2>
-      <ul>
-        <li>
-          <ul>
-            <li><a class="row" href="/work/unpak-dashboard"><h3>Unpak Dashboard</h3><time datetime="2026-07"><span>Jul</span><span class="year">2026</span></time></a></li>
-            <li><a class="row" href="/work/unpak-website"><h3>Unpak Website</h3><time datetime="2026-07"><span>Jul</span><span class="year">2026</span></time></a></li>
-            <li><a class="row" href="/work/liquid-glass"><h3>Liquid Glass</h3><time datetime="2026-07"><span>Jul</span><span class="year">2026</span></time></a></li>
-            <li><a class="row" href="/work/notch"><h3>Notch</h3><time datetime="2026-05"><span>May</span><span class="year">2026</span></time></a></li>
-            <li><a class="row" href="/work/unpak-system"><h3>Unpak System</h3><time datetime="2026-04"><span>Apr</span><span class="year">2026</span></time></a></li>
-            <li><a class="row" href="/work/ai-sales-agent"><h3>AI Sales Agent</h3><time datetime="2026-04"><span>Apr</span><span class="year">2026</span></time></a></li>
-            <li><a class="row" href="/work/steward-ai"><h3>Steward AI</h3><time datetime="2026-01"><span>Jan</span><span class="year">2026</span></time></a></li>
-          </ul>
-        </li>
-        <li>
-          <ul>
-            <li><a class="row" href="/work/floorsense"><h3>FloorSense</h3><time datetime="2025-11"><span>Nov</span><span class="year">2025</span></time></a></li>
-            <li><a class="row" href="/work/ag-analytics"><h3>Agricultural Analytics Platform</h3><time datetime="2025-11"><span>Nov</span><span class="year">2025</span></time></a></li>
-          </ul>
-        </li>
-      </ul>
+    <!-- Each grouped row opens its project on the shared Work page. -->
+    <section class="work" aria-labelledby="work-heading">
+      <h2 id="work-heading">Work</h2>
+      <section class="work-group" aria-labelledby="personal-heading">
+        <h3 id="personal-heading"><a href="/work/#personal">Personal</a></h3>
+        <ul>
+          <li>
+            <a class="work-project" href="/work/#steward-ai">
+                <span><span class="work-title">Steward AI</span> <span class="work-description">Understand how teams use AI.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+          <li>
+            <a class="work-project" href="/work/#unpak">
+                <span><span class="work-title">Unpak</span> <span class="work-description">Find where AI fits into a company’s work.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+          <li>
+            <a class="work-project" href="/work/#floorsense">
+                <span><span class="work-title">FloorSense</span> <span class="work-description">Turn floor plans into interactive models.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="work-group" aria-labelledby="contract-heading">
+        <h3 id="contract-heading"><a href="/work/#contract">Contract</a></h3>
+        <ul>
+          <li>
+            <a class="work-project" href="/work/#ai-sales-agent">
+                <span><span class="work-title">AI Sales Agent</span> <span class="work-description">Ask company data a question.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+          <li>
+            <a class="work-project" href="/work/#ag-analytics">
+                <span><span class="work-title">Agricultural Analytics</span> <span class="work-description">Geospatial tools for an equipment dealer.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="work-group" aria-labelledby="experiments-heading">
+        <h3 id="experiments-heading"><a href="/work/#experiments">Experiments</a></h3>
+        <ul>
+          <li>
+            <a class="work-project" href="/work/#notch">
+                <span><span class="work-title">Notch</span> <span class="work-description">A little more utility in the Mac notch.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+          <li>
+            <a class="work-project" href="/work/#liquid-glass">
+                <span><span class="work-title">Liquid Glass</span> <span class="work-description">An experiment with Apple’s material.</span></span>
+                <span class="work-chevron" aria-hidden="true"></span>
+              </a>
+          </li>
+        </ul>
+      </section>
     </section>
 
-    <!-- The footer: a short rule, then the live bits from /api/pulse. Left
-         is the local time where I am; right is the stats strip: visits in
+    <!-- The footer: a short rule, then the live stats from /api/pulse: visits in
          the last 30 days, the last commit's diff stat (a link, stamped by
          tools/deploy.sh; the markup it matches must not change), and how
          many people are reading now, with a flag per country on hover.
@@ -154,7 +207,6 @@
          hidden until the first response lands. -->
     <footer class="foot">
       <div class="row">
-        <p class="clock"><span class="clock-time">--:--</span> in the Bay Area</p>
         <div class="pulse" hidden>
           <div class="pulse-stat">
             <span class="pulse-label">visits, last 30 days</span>
@@ -189,33 +241,7 @@
       </div>
     </footer>
   </main>
-  <script>
-    /* The clock in the footer, kept on Pacific time whatever the reader's
-       zone, and the "Updated" date under the name, taken from the commit
-       row so both come from the same deploy stamp. */
-    (() => {
-      const timeEl = document.querySelector('.clock-time');
-      const fmt = new Intl.DateTimeFormat('en-US', {
-        hour: 'numeric', minute: '2-digit', hour12: true,
-        timeZone: 'America/Los_Angeles',
-      });
-      function tick() {
-        timeEl.textContent = fmt.format(new Date()).toLowerCase().replace(' ', '');
-      }
-      tick();
-      setInterval(tick, 15000);
-
-      const commit = document.querySelector('.pulse-commit');
-      const updated = document.querySelector('.updated');
-      const at = commit && Date.parse(commit.dataset.committed);
-      if (updated && at && !Number.isNaN(at)) {
-        updated.dateTime = commit.dataset.committed;
-        updated.textContent = 'Updated ' + new Intl.DateTimeFormat('en-US', {
-          month: 'short', day: 'numeric', year: 'numeric',
-        }).format(new Date(at));
-      }
-    })();
-  </script>
+  <script src="/assets/js/home-socials.js" defer></script>
   <script src="/assets/js/pulse.js" defer></script>
 </body>
 </html>

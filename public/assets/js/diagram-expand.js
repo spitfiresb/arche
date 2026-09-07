@@ -165,5 +165,5 @@
     });
   }
 
-  document.querySelectorAll('figure[data-diagram]').forEach(init);
+  document.querySelectorAll('[data-diagram]').forEach(init);
 })();

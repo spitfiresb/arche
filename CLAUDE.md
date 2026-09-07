@@ -36,14 +36,20 @@ README).
 
 ## The pages
 
-One stylesheet, `site.css`, and one shape: a 36.375rem column of 14px
+The shared stylesheet is `site.css`: a 36.375rem column with a 0.875rem
+body font and an 80% root font size, making the layout 20% smaller.
 Inter at weight 460, near-black on off-white, secondary text at 40% black,
-in the manner of benji.org. The home page is a bio in prose, a Work list
-grouped by year, and a footer; each project is an article at
+in the manner of benji.org. The home page has the original short intro,
+expanding social cards (`home-socials.css` and `home-socials.js`), a Work
+list grouped into Personal, Contract, and Experiments, and a footer.
+Each Work row links to an anchor on `/work/`, which contains all three
+categories, their demos, descriptions, and specs. Unpak has System,
+Dashboard, and Website subsections. There is no footer clock.
+Individual project pages remain at
 `/work/<slug>` with its demo up top, prose, a label/value spec list and
 previous/next links; `/about` is the same column as a timeline. The
 project pages are generated: `tools/build-work.py` holds one dict per
-project and writes the nine files, and the output is committed, so edit
+project and writes the nine individual pages plus `work/index.html`, and the output is committed, so edit
 the script, run it, commit both. The home page's Work list is hand-written
 and has to be kept in step with it. `_redirects` sends the previous
 edition's section URLs (`/work/personal`, `/work/contract`, `/work/cool`)

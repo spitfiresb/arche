@@ -1,0 +1,436 @@
+/* Original home intro and expanding social previews, adapted to the light page. */
+.bio {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.bio > header {
+  padding-bottom: 0;
+}
+.bio > header h1 {
+  font-weight: 400;
+}
+.bio > p {
+  padding-top: 1.1rem;
+  color: var(--soft);
+}
+.bio .stress {
+  color: var(--fg);
+}
+.elsewhere {
+  padding-top: 2rem;
+}
+.elsewhere ul.links {
+  max-width: 22rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+.elsewhere ul.social-row {
+  justify-content: center;
+}
+.li-hover-card :where(p) {
+  line-height: 1.6;
+}
+
+/* Home: LinkedIn and GitHub are icon-only marks sitting side by side
+   under the About link. Each one expands into a rounded profile preview
+   on hover, growing out of the icon to the right and down. */
+ul.links ul.social-row {
+  --icon: 1.4em;
+  display: flex;
+  gap: 0.6em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* the marks are their own row, so the list's per-item gap doesn't
+   reappear between them */
+ul.links ul.social-row li {
+  margin-bottom: 0;
+}
+
+/* The item is just the icon's footprint; the card is revealed as an
+   overlay on top of the page, so nothing else shifts */
+ul.links li.li-hover {
+  position: relative;
+  width: var(--icon);
+  height: var(--icon);
+}
+
+ul.links li.li-hover:hover,
+ul.links li.li-hover:focus-within {
+  /* lift the hovered item so its expanding card paints over the links
+     and columns below it instead of being covered by them */
+  z-index: 10;
+}
+
+/* On hover the mark travels from its spot in the row onto the top-left
+   of the card (over the banner photo for LinkedIn, into the header
+   gutter for GitHub) while the card expands out from under it */
+.li-link {
+  display: block;
+  height: 100%;
+}
+
+/* Positioned relative to the li so it can travel onto the card */
+.li-logo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--icon);
+  height: var(--icon);
+  z-index: 3;
+  /* full strength: the marks carry their own white, so any dimming here
+     reads as a gray logo against the dark page */
+  opacity: 1;
+  transition: top 0.5s ease, left 0.5s ease, filter 0.5s ease;
+}
+
+li.li-hover:hover .li-logo,
+li.li-hover:focus-within .li-logo {
+  top: 0.6em;
+  left: 0.55em;
+}
+
+/* The LinkedIn card opens the other way: down and to the LEFT, into the
+   empty page margin rather than over the work columns. Pinning the
+   reveal's right edge to the mark makes the box grow leftward, and the
+   mark lands inside the card's top-right corner, which sits right where
+   the mark already is. landing.js only adds .opens-left when there's
+   actually room to the left; otherwise the card opens right as usual. */
+li.li-hover.opens-left .li-hover-reveal {
+  left: auto;
+  right: 0;
+}
+
+li.li-hover.opens-left:hover .li-logo,
+li.li-hover.opens-left:focus-within .li-logo {
+  left: -0.55em;
+}
+
+/* The reveal is an absolute overlay pinned to the icon, so growing it
+   opens the card right and down over the page without moving any other
+   text. It starts at the icon's own width and widens to the card's final
+   width (--liw / --ghw); the grid row animates its height 0 -> auto. */
+.li-hover-reveal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--icon);
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.6s ease, width 0.6s ease;
+}
+
+.li-hover-reveal > .li-hover-card {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 0;
+  /* fills the box, which grows from the top-left, right and down */
+  transition: opacity 0.5s ease 0.1s, transform 0.5s ease,
+    box-shadow 0.5s ease;
+}
+
+/* Content is laid out at the card's final width (set by landing.js as
+   --liw) and pinned top-left, so the growing box uncovers it rather than
+   squishing it */
+.li-card-inner {
+  width: calc(var(--liw, 100%) - 2px);
+  white-space: normal;
+}
+
+li.li-hover:hover .li-hover-reveal,
+li.li-hover:focus-within .li-hover-reveal {
+  grid-template-rows: 1fr;
+  width: var(--liw, 22rem);
+}
+
+li.li-hover:hover .li-hover-card,
+li.li-hover:focus-within .li-hover-card {
+  opacity: 1;
+}
+
+.li-hover-card {
+  margin-top: 0;
+  /* the cards reproduce LinkedIn's and GitHub's own layouts, so they have
+     to opt out of whatever the surrounding list is doing; the centered
+     About block would otherwise centre the name, headline and location */
+  text-align: left;
+  border-radius: 0.6em;
+  /* flat card: a soft drop shadow and a hairline border, no 3d tilt.
+     Both cards are dark like the page, so the shadow has to be deep
+     enough to separate them from it, and each card sets its own border
+     color from its site's dark palette */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.6);
+}
+
+.li-hover-card .li-banner {
+  border-radius: 0.55em 0.55em 0 0;
+}
+
+/* LinkedIn profile header, replicated 1:1 (font stack, type scale,
+   colors, and layout matching linkedin.com), in LinkedIn's own dark
+   theme, since the site around it is dark: #1d2226 surfaces, #38434f
+   hairlines, and the lighter #70b5f9 for the blue accents */
+.li-card {
+  font-family: -apple-system, system-ui, "Segoe UI", Roboto,
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #1d2226;
+  color: rgba(255, 255, 255, 0.9);
+  border-color: #38434f;
+  -webkit-font-smoothing: antialiased;
+}
+
+.li-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 1; /* LinkedIn banners are 1584x396 */
+  object-fit: cover;
+}
+
+.li-avatar {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: -38px 0 0 16px;
+  object-fit: cover;
+  /* the ring is the card surface punched through the banner */
+  background: #1d2226;
+  border: 2px solid #1d2226;
+  border-radius: 50%;
+}
+
+.li-info {
+  padding: 4px 16px 16px;
+}
+
+.li-name {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.li-headline {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.li-meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.li-connections {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #70b5f9;
+}
+
+/* GitHub card: 53 weeks of boxes need more room than the text column,
+   so on hover this card grows past the list width: as wide as the year
+   wants, capped by the viewport. One shared value (--ghw) sizes both
+   the growing box and the content laid out inside it, so the card can
+   never clip its own right edge. */
+ul.links li.li-hover.gh {
+  /* compact: only as wide as the calendar needs, never past the right
+     viewport edge (the card's left edge sits at the octocat, one icon
+     plus the row gap right of the text column) */
+  --ghw: min(29em, 100vw - 6em, 50vw + 9.5em);
+}
+
+ul.links li.li-hover.gh:hover .li-hover-reveal,
+ul.links li.li-hover.gh:focus-within .li-hover-reveal {
+  width: var(--ghw);
+}
+
+.gh-card .li-card-inner {
+  width: calc(var(--ghw) - 2px);
+}
+
+/* GitHub profile card, replicated like the LinkedIn one (GitHub's font
+   stack, type scale, and colors), with a live contribution calendar */
+.gh-card {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans", Helvetica, Arial, sans-serif;
+  /* GitHub's own dark theme, to match the page: #0d1117 canvas, #30363d
+     hairlines, #e6edf3 ink; the green calendar still carries the color,
+     on the darker ramp landing.js draws */
+  background: #0d1117;
+  color: #e6edf3;
+  border-color: #30363d;
+  -webkit-font-smoothing: antialiased;
+}
+
+.gh-inner {
+  /* padding counts inside the width, so the inner layout is exactly as
+     wide as the card box and nothing clips at the right edge */
+  box-sizing: border-box;
+  padding: 10px 12px 12px;
+}
+
+.gh-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+  /* clear the octocat, which lands in the card's top-left on hover */
+  padding-left: 28px;
+}
+
+/* The octocat is near-black (#1f2328), so it's forced to pure white:
+   brightness(0) crushes it to black first, because inverting #1f2328 on
+   its own only reaches an off-white #e0dcd7. It keeps that white on the
+   dark card too, parked vertically centered on the avatar */
+.li-logo[src*="gh-logo"] {
+  filter: brightness(0) invert(1);
+}
+
+li.li-hover:hover .li-logo[src*="gh-logo"],
+li.li-hover:focus-within .li-logo[src*="gh-logo"] {
+  top: 0.9em;
+  left: 0.45em;
+}
+
+.gh-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.gh-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.gh-login {
+  margin: 0;
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.gh-graph {
+  position: relative; /* anchors the day tooltip */
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+/* The hovered day lights up its outline immediately */
+.gh-graph rect:hover {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
+/* Instant per-day tooltip (a step up from the canvas so the bubble reads
+   against the dark card) */
+.gh-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: #30363d;
+  color: #e6edf3;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.gh-tip::after {
+  content: "";
+  position: absolute;
+  /* landing.js sets --ax so the arrow tracks the hovered cell even
+     when the bubble itself is clamped at the graph's edge */
+  left: var(--ax, 50%);
+  bottom: -4px;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #30363d;
+  border-bottom: none;
+}
+
+.gh-tip.on {
+  opacity: 1;
+}
+
+.gh-graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.gh-month {
+  font-size: 9px;
+  fill: #8b949e;
+}
+
+.gh-graph-fallback {
+  font-size: 13px;
+  color: #8b949e;
+  text-align: center;
+  padding: 1.5em 8px;
+}
+
+/* The headline stat rides the header row, pushed to the right edge */
+.gh-total {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  color: #8b949e;
+}
+
+
+/* The GitHub mark is dark on the page, then white over its dark preview. */
+.li-logo[src*="gh-logo"] {
+  filter: none;
+}
+li.li-hover.gh .li-hover-reveal {
+  left: var(--gh-offset, 0px);
+}
+li.li-hover:not(.opens-left):not(.gh) .li-hover-reveal {
+  left: var(--li-offset, 0px);
+}
+li.li-hover:not(.opens-left):not(.gh):hover .li-logo,
+li.li-hover:not(.opens-left):not(.gh):focus-within .li-logo {
+  left: calc(var(--li-offset, 0px) + 0.55em);
+}
+.gh-head > div {
+  flex: none;
+}
+li.li-hover:hover .li-logo[src*="gh-logo"],
+li.li-hover:focus-within .li-logo[src*="gh-logo"] {
+  filter: brightness(0) invert(1);
+  left: calc(var(--gh-offset, 0px) + 0.45em);
+}
+.li-hover-card {
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.2);
+}
+.li-link:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .li-logo,
+  .li-hover-reveal,
+  .li-hover-reveal > .li-hover-card {
+    transition: none;
+  }
+}

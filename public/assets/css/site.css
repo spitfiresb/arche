@@ -1,5 +1,5 @@
 /* The site, second edition: one narrow column of prose on an off-white
-   page. The home page is a bio, a dated list of work and a hairline
+   page. The home page is a short intro, grouped project rows and a hairline
    footer carrying the live bits; each project is an article in the same
    column with its demo up top; About is a timeline. Everything is 14px
    Inter at weight 460 in near-black, with the secondary text at 40%
@@ -65,6 +65,8 @@
 }
 
 html {
+  /* Compact the typography, column, and spacing together. */
+  font-size: 80%;
   background: var(--bg);
   color: var(--fg);
   -webkit-text-size-adjust: 100%;
@@ -209,7 +211,7 @@ h1, h2, h3 {
   outline: 2px solid rgba(0, 122, 255, 0.5);
 }
 
-/* ---- The work list --------------------------------------------------- */
+/* ---- Grouped project rows -------------------------------------------- */
 
 .work {
   padding-top: 3rem;
@@ -217,108 +219,91 @@ h1, h2, h3 {
 
 .work > h2 {
   color: var(--muted);
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.375rem;
 }
 
-.work ul {
+.work-group {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 1.125rem;
+  padding: 1.0625rem 0;
+  border-top: 1px solid var(--rule);
+}
+.work-group:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+.work-group:last-child {
+  padding-bottom: 0;
+}
+.work-group > h3 {
+  padding-top: 0.6875rem;
+  font-size: 0.75rem;
+  color: var(--soft);
+  font-weight: 400;
+}
+.work-group > ul {
   list-style: none;
-  display: flex;
-  flex-direction: column;
 }
 
-/* One <li> per year, each holding its own list; the year label is drawn
-   once, on the first row of the group, in the gutter on the left. */
-.work > ul > li {
-  border-bottom: 1px solid var(--line);
-}
-.work > ul > li:last-child {
-  border-bottom: none;
-}
-
-.work .row {
-  position: relative;
+.work-project {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.735rem 0 0.735rem 6.75rem;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5625rem 0;
+  list-style: none;
+  cursor: pointer;
 }
-.work .row::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 6.75rem;
-  right: 0;
-  border-bottom: 1px solid var(--line);
+.work-project:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 3px;
 }
-.work > ul > li > ul > li:last-child > .row::after {
-  display: none;
+.work-title {
+  display: block;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
-
-.work .row h3 {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  color: var(--fg);
-  transition: opacity 0.14s ease;
+.work-description {
+  display: block;
+  margin-top: 0.1875rem;
+  color: var(--soft);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
-.work .row h3::after {
-  content: "";
+.work-chevron {
+  flex: none;
   width: 0.375rem;
   height: 0.375rem;
+  margin-right: 0.25rem;
   border-top: 1px solid currentColor;
   border-right: 1px solid currentColor;
-  opacity: 0;
+  color: var(--soft);
   transform: rotate(45deg);
-  transition: opacity 0.14s ease, transform 0.14s ease;
+  transition: transform 0.2s ease;
 }
-.work .row:hover h3::after {
-  opacity: 0.5;
-  transform: translateX(0.25rem) rotate(45deg);
+.work-project:hover .work-chevron {
+  transform: translateX(0.125rem) rotate(45deg);
 }
-
-.work .row time {
-  color: var(--muted);
-  line-height: normal;
+.work-project:hover .work-title {
+  color: var(--soft);
 }
-.work .row time span {
-  display: inline-block;
-  transition: opacity 0.14s ease;
-}
-/* The year sits in the left gutter and is only visible on the first row
-   of its group; the month stays on the right, opposite the title. */
-.work .row time .year {
-  visibility: hidden;
-  position: absolute;
-  left: 0;
-}
-.work > ul > li > ul > li:first-child > .row time .year {
-  visibility: visible;
-}
-
-/* Hovering anywhere over the list dims every row but the one under the
-   cursor; the year labels stay put so the groups keep their shape. */
-@media (min-width: 32.5rem) {
-  .work > ul:hover .row h3,
-  .work > ul:hover .row time span {
-    opacity: 0.3;
-  }
-  .work > ul:hover .row time .year {
-    opacity: 1;
-  }
-  .work > ul:hover .row:hover h3,
-  .work > ul:hover .row:hover time span {
-    opacity: 1;
-  }
-}
-
 @media (max-width: 32.5rem) {
-  .work .row {
-    padding-left: 3rem;
+  .work-group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4375rem;
   }
-  .work .row::after {
-    left: 3rem;
+  .work-group > h3 {
+    padding-top: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .work-title,
+  .work-chevron {
+    transition: none;
   }
 }
 
@@ -353,10 +338,6 @@ h1, h2, h3 {
 }
 .foot .row + .row {
   margin-top: 0.75rem;
-}
-
-.foot .clock {
-  font-variant-numeric: tabular-nums;
 }
 
 /* The live pieces fade in once their first response lands. */
@@ -503,6 +484,62 @@ h1, h2, h3 {
 }
 
 /* ---- Project pages --------------------------------------------------- */
+
+/* All three project categories share one page; rows on the home page
+   link straight to the relevant article. */
+.collection-heading h1 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+.collection-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  padding: 1.25rem 0;
+  margin-bottom: 2rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+}
+.collection .page::before {
+  height: 3rem;
+}
+.collection-section,
+.collection-project,
+.project-family {
+  scroll-margin-top: 5rem;
+}
+.collection-section + .collection-section {
+  margin-top: 5rem;
+}
+.collection-section > h2 {
+  color: var(--soft);
+  margin-bottom: 2rem;
+}
+.collection-project + .collection-project,
+.collection-project + .project-family,
+.project-family + .collection-project {
+  margin-top: 3.5rem;
+  padding-top: 3.5rem;
+  border-top: 1px solid var(--rule);
+}
+.collection-project > header h3,
+.collection-project > header h4,
+.project-family > h3 {
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-weight: 500;
+  margin: 0;
+}
+.family-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0 2rem;
+  font-size: 0.8125rem;
+}
 
 /* The back control: the site's ring-and-chevron mark on a small white
    disc pinned to the top-left corner. The live-demo overlay rebuilds the
@@ -658,6 +695,7 @@ h1, h2, h3 {
 }
 .article .ld-thumb.plain img {
   aspect-ratio: auto;
+  height: auto;
 }
 .article .ld-inline {
   display: block;

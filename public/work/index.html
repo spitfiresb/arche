@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work - Zain Saeed</title>
+<meta name="description" content="Personal projects, contract work, and experiments by Zain Saeed, with live demos.">
+<meta property="og:title" content="Work - Zain Saeed">
+<meta property="og:description" content="Personal projects, contract work, and experiments, with live demos.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zsaeed.com/work/">
+<link rel="canonical" href="https://zsaeed.com/work/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
+<link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site.css?v=compact-work">
+<link rel="stylesheet" href="/assets/css/live-demo.css">
+<script src="/assets/js/transition.js"></script>
+</head>
+<body class="collection">
+  <a class="back" href="/" aria-label="Back to the home page">
+    <svg class="back-mark" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true">
+      <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
+      <path class="back-chevron" d="M24 14 L16 20 L24 26" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <main class="page">
+    <header class="collection-heading"><h1>Work</h1></header>
+    <nav class="collection-nav" aria-label="Project categories">
+      <a class="link" href="#personal">Personal</a>
+      <a class="link" href="#contract">Contract</a>
+      <a class="link" href="#experiments">Experiments</a>
+    </nav>
+    <section class="collection-section" id="personal" aria-labelledby="personal-heading">
+      <h2 id="personal-heading">Personal</h2>
+<article class="article collection-project" id="steward-ai">
+      <header>
+        <h3>Steward AI</h3>
+        <div class="meta"><time datetime="2026-01">January 2026</time><span class="note">NexHacks '26 winner</span></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/steward-ai" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a>
+      <a class="styled-link" href="https://devpost.com/software/nexhacks" target="_blank" rel="noopener">View DevPost <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <div class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html" data-title="Steward AI dashboard - live demo" data-bg="#f7f5f0"
+        tabindex="0" role="button" aria-label="Expand the Steward AI dashboard to fullscreen">
+          <img src="/assets/img/steward/dashboard-preview.png" alt="The Steward AI dashboard: a use-case donut chart with hoverable subcategories, top model rankings, a daily average bar chart and a security overview">
+        </div>
+        <figcaption>The dashboard, running. Click to open it fullscreen.</figcaption>
+      </figure>
+<p>A desktop application that lets businesses understand their employees' AI usage. An Electron app and a browser extension read the accessibility-tree text of AI tools as people use them and a Haiku 4.5 model categorizes each conversation. The platform also identifies PII included in prompts, along with files, which it displays inside the dashboard.</p>
+<p>Built at Carnegie Mellon for NexHacks '26, my first hackathon win.</p>
+      <dl class="spec">
+        <dt>How it works</dt>
+        <dd>Use-case analytics, per-employee drill-downs, a prompt-flow breakdown, and a security log where flagged uploads open in a file viewer</dd>
+        <dt>Built on</dt>
+        <dd>An Electron app built on HTML and JavaScript displays data, and uses Swift to grab data from macOS desktop applications, paired with a browser extension to grab DOM text from Chrome. Data is stored in Supabase</dd>
+      </dl>
+    </article>
+    <section class="project-family" id="unpak" aria-labelledby="unpak-heading">
+      <h3 id="unpak-heading">Unpak</h3>
+      <nav class="family-nav" aria-label="Unpak projects">
+        <a class="link" href="#unpak-system">System</a>
+        <a class="link" href="#unpak-dashboard">Dashboard</a>
+        <a class="link" href="#unpak-website">Website</a>
+      </nav>
+<article class="article collection-project" id="unpak-system">
+      <header>
+        <h4>System</h4>
+        <div class="meta"><time datetime="2026-04">April 2026</time></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/unpak" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <div class="ld-thumb plain" data-diagram tabindex="0" role="button" aria-label="Expand the Unpak system map" tabindex="0" role="button" aria-label="Expand the diagram to fullscreen">
+          <img width="920" height="884" src="/assets/img/unpak/system-preview-light.svg" alt="A flow chart of the Unpak system: the capture agent on the employee machine uploading to Cloudflare R2, Modal running the processing and analysis pipelines, with the model each stage uses">
+        </div>
+        <figcaption>The system map. Click to zoom.</figcaption>
+      </figure>
+<p>The capture and processing core of Unpak. A Rust agent on each machine reads the focused window through AX Tree and OCR capture, and scrubs PII on device. After storage, a pipeline then distills that raw activity down in stages: individual actions get grouped into tasks, and tasks into workflows. Cheaper models handle the high-volume grouping and smarter models handle the complicated reasoning sections. A nightly pass clusters recurring workflows across the workforce into families, so variations of the same workflow can still be deterministically grouped together.</p>
+<p>The idea: a worker's day is made up of various workflows, each a generally set list of tasks. If you can map those workflows and build a picture of how a company actually does its work, down to the smallest step, then you can pinpoint where an AI solution plugs in most effectively and compute, down to the minute, how much time it would save.</p>
+<p>What the customer sees is the <a class="link" href="#unpak-dashboard">dashboard</a>.</p>
+      <dl class="spec">
+        <dt>Built on</dt>
+        <dd>Rust for the agent, Swift for the macOS client, Python for the pipeline. SQLite on the device, Neon Postgres upstream</dd>
+        <dt>Hosting</dt>
+        <dd>Modal for the pipeline, Cloudflare R2 for storage</dd>
+      </dl>
+    </article><article class="article collection-project" id="unpak-dashboard">
+      <header>
+        <h4>Dashboard</h4>
+        <div class="meta"><time datetime="2026-07">July 2026</time></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/unpak/tree/main/cloudflare/dashboard" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <div class="ld-thumb" data-live-demo="/demos/unpak-dashboard/" data-title="Unpak dashboard - live demo" data-bg="#FCFCFB"
+        tabindex="0" role="button" aria-label="Expand the Unpak dashboard to fullscreen">
+          <img src="/assets/img/unpak/dashboard-preview.png" alt="The Unpak dashboard overview: a composition ring of work areas, AI adoption dials, and ranked bars of where the hours are going">
+        </div>
+        <figcaption>The dashboard, running. Click to open it fullscreen.</figcaption>
+      </figure>
+<p>Unpak's dashboard. It shows the customer the workflows their workforce repeats, where the hours go, and where AI has already shown up in the work.</p>
+<p>It is the front half of <a class="link" href="#unpak-system">the Unpak system</a>: everything the capture agent and the pipeline work out ends up here, as a composition ring of work areas, adoption dials, and ranked bars of where the time is going.</p>
+      <dl class="spec">
+        <dt>Built on</dt>
+        <dd>Astro, with the data connected to a Neon Postgres database</dd>
+        <dt>Hosting</dt>
+        <dd>Cloudflare Pages</dd>
+      </dl>
+    </article><article class="article collection-project" id="unpak-website">
+      <header>
+        <h4>Website</h4>
+        <div class="meta"><time datetime="2026-07">July 2026</time></div>
+      </header>
+      <figure class="artifact">
+        <div class="ld-thumb" data-live-demo="/demos/unpak-site/" data-title="Unpak website - live demo" data-bg="#FCFCFB" data-ready="canvas" data-mobile="native"
+        tabindex="0" role="button" aria-label="Expand the Unpak website to fullscreen">
+          <img src="/assets/img/unpak/site-preview.png" alt="The Unpak website landing page: the headline What can AI do for your agency over a soft rippling canvas">
+        </div>
+        <figcaption>The site, running. Click to open it fullscreen.</figcaption>
+      </figure>
+<p>The main website for Unpak. One of my most polished pieces of work.</p>
+<p>The headline sits over a soft rippling canvas, and the diagrams further down are drawn in JavaScript rather than exported as pictures, so they stay crisp at any size.</p>
+      <dl class="spec">
+        <dt>Built on</dt>
+        <dd>Astro, Tailwind, and JavaScript for the diagrams and the WebGL ripple shader</dd>
+        <dt>Hosting</dt>
+        <dd>Cloudflare Pages</dd>
+      </dl>
+    </article></section>
+<article class="article collection-project" id="floorsense">
+      <header>
+        <h3>FloorSense</h3>
+        <div class="meta"><time datetime="2025-11">November 2025</time></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/FloorSense" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <div class="ld-thumb" data-live-demo="/demos/floorsense/?embed=1" data-title="FloorSense - live demo" data-bg="#fdfbf7" data-mobile="native"
+        tabindex="0" role="button" aria-label="Expand the FloorSense to fullscreen">
+          <img src="/assets/img/floorsense/preview.png" alt="The FloorSense app landing page">
+        </div>
+        <figcaption>The app, running. Click to open it fullscreen.</figcaption>
+      </figure>
+<p>A computer vision web app that identifies architectural elements in floorplan images using YOLO-based object detection, with real-time detection visualization and correction tools.</p>
+<p>The idea: floor plans are notoriously difficult to digitize, since there are so many different variations of objects in them, and no standardized system to create them. A model that can visually classify what's on the page gets around that.</p>
+      <dl class="spec">
+        <dt>Built on</dt>
+        <dd>Next.js, React, TypeScript, Tailwind</dd>
+        <dt>Why I built it</dt>
+        <dd>I was attempting to impress a group of founders at a company I wanted to work at, so I built the product they showed me in a demo</dd>
+        <dt>Hosting</dt>
+        <dd>Website hosted on Vercel, YOLO model hosted on Roboflow</dd>
+      </dl>
+    </article>
+    </section>
+    <section class="collection-section" id="contract" aria-labelledby="contract-heading">
+      <h2 id="contract-heading">Contract</h2>
+<article class="article collection-project" id="ai-sales-agent">
+      <header>
+        <h3>AI Sales Agent</h3>
+        <div class="meta"><time datetime="2026-04">April 2026</time></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/olander-agents" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <div class="ld-thumb" data-live-demo="/demos/olander/" data-title="Olander Agents - live demo" data-bg="#faf7f1" data-mobile="native"
+        tabindex="0" role="button" aria-label="Expand the Olander Agents to fullscreen">
+          <img src="/assets/img/olander/preview.png" alt="Olander Agents chat: an ERP stock question answered with tool-call steps and a per-warehouse on-hand table">
+        </div>
+        <figcaption>The agent, running. Click to open it fullscreen.</figcaption>
+      </figure>
+<p>A chat agent built for a distribution company in the Bay Area. Connects to their ERP system and allows their employees to save time doing data lookups. Currently serving around 70 employees.</p>
+<p>A question like <em>how many of these are in stock</em> becomes a handful of tool calls against the catalog, stock and order tables, and the answer comes back as a table rather than a paragraph. Catalog search runs on a vector index, so a loosely worded part name still finds the part.</p>
+      <dl class="spec">
+        <dt>Data</dt>
+        <dd>Epicor Prophet 21: catalog, stock, customers, orders. Read through a fixed-IP proxy. Catalog search on a Qdrant vector index</dd>
+        <dt>Built on</dt>
+        <dd>Next.js, TypeScript, GPT-5 nano. Neon Postgres, Qdrant, Microsoft SSO</dd>
+        <dt>Hosting</dt>
+        <dd>Vercel, plus one always-on proxy for the fixed IP</dd>
+      </dl>
+    </article>
+<article class="article collection-project" id="ag-analytics">
+      <header>
+        <h3>Agricultural Analytics Platform</h3>
+        <div class="meta"><time datetime="2025-11">November 2025</time></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/AgDash" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <div class="ld-thumb" data-live-demo="/demos/papeagnet/" data-title="PapeAgNet - live demo" data-ready="canvas"
+        tabindex="0" role="button" aria-label="Expand the PapeAgNet to fullscreen">
+          <img src="/assets/img/papeagnet/preview.png" alt="PapeAgNet dashboard: Pacific Northwest dealer regions and county agriculture metrics on an interactive map">
+        </div>
+        <figcaption>The platform, running. Click to open it fullscreen.</figcaption>
+      </figure>
+<p>A geospatial analytics platform for Oregon's largest equipment dealer. Currently being used by over 1,500 employees across six states.</p>
+<p>Every county in the dealer's territory is drawn from the Census Bureau's boundary files and shaded by the USDA's agricultural census, so a rep can see at a glance where the acreage and the crops are, and how their own region compares.</p>
+      <dl class="spec">
+        <dt>Data</dt>
+        <dd>USDA Census of Agriculture, 250 counties across six states. Boundaries from the Census Bureau's TIGER/Line files</dd>
+        <dt>Built on</dt>
+        <dd>React, TypeScript, Vite, MapLibre GL</dd>
+        <dt>Hosting</dt>
+        <dd>Vercel</dd>
+      </dl>
+    </article>
+    </section>
+    <section class="collection-section" id="experiments" aria-labelledby="experiments-heading">
+      <h2 id="experiments-heading">Experiments</h2>
+<article class="article collection-project" id="notch">
+      <header>
+        <h3>Notch</h3>
+        <div class="meta"><time datetime="2026-05">May 2026</time></div>
+      </header>
+      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/notch" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
+      <figure class="artifact">
+        <iframe class="ld-inline dark" src="/demos/notch-v2/" title="Notch - the app running itself" loading="lazy"></iframe>
+        <figcaption>A recreation of the app, running itself on a loop. Nothing here responds to you.</figcaption>
+      </figure>
+<p>A macOS utility that creates its own notch at the top of the display. Lets you control music, add or remove songs from playlists, and see a Claude session's status in real time. It also makes taking screenshots on a Mac a bit easier.</p>
+<p>The demo above is not a video. It is the app rebuilt in the browser at its own point sizes, walking a drawn cursor through Now Playing, the playlist panel, a live Claude Code session, and a screenshot drag, then starting over.</p>
+      <dl class="spec">
+        <dt>How it works</dt>
+        <dd>An NSPanel pinned above every Space. Now Playing over the private MediaRemote API, audio bars from a CoreAudio tap, screenshots from a folder watch, and Claude sessions from hook events</dd>
+        <dt>Built on</dt>
+        <dd>Swift, SwiftUI and AppKit</dd>
+        <dt>Why</dt>
+        <dd>I was unsatisfied with the open source alternatives, so I decided to make my own</dd>
+      </dl>
+    </article>
+<article class="article collection-project" id="liquid-glass">
+      <header>
+        <h3>Liquid Glass</h3>
+        <div class="meta"><time datetime="2026-07">July 2026</time></div>
+      </header>
+      <p class="links"><a class="styled-link is-internal" href="/work/liquid-glass-code">View code <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11 L3 8 L6 5"/><path d="M10 5 L13 8 L10 11"/></svg></a></p>
+      <figure class="artifact">
+        <iframe class="ld-inline" src="/demos/liquid-glass/" title="Liquid glass - interactive demo" loading="lazy"></iframe>
+        <figcaption>Live. Click a tab and the glass follows.</figcaption>
+      </figure>
+<p>My implementation of Apple's Liquid Glass. A pill of glass slides between the tabs, bending the background as it goes and stretching before it settles. One of my personal favorites.</p>
+<p>The pill is a signed distance field, and the refraction at its edge follows Snell's law with a little dispersion per colour channel, which is where the faint rainbow fringe comes from. A fresnel term and a glare highlight in LCH space give it the wet look, and a spring drives the motion so the glass overshoots and settles instead of easing to a stop.</p>
+      <dl class="spec">
+        <dt>How it works</dt>
+        <dd>A refractive lens over a tab row: SDF pill, Snell-law edge refraction with per-channel dispersion, LCH fresnel and glare, spring-driven motion</dd>
+        <dt>Built on</dt>
+        <dd>WebGL and JavaScript</dd>
+      </dl>
+    </article>
+    </section>
+  </main>
+  <script src="/assets/js/live-demo.js"></script>
+  <script src="/assets/js/diagram-expand.js?v=collection"></script>
+  <script src="/assets/js/pulse.js" defer></script>
+</body>
+</html>

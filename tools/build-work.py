@@ -28,8 +28,8 @@ BACK = '''  <a class="back" href="/" aria-label="Back to the home page">
     </svg>
   </a>'''
 
-# Newest first: the same order as the Work list on the home page, so
-# "next" walks back in time and "previous" forward.
+# Individual-page neighbours remain chronological. The shared Work page
+# groups these same projects by category instead.
 PROJECTS = [
   dict(
     slug='unpak-dashboard', title='Unpak Dashboard', date='2026-07', when='July 2026',
@@ -205,7 +205,7 @@ def head(p):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/site.css?v=compact-work">
 <link rel="stylesheet" href="/assets/css/live-demo.css">
 <script src="/assets/js/transition.js"></script>
 </head>'''
@@ -299,9 +299,102 @@ def page(i, p):
 '''
 
 
+def collection_article(p, level=3, title=None):
+    note = f'<span class="note">{p["note"]}</span>' if p.get('note') else ''
+    body = '\n'.join(p['body'])
+    # Related projects on this page stay in the collection.
+    for related in PROJECTS:
+        body = body.replace(f'href="/work/{related["slug"]}"', f'href="#{related["slug"]}"')
+    preview = artifact(p['artifact'])
+    if p['artifact']['kind'] == 'diagram':
+        preview = preview.replace('data-diagram', 'data-diagram tabindex="0" role="button" aria-label="Expand the Unpak system map"')
+        preview = preview.replace('<img ', '<img width="920" height="884" ')
+    return f'''<article class="article collection-project" id="{p['slug']}">
+      <header>
+        <h{level}>{title or p['title']}</h{level}>
+        <div class="meta"><time datetime="{p['date']}">{p['when']}</time>{note}</div>
+      </header>
+{links(p['links'])}{preview}
+{body}
+{spec(p['spec'])}
+    </article>'''
+
+
+def collection_page():
+    projects = {p['slug']: p for p in PROJECTS}
+    personal = collection_article(projects['steward-ai'])
+    personal += '''
+    <section class="project-family" id="unpak" aria-labelledby="unpak-heading">
+      <h3 id="unpak-heading">Unpak</h3>
+      <nav class="family-nav" aria-label="Unpak projects">
+        <a class="link" href="#unpak-system">System</a>
+        <a class="link" href="#unpak-dashboard">Dashboard</a>
+        <a class="link" href="#unpak-website">Website</a>
+      </nav>
+'''
+    for slug, title in [('unpak-system', 'System'), ('unpak-dashboard', 'Dashboard'), ('unpak-website', 'Website')]:
+        personal += collection_article(projects[slug], level=4, title=title)
+    personal += '</section>\n' + collection_article(projects['floorsense'])
+    contract = '\n'.join(collection_article(projects[slug]) for slug in ['ai-sales-agent', 'ag-analytics'])
+    experiments = '\n'.join(collection_article(projects[slug]) for slug in ['notch', 'liquid-glass'])
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work - Zain Saeed</title>
+<meta name="description" content="Personal projects, contract work, and experiments by Zain Saeed, with live demos.">
+<meta property="og:title" content="Work - Zain Saeed">
+<meta property="og:description" content="Personal projects, contract work, and experiments, with live demos.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zsaeed.com/work/">
+<link rel="canonical" href="https://zsaeed.com/work/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
+<link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site.css?v=compact-work">
+<link rel="stylesheet" href="/assets/css/live-demo.css">
+<script src="/assets/js/transition.js"></script>
+</head>
+<body class="collection">
+{BACK}
+  <main class="page">
+    <header class="collection-heading"><h1>Work</h1></header>
+    <nav class="collection-nav" aria-label="Project categories">
+      <a class="link" href="#personal">Personal</a>
+      <a class="link" href="#contract">Contract</a>
+      <a class="link" href="#experiments">Experiments</a>
+    </nav>
+    <section class="collection-section" id="personal" aria-labelledby="personal-heading">
+      <h2 id="personal-heading">Personal</h2>
+{personal}
+    </section>
+    <section class="collection-section" id="contract" aria-labelledby="contract-heading">
+      <h2 id="contract-heading">Contract</h2>
+{contract}
+    </section>
+    <section class="collection-section" id="experiments" aria-labelledby="experiments-heading">
+      <h2 id="experiments-heading">Experiments</h2>
+{experiments}
+    </section>
+  </main>
+  <script src="/assets/js/live-demo.js"></script>
+  <script src="/assets/js/diagram-expand.js?v=collection"></script>
+  <script src="/assets/js/pulse.js" defer></script>
+</body>
+</html>
+'''
+
+
 os.makedirs(OUT, exist_ok=True)
 for i, p in enumerate(PROJECTS):
     path = os.path.join(OUT, p['slug'] + '.html')
     with open(path, 'w') as f:
         f.write(page(i, p))
     print('wrote', os.path.relpath(path, ROOT))
+
+with open(os.path.join(OUT, 'index.html'), 'w') as f:
+    f.write(collection_page())
+print('wrote', os.path.relpath(os.path.join(OUT, 'index.html'), ROOT))
