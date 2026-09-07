@@ -164,48 +164,35 @@ Things to remember when touching it:
 
 ## The valley and the theme
 
-The home page's background: a glacier valley from a viewpoint high on
-its shoulder, looking down its length — the river braiding out of the
-ice at the head and meandering down between forest, gravel bars and
-boulders; the walls stepping up in benches to a broken skyline, with
-spurs, crags and a waterfall; pines thick on the floor and climbing the
-lower slopes, thinning to the meadow, bushes and rocks nearest us.
-`home-scene.js` lays it out in three dimensions (the valley *winds* —
-`axis(z)` offsets everything across) and draws every mark as a stroke
-through projected points on a canvas the size of the window, fixed
-under the page; it is not an image and not an SVG, and a resize is a
-redraw. The ink and the shapes are About's meadow's: `pine`, `bush`,
-`rock` and `tuft` are the camp.js drawings ported to canvas, filled with
-the page colour and stroked in the text colour, drawn far to near so
-each hides what stands behind it. `camp.js` itself still holds About's
-meadow; the home page doesn't use it.
+The home page's background: a valley in colouring-book line art —
+clouds over a range of snow-capped peaks, two forested hills sloping to
+a gap, and a river coming out of the gap across a meadow of bushes,
+rocks and grass, with big pines in the near corners. Every element is a
+closed shape with one clean outline, filled with the page colour so the
+nearer shape hides the farther one; depth is overlap, never shading. It
+is drawn by `home-scene.js` on a canvas the size of the window, fixed
+under the page; not an image, not an SVG.
 
-- **The columns never sit over the drawing.** The valley takes the
-  bottom `--valley-h` of the window and `body.home main` reserves that
-  in its bottom padding. The script measures where the work grid ends
-  and writes `--valley-h` back as the space left under it, held between
-  about a quarter and 42% of the height, so the skyline tucks under the
-  last item on any window that fits the page. The home page's type is a
-  step smaller than the rest of the site (15px, desktop only) to leave
-  that room. Don't size the band in `vh` and read it back: `vh` ignores
-  the desktop `zoom: 0.9`, which is how an earlier version came out a
-  tenth too short.
-- **The viewpoint is high on purpose.** The camera stands above the
-  near crests (`camY` over the wall heights), so the nearest walls
-  project *below* eye level and the skyline sits at the band's top
-  rather than climbing the sides of the window into the columns, which
-  is what a floor-level camera did. Ground-level detail — benches,
-  spurs, crags — is gated by z so nothing gets drawn at arm's length
-  where a step of one unit is a hundred pixels.
-- **The sides are forest, and there's a range behind each wall.** Pines
-  climb the slopes to the ridge (thick low and near, bare rock near the
-  crest), which is what fills the band edge to edge; a second, higher
-  skyline stands behind each wall from a few units in, with ridge lines
-  running along and down from its summits. Crest noise is smooth on
-  purpose — a one-sample spike projects as a steeple.
-- **Full-strength ink, no hatching.** Every mark is a deliberate shape
-  at full opacity like the meadow's; the earlier faint, random ticks
-  read as a sketch, and the whole point is that it doesn't.
+- **It's a fixed composition, not a generator.** The scene is hand-placed
+  in a 1600×460 design box and scaled to the window the way the car on
+  About is scaled from its source box. Three earlier versions generated
+  the valley from noise and every one of them looked like a sketch; a
+  composed drawing is the only thing that reads as drawn. Change the
+  scene by moving points in the box, not by adding randomness — the
+  only noise left is the jitter that places trees along the hills.
+- **The box covers the band, anchored to the bottom edge, clipped to
+  it.** The band is the bottom `--valley-h` of the window (the script
+  measures where the work grid ends, writes back what's left, held
+  between a quarter and 42% of the height, and `body.home main` keeps
+  it clear). On a short band the sky crops first, so the far range sits
+  low in the box and a cloud that would be cut is skipped rather than
+  drawn as a flat-topped box. The home page's type is a step smaller
+  than the rest of the site (15px, desktop only) to leave the room.
+  Don't size the band in `vh` and read it back — `vh` ignores the
+  desktop `zoom: 0.9`.
+- **The shapes are the meadow's.** `pine`, `bush`, `rock` and `tuft` are
+  the camp.js drawings ported to canvas, so the two pages share a hand;
+  clouds and snowcaps are the only shapes of its own.
 - **Hidden below 40rem** with the corners; nothing is drawn while it is.
 
 The sun in the sky, top right, is the dark/light switch. The site is
