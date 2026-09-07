@@ -162,18 +162,33 @@ Things to remember when touching it:
   `played_at` stays behind; the browser gets a distance from now, never a
   clock time.
 
-## The campground band
+## The backdrop and the theme
 
-The bottom of the home page: About's meadow, drawn by the same code.
-`camp.js` holds the drawing (`drawCamp(svg, opts)`) and both pages call
-it — `about.js` at the base of the descent, anchored to the cliff, and
-`home-camp.js` as a fixed, opaque band the full width of the window with
-no cliff, the camp placed to sit mid-screen. `--camp-h` in `style.css`
-is the band's height; `body.home main` reserves it in its bottom
-padding and the music corner and the stats strip lift by the same
-amount so they sit on the treeline. Hidden below 40rem with the corners.
-The home page's top padding dropped from 20vh to 12vh to make room, so
-a laptop screen still fits the whole page without scrolling.
+The home page's background: a mountain range with a river coming out of
+the middle of it, drawn by `home-scene.js` in the About page's ink
+language (thin round strokes in the text colour, shapes filled with the
+page colour so a nearer ridge hides the one behind). One fixed svg the
+size of the window, under `main`, redrawn on resize; stroke opacities
+are kept low because the columns read straight over it. Hidden below
+40rem with the corners. `camp.js` still holds About's meadow (shared
+drawing code); the home page doesn't use it.
+
+The sun in the sky, top right, is the dark/light switch. The site is
+dark by default; clicking puts `html.light` on and remembers `theme` in
+localStorage, and `theme.js` — loaded synchronously in every page's head
+— puts the class back before first paint so nothing flashes dark on the
+way in. In the dark the sun is a moon and the scene has stars.
+
+- **Colours go through the variables.** The light palette is one
+  `html.light` block in `style.css` overriding `--bg`/`--fg`/`--muted`/
+  `--faint`/`--line`; the drawings (`about.js`, `camp.js`,
+  `home-scene.js`) use `currentColor` and `var(--bg)` for the same
+  reason. A hard-coded grey is a thing that stays dark in the light —
+  the few that remain are deliberate (the LinkedIn and GitHub cards
+  match their sites' dark themes; the phone back button floats over
+  demo content) or have an `html.light` override beside them.
+- **Default is dark, not the OS setting.** The site was designed dark;
+  the light palette is an offer, not a mirror of `prefers-color-scheme`.
 
 ## The Notch demo
 

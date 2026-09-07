@@ -45,8 +45,6 @@
   --head-size: 0.9375rem;   /* 15px: page title and its description, one size */
   --content-width: 48rem;   /* content column width (768px) */
   --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
-  --camp-h: 205px;          /* the campground band along the bottom of the
-                               home page: the svg's own height (camp.js) */
   --ld-corner: 40px;        /* rounded corner on the demo preview boxes; the
                                single knob: the thumb and inline embed read it
                                directly, and live-demo.js reads it to scale the
@@ -54,6 +52,22 @@
   --font-sans: "InterVariable", "Inter Fallback", -apple-system,
     BlinkMacSystemFont, Helvetica, Arial, sans-serif;
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
+  color-scheme: dark;
+}
+
+/* The light palette: the same greys turned over, on a warm off-white so
+   the line art (home-scene.js, about.js) reads as ink on paper rather
+   than a wireframe on a screen. theme.js puts the class on <html> before
+   first paint; the sun on the home page toggles it. Everything that
+   names a colour through a variable follows for free; the handful of
+   hard-coded greys below have their own overrides beside them. */
+html.light {
+  --bg: #f4f2ec;
+  --fg: #1a1a1a;
+  --muted: #5c5c5c;
+  --faint: #7b7b7b;
+  --line: rgba(26, 26, 26, 0.12);
+  color-scheme: light;
 }
 
 /* The site was designed at 90% browser zoom; render everything at that
@@ -105,11 +119,7 @@ body.home main {
      hold it off the bottom edge whenever the window has slack, so this
      padding only shows on a short window - where 4rem of it was enough to
      push the page past 100vh and make a laptop screen scroll */
-  /* the top used to be 20vh; the campground band along the bottom (see
-     .camp) takes the difference, so a laptop screen still fits the whole
-     page without scrolling. The bottom reserves the band's full height
-     plus the row the music line and the stats strip sit in above it. */
-  padding: 12vh 1.5rem calc(var(--camp-h) + 3.5rem);
+  padding: 20vh 1.5rem 1.5rem;
   font-size: 1.0625rem;   /* 17px body */
   line-height: 1.5;
   display: flex;
@@ -761,7 +771,7 @@ ul.timeline li::before {
   top: 0.4em;
   width: 0.42em;
   height: 0.42em;
-  background: #f2f2f2;
+  background: var(--fg);
   border-radius: 50%;
 }
 
@@ -773,7 +783,7 @@ ul.timeline li::after {
   top: 0.4em;
   width: 2px;
   height: 100%;
-  background: #f2f2f2;
+  background: var(--fg);
   transform-origin: top;
 }
 
@@ -1538,6 +1548,11 @@ ul.links li.li-hover.gh:focus-within .li-hover-reveal {
 .li-logo[src*="gh-logo"] {
   filter: brightness(0) invert(1);
 }
+/* on the light page the mark's own near-black is right, until the card
+   opens under it and the hover rule below turns it white again */
+html.light li.li-hover:not(:hover):not(:focus-within) .li-logo[src*="gh-logo"] {
+  filter: none;
+}
 
 li.li-hover:hover .li-logo[src*="gh-logo"],
 li.li-hover:focus-within .li-logo[src*="gh-logo"] {
@@ -1642,6 +1657,9 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
    mirrors it. The html background stops the white flash between documents. */
 html {
   background: #1a1a1a;
+}
+html.light {
+  background: #f4f2ec;
 }
 
 html.page-exit body,
@@ -1862,6 +1880,9 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 .lang-menu button[aria-selected="true"] {
   background: rgba(242, 242, 242, 0.1);
 }
+html.light .lang-menu { background: #fbfaf7; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18); }
+html.light .lang-menu button:hover { background: rgba(26, 26, 26, 0.06); }
+html.light .lang-menu button[aria-selected="true"] { background: rgba(26, 26, 26, 0.09); }
 
 @media (max-width: 40rem) {
   .lang-switch { top: 0.85rem; right: 0.9rem; }
@@ -2108,6 +2129,8 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 .pulse-add { color: #3fb950; }   /* GitHub dark: success-fg */
 .pulse-del { color: #f85149; }   /* GitHub dark: danger-fg  */
+html.light .pulse-add { color: #1a7f37; }   /* GitHub light: success-fg */
+html.light .pulse-del { color: #cf222e; }   /* GitHub light: danger-fg  */
 
 .pulse-commit:hover .pulse-num,
 .pulse-commit:focus-visible .pulse-num {
@@ -2160,37 +2183,7 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
    Only the drawing goes. pulse.js still beats to /api/pulse on every
    page load, so phone visits count the same as any other — the strip
    just isn't there to show the number. */
-/* ---- The campground -----------------------------------------------------
-
-   The home page's bottom edge: About's meadow (camp.js, drawn by
-   home-camp.js) as a fixed band the full width of the window, sitting
-   under the two bottom corners. Opaque on purpose: it shares the page's
-   background, and on a window too short for the whole page the content
-   scrolls behind it rather than through the trees. The two corners lift
-   by the band's height so they keep their old distance from the bottom
-   edge — now the treeline's — and main's bottom padding keeps the work
-   grid clear of all three. */
-.camp {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: var(--camp-h);
-  z-index: 50;                /* under the corners, over the page */
-  background: var(--bg);
-  overflow: visible;
-  pointer-events: none;
-}
-
-body.home .pulse,
-body.home .listening {
-  bottom: calc(var(--camp-h) + 1.25rem);
-}
-
 @media (max-width: 40rem) {
-  .camp {
-    display: none;
-  }
   .pulse {
     display: none;
   }
@@ -2207,6 +2200,135 @@ body.home .listening {
    relies on, so the pre-response state has to be spelled out */
 .pulse[hidden] {
   display: none;
+}
+
+/* ---- The backdrop and the sun ------------------------------------------
+
+   The home page's scenery (home-scene.js): a mountain range with a river
+   out of the middle of it, one fixed svg the size of the window under
+   everything on the page, drawn in the text colour at low opacity so
+   the columns read straight over it. The sun, top right in the sky, is
+   the theme switch; it's a real button, so it lives outside the svg on
+   the corners' layer. */
+.scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;                 /* under main, which is stacked above it */
+  color: var(--fg);
+  pointer-events: none;
+}
+
+body.home main {
+  position: relative;
+  z-index: 1;
+}
+
+/* stars only come out in the dark */
+html.light .scene-stars {
+  display: none;
+}
+
+.sky-toggle {
+  position: fixed;
+  top: 4.25rem;
+  right: 5.5rem;
+  z-index: 60;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  opacity: 0.7;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.sky-toggle svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sky-toggle:hover,
+.sky-toggle:focus-visible {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.sky-toggle:focus-visible {
+  outline: 1px solid var(--muted);
+  outline-offset: 4px;
+}
+
+/* Sun by day, moon by night: the two are drawn on top of each other and
+   the one that's out fades in while the rays swing round. In the dark
+   the sun is folded away and only the crescent shows; turn the page
+   over and the moon fades as the sun opens out. */
+.sky-toggle .sun,
+.sky-toggle .moon {
+  transform-origin: 0 0;
+  transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sky-toggle .sun-rays {
+  transform-origin: 0 0;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sky-toggle .sun {
+  opacity: 0;
+  transform: scale(0.6) rotate(-90deg);
+}
+.sky-toggle .moon {
+  opacity: 1;
+  transform: rotate(-20deg);
+}
+html.light .sky-toggle .sun {
+  opacity: 1;
+  transform: none;
+}
+html.light .sky-toggle .sun-rays {
+  transform: rotate(45deg);
+}
+html.light .sky-toggle .moon {
+  opacity: 0;
+  transform: scale(0.6) rotate(60deg);
+}
+
+/* the page turns over rather than snaps: the colours cross-fade for the
+   moment after a click, and only then, so a fresh load never fades in */
+html.theme-turning,
+html.theme-turning body,
+html.theme-turning .scene {
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+@media (max-width: 40rem) {
+  .scene {
+    display: none;
+  }
+  /* no sky to sit in: the sun moves in beside the flag, at its size */
+  .sky-toggle {
+    top: 0.65rem;
+    right: 3.6rem;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-toggle,
+  .sky-toggle .sun,
+  .sky-toggle .moon,
+  .sky-toggle .sun-rays,
+  html.theme-turning,
+  html.theme-turning body,
+  html.theme-turning .scene {
+    transition: none;
+  }
 }
 
 /* ---- Last seen at -----------------------------------------------------

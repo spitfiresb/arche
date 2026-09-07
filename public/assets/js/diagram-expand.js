@@ -50,7 +50,7 @@
     var overlay = document.createElement('div');
     overlay.className = 'ld-overlay';
     overlay.style.position = 'fixed';
-    overlay.style.background = '#1a1a1a';
+    overlay.style.background = 'var(--bg)';
     overlay.hidden = true;
 
     var big = document.createElement('img');

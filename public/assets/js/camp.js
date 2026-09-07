@@ -22,7 +22,7 @@ window.drawCamp = function (svg, o) {
   const NS = 'http://www.w3.org/2000/svg';
   const ff = (v) => v.toFixed(1);
   const fln = (w) => ({
-    fill: 'none', stroke: '#f2f2f2', 'stroke-width': w,
+    fill: 'none', stroke: 'currentColor', 'stroke-width': w,
     'stroke-linecap': 'round', 'stroke-linejoin': 'round',
   });
   // Deterministic per-index noise so the props keep their shape across
@@ -87,7 +87,7 @@ window.drawCamp = function (svg, o) {
       d += FL(x + tw[t - 1], cy[t - 1]);
     }
     d += FQ(x, cy[0] + h * 0.05, x - tw[0], cy[0]) + 'Z';
-    fel('path', Object.assign(fln(1.4), { d, fill: '#1a1a1a' }));
+    fel('path', Object.assign(fln(1.4), { d, fill: 'var(--bg)' }));
   }
 
   // bush: one closed run of humps rooted in the turf
@@ -105,7 +105,7 @@ window.drawCamp = function (svg, o) {
       d += FQ(mx + (mx - x) * 0.3, (p0[1] + p1[1]) / 2 - h * 0.32,
               p1[0], i === n ? gy + 1 : p1[1]);
     }
-    fel('path', Object.assign(fln(1.2), { d: d + 'Z', fill: '#1a1a1a' }));
+    fel('path', Object.assign(fln(1.2), { d: d + 'Z', fill: 'var(--bg)' }));
   }
 
   // stump with the growth ring showing on the cut face
@@ -114,7 +114,7 @@ window.drawCamp = function (svg, o) {
     fel('path', Object.assign(fln(1.3), {
       d: FM(x - w / 2, gy + 1) + FL(x - w / 2 + 1, gy - h) +
          FQ(x, gy - h - 2.5, x + w / 2 - 1, gy - h) +
-         FL(x + w / 2, gy + 1) + 'Z', fill: '#1a1a1a' }));
+         FL(x + w / 2, gy + 1) + 'Z', fill: 'var(--bg)' }));
     fel('path', Object.assign(fln(0.8), {
       d: FM(x - w / 2 + 1, gy - h) + FQ(x, gy - h + 2.5, x + w / 2 - 1, gy - h) +
          FM(x - w * 0.2, gy - h + 0.8) +
@@ -155,7 +155,7 @@ window.drawCamp = function (svg, o) {
     fel('path', Object.assign(fln(1), {
       d: FM(x, gy) + FQ(x + 1.5, gy - h * 0.6, x, gy - h) }));
     fel('circle', { cx: x, cy: gy - h - 1.5, r: 1.8, fill: 'none',
-      stroke: '#f2f2f2', 'stroke-width': 1 });
+      stroke: 'currentColor', 'stroke-width': 1 });
   }
 
   // scree: angular rubble where the cliff meets the meadow
@@ -182,7 +182,7 @@ window.drawCamp = function (svg, o) {
     fel('path', Object.assign(fln(1.6), {
       d: FM(lx, gy) + FQ(x - w * 0.17, gy - h * 0.18, x, ay) +
          FL(shX, shY) + FQ(x + w * 0.22, gy - h * 0.16, rx, gy) +
-         FL(lx, gy) + 'Z', fill: '#1a1a1a' }));
+         FL(lx, gy) + 'Z', fill: 'var(--bg)' }));
     fel('path', Object.assign(fln(1.2), { d: FM(x - 0.5, ay) + FL(x - 0.5, ay - 4.5) }));
     fel('path', Object.assign(fln(0.85), { d: FM(x, ay + 3) + FL(x, gy) }));
     fel('path', Object.assign(fln(1), {
@@ -200,12 +200,12 @@ window.drawCamp = function (svg, o) {
   // stub legs, one smoke squiggle above; the layers morph on their
   // own phases via the returned updater
   function fire(x) {
-    const inner = fel('path', Object.assign(fln(1.4), { fill: '#1a1a1a' }));
+    const inner = fel('path', Object.assign(fln(1.4), { fill: 'var(--bg)' }));
     const core = fel('path', fln(1));
     fel('path', Object.assign(fln(1.5), {
       d: FM(x - 25, gy - 15) + FQ(x, gy - 11.5, x + 25, gy - 15) +
          FQ(x + 21, gy - 4, x + 7, gy - 3) + FL(x - 7, gy - 3) +
-         FQ(x - 21, gy - 4, x - 25, gy - 15) + 'Z', fill: '#1a1a1a' }));
+         FQ(x - 21, gy - 4, x - 25, gy - 15) + 'Z', fill: 'var(--bg)' }));
     fel('path', Object.assign(fln(2.2), {
       d: FM(x - 13, gy - 4) + FL(x - 17, gy + 1) +
          FM(x + 13, gy - 4) + FL(x + 17, gy + 1) +
@@ -297,8 +297,8 @@ window.drawCamp = function (svg, o) {
       'translate(' + ff(x - CAR.bx * s) + ' ' +
       ff(gy + (sink || 0) - CAR.groundY * s) + ') scale(' + s.toFixed(4) + ')' });
     g.innerHTML =
-      '<g fill="#1a1a1a"><g transform="' + CAR.tr + '">' + CAR.sil + '</g></g>' +
-      '<g fill="#f2f2f2" stroke="#f2f2f2" stroke-width="0.45"><g transform="' +
+      '<g fill="var(--bg)"><g transform="' + CAR.tr + '">' + CAR.sil + '</g></g>' +
+      '<g fill="currentColor" stroke="currentColor" stroke-width="0.45"><g transform="' +
       CAR.tr + '">' + CAR.line + '</g></g>';
     // settle the tyres into the dirt: for each wheel, mask the buried
     // bottom behind the ground and heap a little displaced soil at the
@@ -309,7 +309,7 @@ window.drawCamp = function (svg, o) {
       [500, 1294].forEach((wx) => {           // wheel centres in art space
         const c = x + (wx - CAR.bx) * s;
         // mask the buried tyre bottom behind the dirt
-        fel('path', { fill: '#1a1a1a', stroke: 'none', d:
+        fel('path', { fill: 'var(--bg)', stroke: 'none', d:
           FM(c - tw - 2, gy + 0.5) + FL(c + tw + 2, gy + 0.5) +
           FL(c + tw + 2, gy + sink + 5) + FL(c - tw - 2, gy + sink + 5) + 'Z' });
         // the white tyre body occludes the main ground edge at the contact,

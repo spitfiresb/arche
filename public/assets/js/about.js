@@ -12,7 +12,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   const f1 = (v) => v.toFixed(1);
   const line = (w) => ({
-    fill: 'none', stroke: '#f2f2f2', 'stroke-width': w,
+    fill: 'none', stroke: 'currentColor', 'stroke-width': w,
     'stroke-linecap': 'round', 'stroke-linejoin': 'round',
   });
   // Deterministic per-index noise so the rock and the props keep their
@@ -156,10 +156,10 @@
   const torsoEl = shape('path', line(2.4));
   const legFEl = shape('path', line(2.2));
   const stickEl = shape('path', line(1.7));
-  const headEl = shape('circle', { r: 4.2, fill: '#f2f2f2' });
+  const headEl = shape('circle', { r: 4.2, fill: 'currentColor' });
   const armGEl = shape('path', line(2.2));
-  const handGEl = shape('circle', { r: 1.6, fill: '#f2f2f2' });
-  const handBEl = shape('circle', { r: 1.6, fill: '#f2f2f2' });
+  const handGEl = shape('circle', { r: 1.6, fill: 'currentColor' });
+  const handBEl = shape('circle', { r: 1.6, fill: 'currentColor' });
 
   // The cliff face he rappels against: a jagged outer edge doubled by
   // an inner echo line, the band between them filled with parallel
@@ -545,7 +545,7 @@
     const a = anchors[cleaned];
     if (!a) return;
     cleaned++;
-    a.ring.setAttribute('fill', '#f2f2f2');
+    a.ring.setAttribute('fill', 'currentColor');
     a.ring.setAttribute('r', 2.6);
     buildBelow();
     // the capture starts at the rope's current end (fist, or the
@@ -611,14 +611,14 @@
         const ring = document.createElementNS(NS, 'circle');
         ring.setAttribute('cx', (FACE_X + wallOff(dy)).toFixed(1));
         ring.setAttribute('cy', dy);
-        ring.setAttribute('stroke', '#f2f2f2');
+        ring.setAttribute('stroke', 'currentColor');
         ring.setAttribute('stroke-width', 1.5);
         if (anchors.length < cleaned) {
           // already cleaned: a bare bolt, same look as a plain dot
-          ring.setAttribute('fill', '#f2f2f2');
+          ring.setAttribute('fill', 'currentColor');
           ring.setAttribute('r', 2.6);
         } else {
-          ring.setAttribute('fill', '#1a1a1a');
+          ring.setAttribute('fill', 'var(--bg)');
           ring.setAttribute('r', 3.4);
         }
         rig.appendChild(ring);
@@ -1062,7 +1062,7 @@
     for (let i = 0; i < n; i++) {
       const el = shape('circle', {
         r: (0.8 + noise(drops.length * 7 + i + 61) * 0.5).toFixed(2),
-        fill: '#f2f2f2',
+        fill: 'currentColor',
       });
       drops.push({
         el, t: 0,
@@ -1082,7 +1082,7 @@
     const n = 2 + Math.floor(Math.random() * 2);
     for (let i = 0; i < n; i++) {
       const el = shape('circle', {
-        r: (0.7 + Math.random() * 0.5).toFixed(2), fill: '#f2f2f2',
+        r: (0.7 + Math.random() * 0.5).toFixed(2), fill: 'currentColor',
       }, overlay);
       embers.push({
         el, t: 0,
