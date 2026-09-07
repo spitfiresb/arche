@@ -45,6 +45,8 @@
   --head-size: 0.9375rem;   /* 15px: page title and its description, one size */
   --content-width: 48rem;   /* content column width (768px) */
   --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
+  --camp-h: 205px;          /* the campground band along the bottom of the
+                               home page: the svg's own height (camp.js) */
   --ld-corner: 40px;        /* rounded corner on the demo preview boxes; the
                                single knob: the thumb and inline embed read it
                                directly, and live-demo.js reads it to scale the
@@ -103,7 +105,11 @@ body.home main {
      hold it off the bottom edge whenever the window has slack, so this
      padding only shows on a short window - where 4rem of it was enough to
      push the page past 100vh and make a laptop screen scroll */
-  padding: 20vh 1.5rem 1.5rem;
+  /* the top used to be 20vh; the campground band along the bottom (see
+     .camp) takes the difference, so a laptop screen still fits the whole
+     page without scrolling. The bottom reserves the band's full height
+     plus the row the music line and the stats strip sit in above it. */
+  padding: 12vh 1.5rem calc(var(--camp-h) + 3.5rem);
   font-size: 1.0625rem;   /* 17px body */
   line-height: 1.5;
   display: flex;
@@ -2154,7 +2160,37 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
    Only the drawing goes. pulse.js still beats to /api/pulse on every
    page load, so phone visits count the same as any other — the strip
    just isn't there to show the number. */
+/* ---- The campground -----------------------------------------------------
+
+   The home page's bottom edge: About's meadow (camp.js, drawn by
+   home-camp.js) as a fixed band the full width of the window, sitting
+   under the two bottom corners. Opaque on purpose: it shares the page's
+   background, and on a window too short for the whole page the content
+   scrolls behind it rather than through the trees. The two corners lift
+   by the band's height so they keep their old distance from the bottom
+   edge — now the treeline's — and main's bottom padding keeps the work
+   grid clear of all three. */
+.camp {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--camp-h);
+  z-index: 50;                /* under the corners, over the page */
+  background: var(--bg);
+  overflow: visible;
+  pointer-events: none;
+}
+
+body.home .pulse,
+body.home .listening {
+  bottom: calc(var(--camp-h) + 1.25rem);
+}
+
 @media (max-width: 40rem) {
+  .camp {
+    display: none;
+  }
   .pulse {
     display: none;
   }

@@ -162,6 +162,19 @@ Things to remember when touching it:
   `played_at` stays behind; the browser gets a distance from now, never a
   clock time.
 
+## The campground band
+
+The bottom of the home page: About's meadow, drawn by the same code.
+`camp.js` holds the drawing (`drawCamp(svg, opts)`) and both pages call
+it — `about.js` at the base of the descent, anchored to the cliff, and
+`home-camp.js` as a fixed, opaque band the full width of the window with
+no cliff, the camp placed to sit mid-screen. `--camp-h` in `style.css`
+is the band's height; `body.home main` reserves it in its bottom
+padding and the music corner and the stats strip lift by the same
+amount so they sit on the treeline. Hidden below 40rem with the corners.
+The home page's top padding dropped from 20vh to 12vh to make room, so
+a laptop screen still fits the whole page without scrolling.
+
 ## The Notch demo
 
 The Notch band on `/work/cool` embeds `public/demos/notch-v2/` — one
