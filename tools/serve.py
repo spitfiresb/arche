@@ -43,6 +43,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path in ('/__scene', '/__scene/'):
+            return self._send_bytes(open(os.path.join(HERE, 'scene-layers', 'inspector.html'), 'rb').read(), 'text/html')
         if parsed.path == EDIT_URL:
             return self._send_bytes(open(EDIT_FILE, 'rb').read(),
                                     'text/javascript')

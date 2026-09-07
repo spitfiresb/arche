@@ -41,10 +41,6 @@
   ].forEach(d => el('path', { d }, patches));
   el('image', { href: '/assets/img/home/lookout-valley-treetops.png', x: 0, y: 0, width: 1536, height: 1024, mask: 'url(#treetop-detail-mask)', class: 'lookout-treetop-detail' });
 
-  window.LookoutComposition.mount(svg).catch(error => {
-    console.error('Layered lookout failed to load; keeping the static reference.', error);
-  });
-
   // Stars occupy the margins and the open space below the work list.
   // Keeping them outside the central copy column also covers translations.
   const sky = document.createElement('div');
