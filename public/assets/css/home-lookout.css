@@ -1,22 +1,50 @@
-/* Local homepage mockup. Loaded only by index.html; all existing page
-   content and corner widgets retain their own markup and behavior. */
+/* The homepage is one viewport. The copy and artwork share that space;
+   home-layout.js fits unusually short windows and longer translations. */
+html:has(body.home) {
+  overflow: clip;
+}
 body.home {
-  height: auto;
-  min-height: 100svh;
+  height: 100%;
+  min-height: 0;
+  overflow: clip;
   position: relative;
   isolation: isolate;
-  --lookout-height: clamp(290px, 38.67vw, 650px);
+  --home-gap: clamp(.5rem, calc(6dvh - 2rem), 1.4rem);
 }
 body.home main {
-  min-height: 111.12svh; /* compensate for the site's existing desktop .9 zoom */
-  padding-bottom: calc(var(--lookout-height) + 1.5rem);
+  height: 100%;
+  min-height: 0;
+  padding: clamp(.75rem, 3dvh, 2.5rem) 1.5rem 0;
+  font-size: .9375rem;
 }
+.home-copy {
+  flex: none;
+  align-self: center;
+  width: calc(100% / var(--home-copy-scale, 1));
+  display: flex;
+  flex-direction: column;
+  scale: var(--home-copy-scale, 1);
+  transform-origin: top center;
+}
+body.home .intro p { margin-top: .65em; }
+body.home .elsewhere { padding-top: var(--home-gap); }
+body.home .socials { margin-bottom: 0; }
+body.home .about-more { margin-top: .65em; }
+body.home .work-grid {
+  padding-top: var(--home-gap);
+  margin: 0;
+}
+body.home .col > h2 { margin-bottom: calc(.9rem - .45em); }
+body.home .col ul.stack li { margin-bottom: .65em; }
+body.home .col ul.stack li:last-child { margin-bottom: 0; }
+body.home .item-desc { font-size: .9em; }
 .lookout-scene {
+  width: 100%;
+  aspect-ratio: 1536 / 594;
+  height: var(--home-scene-height, auto);
   position: absolute;
   left: 0;
-  right: 0;
   bottom: 0;
-  height: var(--lookout-height);
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
@@ -91,9 +119,24 @@ body.home :is(.listening, .pulse) {
   body.home .sky-toggle { left: 2%; top: 5.5rem; width: 44px; height: 44px; }
 }
 @media (max-width: 40rem) {
-  body.home { --lookout-height: 260px; }
-  body.home main { min-height: 100svh; padding-bottom: 285px; }
-  .lookout-landscape { width: 690px; max-width: none; position: absolute; right: 0; }
+  body.home { --home-gap: clamp(.5rem, 1.5dvh, .875rem); }
+  body.home main {
+    padding: max(3.1rem, env(safe-area-inset-top)) 1rem 0;
+    font-size: .875rem;
+  }
+  body.home .work-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .875rem 1.25rem;
+  }
+  body.home .col:last-child { grid-column: 1 / -1; }
+  body.home .col:last-child ul.stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  body.home .col:last-child ul.stack li { margin-bottom: 0; }
+  body.home .col > h2 { font-size: .75rem; }
+  body.home .item-desc { margin-top: .25em; }
   .lookout-sky { display: none; }
   body.home .sky-toggle { position: fixed; left: auto; right: 3.6rem; top: .65rem; width: 36px; height: 36px; }
 }

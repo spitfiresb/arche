@@ -6,6 +6,10 @@ lookout building, window light, and reconstructed backing have separate SVG file
 Stars and the interactive moon/sun remain separate DOM elements in home-scene.js.
 About has its own renderer and is unaffected.
 
+Home fits these layers proportionally into a shorter band and fills the extra
+width with generated side terrain. The original foreground remains visible.
+See [panorama.md](panorama.md) for the side asset, alignment and generation prompt.
+
 ## Preview and edit
 
 Run `PORT=8712 python3 tools/serve.py`, then visit http://localhost:8712/__scene.
