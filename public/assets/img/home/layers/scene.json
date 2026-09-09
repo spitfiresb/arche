@@ -1,0 +1,375 @@
+{
+  "viewBox": [
+    0,
+    0,
+    1536,
+    1024
+  ],
+  "crop": [
+    0,
+    430,
+    1536,
+    594
+  ],
+  "layers": [
+    {
+      "id": "terrain-repair",
+      "label": "Reconstructed ground behind objects",
+      "category": "backing",
+      "type": "repair",
+      "src": "/assets/img/home/layers/terrain-repair.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "landscape",
+      "label": "Rocks, trail and low vegetation",
+      "category": "landscape",
+      "type": "landscape",
+      "src": "/assets/img/home/layers/landscape.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "mountain",
+      "label": "Snowy mountain and distant slopes",
+      "category": "mountain",
+      "pivot": [
+        343,
+        720
+      ],
+      "src": "/assets/img/home/layers/mountain.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "clouds-far",
+      "label": "Clouds \u00b7 distant valley",
+      "category": "clouds",
+      "pivot": [
+        600,
+        750
+      ],
+      "reveal": "Painted cloud continuation behind wooded ridges",
+      "src": "/assets/img/home/layers/clouds-far.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "clouds-middle",
+      "label": "Clouds \u00b7 middle valley",
+      "category": "clouds",
+      "pivot": [
+        550,
+        820
+      ],
+      "reveal": "Cloud-free forest backing beneath the cloud deck",
+      "src": "/assets/img/home/layers/clouds-middle.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "clouds-near",
+      "label": "Clouds \u00b7 near valley",
+      "category": "clouds",
+      "pivot": [
+        470,
+        880
+      ],
+      "reveal": "Continuous reconstructed forest appears when this layer moves",
+      "src": "/assets/img/home/layers/clouds-near.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-island-1",
+      "label": "Forest \u00b7 Below the mountain",
+      "category": "trees",
+      "pivot": [
+        420,
+        775
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-island-1.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-island-2",
+      "label": "Forest \u00b7 Near left ridge",
+      "category": "trees",
+      "pivot": [
+        375,
+        853
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-island-2.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-island-3",
+      "label": "Forest \u00b7 Middle island",
+      "category": "trees",
+      "pivot": [
+        719,
+        818
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-island-3.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-island-4",
+      "label": "Forest \u00b7 Far right ridge",
+      "category": "trees",
+      "pivot": [
+        864,
+        778
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-island-4.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-left-ridge",
+      "label": "Forest \u00b7 far left ridge",
+      "category": "trees",
+      "pivot": [
+        90,
+        784
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-left-ridge.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-right-slope",
+      "label": "Forest \u00b7 right valley slope",
+      "category": "trees",
+      "pivot": [
+        804,
+        925
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-right-slope.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "forest-foreground",
+      "label": "Forest \u00b7 foreground ridge",
+      "category": "trees",
+      "pivot": [
+        250,
+        990
+      ],
+      "underpaint": true,
+      "src": "/assets/img/home/layers/forest-foreground.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "fir-left-edge",
+      "label": "Fir \u00b7 far left edge",
+      "category": "trees",
+      "pivot": [
+        27,
+        989
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/fir-left-edge.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "fir-left-tall",
+      "label": "Fir \u00b7 tall left foreground",
+      "category": "trees",
+      "pivot": [
+        106,
+        951
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/fir-left-tall.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "fir-left-low",
+      "label": "Fir \u00b7 lower left foreground",
+      "category": "trees",
+      "pivot": [
+        160,
+        1015
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/fir-left-low.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "fir-left-center",
+      "label": "Fir \u00b7 left center",
+      "category": "trees",
+      "pivot": [
+        250,
+        981
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/fir-left-center.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "fir-center-front",
+      "label": "Fir \u00b7 center foreground",
+      "category": "trees",
+      "pivot": [
+        471,
+        1018
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/fir-center-front.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "fir-valley-right",
+      "label": "Fir \u00b7 right valley edge",
+      "category": "trees",
+      "pivot": [
+        697,
+        990
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/fir-valley-right.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "lookout-fir-left",
+      "label": "Fir \u00b7 behind lookout, left",
+      "category": "trees",
+      "pivot": [
+        1380,
+        707
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/lookout-fir-left.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "lookout-fir-right",
+      "label": "Fir \u00b7 behind lookout, right",
+      "category": "trees",
+      "pivot": [
+        1440,
+        711
+      ],
+      "edgePadding": 5,
+      "src": "/assets/img/home/layers/lookout-fir-right.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "cabin",
+      "label": "Fire lookout \u00b7 structure",
+      "category": "cabin",
+      "pivot": [
+        1240,
+        728
+      ],
+      "reveal": "Reconstructed rock, sky and slope behind the building",
+      "src": "/assets/img/home/layers/cabin.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    },
+    {
+      "id": "window-light",
+      "label": "Fire lookout \u00b7 window light",
+      "category": "light",
+      "pivot": [
+        1240,
+        627
+      ],
+      "parent": "cabin",
+      "src": "/assets/img/home/layers/window-light.svg",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "opacity": 1,
+      "visible": true
+    }
+  ]
+}

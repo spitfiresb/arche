@@ -28,11 +28,24 @@ Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
 
 ## Local preview
 
+`reformatting` is the combined development branch: the illustration branch's
+history, source artwork and scene tools are merged here. `main` remains the
+production baseline. Use one preview server: `python3 tools/serve.py` on
+`http://localhost:8712`; an optional positional port or `PORT` overrides it.
+
 `tools/serve.py` serves `public/` with Cloudflare's clean-URL rule, so
 `/work/notch` resolves the way it does live. Any other static server works
 but needs the `.html`. Neither runs the Pages Functions, so the live footer
 stays empty; for that use `npx wrangler pages dev` (needs `.dev.vars`, see
 README).
+
+The same server exposes `/__scene` for the preserved illustration layer
+inspector and `?edit` for in-place text previews, with no-store responses.
+The homepage currently uses the static panorama. The layer sources and older
+scene/theme scripts are retained for future illustration work, but are not
+loaded by the homepage; editing the layer manifest only updates the inspector.
+Do not re-enable the old viewport-fitting script or three-column stylesheet
+when changing the illustration: the current layout lives in `site.css`.
 
 ## The pages
 

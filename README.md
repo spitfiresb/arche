@@ -78,6 +78,17 @@ Every page beats to `/api/pulse`; only the home page draws the answer.
 
 ## Running it
 
+For the combined design on `reformatting`, use one static preview server:
+
+```sh
+python3 tools/serve.py    # http://localhost:8712
+```
+
+The illustration layer inspector is at `/__scene`; `?edit` enables local
+text editing. The homepage uses the static panorama, while the original
+layered artwork and tools remain available for further illustration work.
+For the live footer and other Cloudflare Pages Functions, use Wrangler:
+
 ```sh
 cp .dev.vars.example .dev.vars     # then fill both values in
 npx wrangler d1 execute zainsaeed-pulse --local --file=schema.sql

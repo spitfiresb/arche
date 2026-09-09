@@ -1,0 +1,142 @@
+/* The homepage is one viewport. The copy and artwork share that space;
+   home-layout.js fits unusually short windows and longer translations. */
+html:has(body.home) {
+  overflow: clip;
+}
+body.home {
+  height: 100%;
+  min-height: 0;
+  overflow: clip;
+  position: relative;
+  isolation: isolate;
+  --home-gap: clamp(.5rem, calc(6dvh - 2rem), 1.4rem);
+}
+body.home main {
+  height: 100%;
+  min-height: 0;
+  padding: clamp(.75rem, 3dvh, 2.5rem) 1.5rem 0;
+  font-size: .9375rem;
+}
+.home-copy {
+  flex: none;
+  align-self: center;
+  width: calc(100% / var(--home-copy-scale, 1));
+  display: flex;
+  flex-direction: column;
+  scale: var(--home-copy-scale, 1);
+  transform-origin: top center;
+}
+body.home .intro p { margin-top: .65em; }
+body.home .elsewhere { padding-top: var(--home-gap); }
+body.home .socials { margin-bottom: 0; }
+body.home .about-more { margin-top: .65em; }
+body.home .work-grid {
+  padding-top: var(--home-gap);
+  margin: 0;
+}
+body.home .col > h2 { margin-bottom: calc(.9rem - .45em); }
+body.home .col ul.stack li { margin-bottom: .65em; }
+body.home .col ul.stack li:last-child { margin-bottom: 0; }
+body.home .item-desc { font-size: .9em; }
+.lookout-scene {
+  width: 100%;
+  aspect-ratio: 1536 / 594;
+  height: var(--home-scene-height, auto);
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  color: #d8d8d8;
+  mix-blend-mode: screen;
+}
+.lookout-landscape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: hidden;
+}
+.lookout-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.lookout-sky i {
+  position: absolute;
+  width: 1.5px;
+  height: 1.5px;
+  background: #d8d8d8;
+  border-radius: 50%;
+  opacity: var(--star-opacity);
+}
+.lookout-star-cross::before {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 1px;
+  background: inherit;
+  left: -1.75px;
+  top: .25px;
+}
+.lookout-star-cross::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 5px;
+  background: inherit;
+  top: -1.75px;
+  left: .25px;
+}
+body.home .sky-toggle {
+  position: absolute;
+  left: 9%;
+  right: auto;
+  top: 19vh;
+  width: 65px;
+  height: 65px;
+  color: #dddddd;
+  opacity: .9;
+}
+html.light .lookout-scene {
+  filter: invert(1) grayscale(1);
+  mix-blend-mode: multiply;
+}
+html.light .lookout-sky { opacity: 0; }
+html.light body.home .sky-toggle { color: var(--fg); }
+/* Solid backing lets live corner text stay legible over the illustration. */
+body.home :is(.listening, .pulse) {
+  background: var(--bg);
+  box-shadow: 0 0 18px 12px var(--bg);
+  border-radius: 3px;
+}
+@media (max-width: 70rem) {
+  body.home .sky-toggle { left: 2%; top: 5.5rem; width: 44px; height: 44px; }
+}
+@media (max-width: 40rem) {
+  body.home { --home-gap: clamp(.5rem, 1.5dvh, .875rem); }
+  body.home main {
+    padding: max(3.1rem, env(safe-area-inset-top)) 1rem 0;
+    font-size: .875rem;
+  }
+  body.home .work-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .875rem 1.25rem;
+  }
+  body.home .col:last-child { grid-column: 1 / -1; }
+  body.home .col:last-child ul.stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  body.home .col:last-child ul.stack li { margin-bottom: 0; }
+  body.home .col > h2 { font-size: .75rem; }
+  body.home .item-desc { margin-top: .25em; }
+  .lookout-sky { display: none; }
+  body.home .sky-toggle { position: fixed; left: auto; right: 3.6rem; top: .65rem; width: 36px; height: 36px; }
+}

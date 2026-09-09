@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lookout · layer studio</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#151616;color:#e6e3da;font:14px/1.45 system-ui,sans-serif}button,input{font:inherit}button{color:inherit;background:#292b2a;border:1px solid #444842;border-radius:6px;padding:7px 10px;cursor:pointer}button:hover{background:#3b3f38}button:disabled{opacity:.4;cursor:default}a{color:#cbd6b1}header{padding:17px 22px;border-bottom:1px solid #343632;display:flex;align-items:center;justify-content:space-between;gap:16px}h1{font-size:18px;margin:0;font-weight:500}header p{margin:3px 0 0;color:#999e94;font-size:12px}.layout{display:grid;grid-template-columns:300px minmax(0,1fr);height:calc(100vh - 81px)}aside{border-right:1px solid #343632;overflow:auto;padding:14px}.controls{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.layer{display:flex;gap:8px;align-items:center;border:1px solid transparent;border-radius:5px;margin:2px 0}.layer.selected{background:#30362b;border-color:#6b7959}.layer input{margin-left:10px;accent-color:#bac99b}.layer button{border:0;background:none;text-align:left;flex:1;padding:8px 6px;font-size:12px}.layer button:hover{color:white}main{min-width:0;display:flex;flex-direction:column;overflow:auto}.toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:15px 22px}.toolbar label{display:flex;gap:6px;align-items:center;font-size:12px}input{accent-color:#c3d0ad}#stage{position:relative;flex:1;min-height:350px;margin:0 20px;background-color:#090a09;background-image:linear-gradient(45deg,#10120f 25%,transparent 25%),linear-gradient(-45deg,#10120f 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#10120f 75%),linear-gradient(-45deg,transparent 75%,#10120f 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;border:1px solid #33382e;border-radius:6px;overflow:hidden}#scene,#reference{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen}#reference{display:none}#status{font-size:12px;color:#a1ad94}#properties{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:170px}#properties h2{font-size:15px;margin:0 0 7px}#properties p{font-size:12px;color:#a3aa9c;margin:0;max-width:550px}.sliders{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}.sliders label{display:grid;grid-template-columns:45px 1fr 43px;align-items:center;font-size:12px;gap:7px}.sliders input{width:100%}output{text-align:right;font-variant-numeric:tabular-nums}code{font-size:11px;overflow-wrap:anywhere}footer{font-size:11px;color:#919789;padding:0 22px 16px}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #d0e6a7;outline-offset:2px}@media(max-width:800px){.layout{grid-template-columns:210px minmax(0,1fr)}#properties{grid-template-columns:1fr}.sliders{grid-template-columns:1fr}header{padding:12px}#stage{margin:0 10px}.toolbar{padding:12px}}@media(max-width:540px){.layout{display:flex;flex-direction:column;height:auto}aside{max-height:240px;border-bottom:1px solid #343632}#stage{min-height:330px}header p{max-width:220px}h1{font-size:16px}}
+</style>
+<header><div><h1>Lookout / layer studio</h1><p>Local editing preview · static artwork, independently composed</p></div><a href="/">View Home ↗</a></header>
+<div class="layout"><aside><div class="controls"><button id="reset" disabled>Reset scene</button><button id="export" disabled>Export layout</button></div><div id="layers" aria-label="Artwork layers"></div></aside>
+<main><div class="toolbar"><label><input id="compare" type="checkbox" disabled> Approved reference</label><label><input id="clouds" type="checkbox" checked disabled> Clouds</label><label><input id="crop" type="checkbox" checked> Home crop</label><button id="solo" disabled>Isolate selected</button><span id="status" role="status">Loading artwork…</span></div>
+<div id="stage"><svg id="scene" viewBox="0 430 1536 594" role="img" aria-label="Editable layered fire lookout landscape"></svg><svg id="reference" viewBox="0 430 1536 594" role="img" aria-label="Approved reference illustration"></svg></div>
+<div id="properties"><div><h2 id="name">Select a layer</h2><p id="description">Select a piece to inspect its artwork, placement and opacity.</p><p><code id="source"></code></p></div><div class="sliders">
+<label>X <input id="x" type="range" min="-100" max="100" step="1" value="0" disabled><output for="x">0</output></label>
+<label>Y <input id="y" type="range" min="-100" max="100" step="1" value="0" disabled><output for="y">0</output></label>
+<label>Scale <input id="scale" type="range" min="0.8" max="1.2" step="0.005" value="1" disabled><output for="scale">1</output></label>
+<label>Opacity <input id="opacity" type="range" min="0" max="1" step="0.01" value="1" disabled><output for="opacity">1</output></label>
+</div></div><footer>Changes here are temporary. Export saves the layer layout; replacing scene.json applies it to Home. The original plates remain intact.</footer>
+</main></div>
+<script src="/assets/js/lookout-composition.js"></script>
+<script>
+(async function(){
+  const $=id=>document.getElementById(id);
+  try{
+    const controller=await LookoutComposition.mount($('scene'));
+    $('reference').append(await LookoutComposition.artwork('/assets/img/home/layers/reference.svg'));
+    let selected='cabin',isolated=false;
+    const fields=['x','y','scale','opacity'];
+    const layer=()=>controller.manifest.layers.find(item=>item.id===selected);
+    function select(id){selected=id;if(isolated)controller.solo(id);refresh();}
+    function refresh(){
+      $('layers').replaceChildren();
+      [...controller.manifest.layers].reverse().forEach(item=>{
+        const row=document.createElement('div');row.className='layer'+(selected===item.id?' selected':'');
+        const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=item.visible!==false;checkbox.setAttribute('aria-label','Show '+item.label);
+        checkbox.addEventListener('change',()=>{controller.set(item.id,{visible:checkbox.checked});refresh();});
+        const button=document.createElement('button');button.textContent=item.label;button.addEventListener('click',()=>select(item.id));
+        row.append(checkbox,button);$('layers').append(row);
+      });
+      const current=layer();$('name').textContent=current.label;
+      $('description').textContent=current.reveal||'A separate cutout of the approved drawing. Its source can be replaced without regenerating the scene.';
+      $('source').textContent=current.src;
+      fields.forEach(key=>{$(key).value=current[key];document.querySelector(`output[for="${key}"]`).value=current[key];$(key).disabled=false;});
+      $('solo').textContent=isolated?'Show composition':'Isolate selected';
+      $('clouds').checked=controller.manifest.layers.filter(item=>item.category==='clouds').every(item=>item.visible!==false);
+      $('status').textContent=isolated?'Isolated layer':`${[...controller.nodes.values()].filter(node=>node.style.display!=='none').length} of ${controller.manifest.layers.length} layers visible`;
+    }
+    fields.forEach(key=>$(key).addEventListener('input',()=>{controller.set(selected,{[key]:Number($(key).value)});document.querySelector(`output[for="${key}"]`).value=$(key).value;}));
+    $('solo').addEventListener('click',()=>{isolated=!isolated;controller.solo(isolated?selected:null);refresh();});
+    $('reset').addEventListener('click',()=>{controller.reset();isolated=false;$('compare').checked=false;$('reference').style.display='none';$('scene').style.visibility='';refresh();});
+    $('clouds').addEventListener('change',()=>{controller.manifest.layers.filter(item=>item.category==='clouds').forEach(item=>controller.set(item.id,{visible:$('clouds').checked}));refresh();});
+    $('compare').addEventListener('change',()=>{$('reference').style.display=$('compare').checked?'block':'none';$('scene').style.visibility=$('compare').checked?'hidden':'';});
+    $('crop').addEventListener('change',()=>{for(const id of ['scene','reference'])$(id).setAttribute('viewBox',$('crop').checked?'0 430 1536 594':'0 0 1536 1024');});
+    $('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([controller.export()],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='scene.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+    ['reset','export','compare','clouds','solo'].forEach(id=>$(id).disabled=false);refresh();
+  }catch(error){$('status').textContent='Unable to load: '+error.message;console.error(error);}
+})();
+</script>
+</html>
