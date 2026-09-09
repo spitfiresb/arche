@@ -36,32 +36,41 @@ README).
 
 ## The pages
 
-The shared stylesheet is `site.css`: a 36.375rem column with a 0.875rem
+The homepage stylesheet is `site.css`: a 36.375rem column with a 0.875rem
 body font and an 80% root font size, making the layout 20% smaller.
-Inter at weight 460, near-black on off-white, secondary text at 40% black,
-in the manner of benji.org. The home page has the original short intro,
-expanding social cards (`home-socials.css` and `home-socials.js`), a Work
-list grouped into Personal, Contract, and Experiments, and a footer.
-Each Work row links to an anchor on `/work/`, which contains all three
-categories, their demos, descriptions, and specs. Unpak has System,
-Dashboard, and Website subsections. There is no footer clock.
+Inter at weight 460, off-white on charcoal (#1a1a1a), with main's grey
+palette. The home page has the original short intro,
+expanding social cards (`home-socials.css` and `home-socials.js`), a project
+list grouped into Personal, Contract, and Experiments without a Work heading,
+and a footer.
+The categories are plain homepage labels. Each project row links to an
+anchor on `/work/`, one continuous list without category sections or tabs.
+The fixed left table of contents lists every project by name, with a single
+dot following the active article (`toc.js`). It stays on the left at every screen width, with a reserved gutter beside
+the projects and vertical scrolling when the list is taller than the window. The project page loads main's original
+`style.css` and uses its alternating side-by-side bands, original project
+copy, typography, technical specifications, and demo sizes. All nine bands,
+including Unpak System, Dashboard, and Website, are in `tools/project-bands.html`,
+copied from main at 07c5768. `project-navigation.css` only adapts the table of
+contents to the combined page; it reserves a left gutter at every width so the navigation never moves
+above the content. Wide screens retain main's original band width.
+There is no footer clock.
 Individual project pages remain at
 `/work/<slug>` with its demo up top, prose, a label/value spec list and
 previous/next links; `/about` is the same column as a timeline. The
 project pages are generated: `tools/build-work.py` holds one dict per
-project and writes the nine individual pages plus `work/index.html`, and the output is committed, so edit
-the script, run it, commit both. The home page's Work list is hand-written
+project for the individual pages, and reads `tools/project-bands.html` for
+`work/index.html`. The output is committed, so edit the appropriate source,
+run the script, and commit both. The home page's project list is hand-written
 and has to be kept in step with it. `_redirects` sends the previous
 edition's section URLs (`/work/personal`, `/work/contract`, `/work/cool`)
 to a project page each.
 
-The demos are unchanged from the previous edition (`live-demo.js`,
-`live-demo.css`, `diagram-expand.js`); `site.css` re-frames them for the
-narrow column (`--ld-corner` is 12px here, and the overlay height override
-in `site.css` exists because `live-demo.css` still compensates for a page
-zoom this edition doesn't apply). The Unpak system map has a light copy,
-`system-preview-light.svg`, made from the dark original by remapping its
-greys; the original is kept.
+The collection uses the original demo framing (`live-demo.js`, `live-demo.css`,
+and `diagram-expand.js`), with main's 40px corners and desktop zoom. The
+standalone pages keep `site.css` and its 12px corners and overlay height
+adjustment. The collection uses the original dark Unpak system map; the
+standalone page retains `system-preview-light.svg`.
 
 ## The stats strip
 

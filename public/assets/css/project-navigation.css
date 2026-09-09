@@ -1,0 +1,74 @@
+/* Navigation for the unified collection. Project layout, type, spacing,
+   and previews come directly from main's unmodified style.css. */
+:root {
+  color-scheme: dark;
+  --toc-width: 10rem;
+  --toc-left: 1rem;
+  --toc-gap: 1.5rem;
+  --toc-gutter: calc(var(--toc-left) + var(--toc-width) + var(--toc-gap));
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+ul.bands > li:focus {
+  outline: none;
+}
+.toc {
+  display: block;
+  left: var(--toc-left);
+  width: var(--toc-width);
+  max-height: calc(100dvh - 12rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.toc-track {
+  position: relative;
+}
+.toc-link:focus-visible {
+  outline: 1px solid var(--fg);
+  outline-offset: -1px;
+  border-radius: 3px;
+}
+.toc-dot.is-positioning {
+  transition: none;
+}
+/* Reserve the left gutter at every width instead of moving navigation
+   above the projects. Wide screens retain main's original band measure. */
+body.page.work.collection main {
+  box-sizing: border-box;
+  width: calc(100% - var(--toc-gutter));
+  max-width: calc(var(--work-width) + 3rem);
+  margin-left: max(var(--toc-gutter), calc((100% - var(--work-width) - 3rem) / 2));
+  margin-right: 0;
+}
+@media (max-width: 40rem) {
+  :root {
+    --toc-width: 6.5rem;
+    --toc-left: 0.5rem;
+    --toc-gap: 0.5rem;
+  }
+  .toc {
+    max-height: calc(100dvh - 8rem);
+  }
+  .toc-link {
+    overflow-wrap: anywhere;
+  }
+  body.page.work.collection main {
+    padding-inline: 0.75rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toc-link,
+  .toc-dot {
+    transition: none;
+  }
+}

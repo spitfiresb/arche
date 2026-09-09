@@ -1,4 +1,4 @@
-/* Original home intro and expanding social previews, adapted to the light page. */
+/* Original home intro and expanding social previews on the charcoal page. */
 .bio {
   position: relative;
   z-index: 1;
@@ -397,10 +397,6 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 }
 
 
-/* The GitHub mark is dark on the page, then white over its dark preview. */
-.li-logo[src*="gh-logo"] {
-  filter: none;
-}
 li.li-hover.gh .li-hover-reveal {
   left: var(--gh-offset, 0px);
 }
@@ -418,9 +414,6 @@ li.li-hover:hover .li-logo[src*="gh-logo"],
 li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   filter: brightness(0) invert(1);
   left: calc(var(--gh-offset, 0px) + 0.45em);
-}
-.li-hover-card {
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.2);
 }
 .li-link:focus-visible {
   outline: 2px solid var(--link);

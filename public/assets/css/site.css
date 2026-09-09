@@ -1,9 +1,9 @@
-/* The site, second edition: one narrow column of prose on an off-white
+/* The site, second edition: one narrow column of prose on a charcoal
    page. The home page is a short intro, grouped project rows and a hairline
    footer carrying the live bits; each project is an article in the same
    column with its demo up top; About is a timeline. Everything is 14px
-   Inter at weight 460 in near-black, with the secondary text at 40%
-   black. style.css is the previous edition and nothing loads it now. */
+   Inter at weight 460 in off-white, with the grey palette from main.
+   style.css is the previous edition and nothing loads it now. */
 
 @font-face {
   font-family: "InterVariable";
@@ -38,18 +38,20 @@
 }
 
 :root {
-  --bg: #fdfdfc;
-  --fg: #111;
-  --muted: rgba(0, 0, 0, 0.4);
-  --soft: rgba(0, 0, 0, 0.65);
-  --line: #f2f2f2;
-  --rule: #ededed;
-  --underline: #d9d9d9;
-  --underline-hover: #666;
+  color-scheme: dark;
+  --bg: #1a1a1a;
+  --bg-rgb: 26, 26, 26;
+  --fg: #f2f2f2;
+  --muted: #a0a0a0;
+  --soft: #a0a0a0;
+  --line: rgba(242, 242, 242, 0.1);
+  --rule: rgba(242, 242, 242, 0.1);
+  --underline: #555;
+  --underline-hover: #a0a0a0;
   --live: #3fb950;
-  --link: #2480ed;
-  --link-hover: #74b1fd;
-  --faint: rgba(0, 0, 0, 0.3);
+  --link: #74b1fd;
+  --link-hover: #a3ccff;
+  --faint: #7e7e7e;
   --column: 36.375rem;
   --ld-corner: 12px;      /* the demo previews' corner; live-demo.js reads it */
   --font-sans: "InterVariable", "Inter Fallback", -apple-system,
@@ -110,7 +112,7 @@ h1, h2, h3 {
   padding: 5rem 1rem 2.5rem;
 }
 
-/* A white fade pinned to the top of the window, so scrolled text dissolves
+/* A page-colored fade pinned to the top of the window, so scrolled text dissolves
    into the page edge rather than being cut by it. */
 .page::before {
   content: "";
@@ -124,17 +126,17 @@ h1, h2, h3 {
   background: linear-gradient(
     180deg,
     var(--bg) 0,
-    rgba(253, 253, 252, 0.74) 19%,
-    rgba(253, 253, 252, 0.54) 34%,
-    rgba(253, 253, 252, 0.38) 47%,
-    rgba(253, 253, 252, 0.28) 56.5%,
-    rgba(253, 253, 252, 0.19) 65%,
-    rgba(253, 253, 252, 0.13) 73%,
-    rgba(253, 253, 252, 0.075) 80%,
-    rgba(253, 253, 252, 0.04) 86%,
-    rgba(253, 253, 252, 0.02) 91%,
-    rgba(253, 253, 252, 0.008) 95%,
-    rgba(253, 253, 252, 0)
+    rgba(var(--bg-rgb), 0.74) 19%,
+    rgba(var(--bg-rgb), 0.54) 34%,
+    rgba(var(--bg-rgb), 0.38) 47%,
+    rgba(var(--bg-rgb), 0.28) 56.5%,
+    rgba(var(--bg-rgb), 0.19) 65%,
+    rgba(var(--bg-rgb), 0.13) 73%,
+    rgba(var(--bg-rgb), 0.075) 80%,
+    rgba(var(--bg-rgb), 0.04) 86%,
+    rgba(var(--bg-rgb), 0.02) 91%,
+    rgba(var(--bg-rgb), 0.008) 95%,
+    rgba(var(--bg-rgb), 0)
   );
 }
 
@@ -179,7 +181,7 @@ h1, h2, h3 {
   font-size: 0.9375rem;
   letter-spacing: 0.01rem;
   font-variation-settings: "opsz" 10;
-  color: #000;
+  color: var(--fg);
 }
 
 /* An inline link is a word with a hairline under it, darkening on hover. */
@@ -217,11 +219,6 @@ h1, h2, h3 {
   padding-top: 3rem;
 }
 
-.work > h2 {
-  color: var(--muted);
-  margin-bottom: 1.375rem;
-}
-
 .work-group {
   display: grid;
   grid-template-columns: 6rem minmax(0, 1fr);
@@ -236,7 +233,7 @@ h1, h2, h3 {
 .work-group:last-child {
   padding-bottom: 0;
 }
-.work-group > h3 {
+.work-group > h2 {
   padding-top: 0.6875rem;
   font-size: 0.75rem;
   color: var(--soft);
@@ -296,7 +293,7 @@ h1, h2, h3 {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.4375rem;
   }
-  .work-group > h3 {
+  .work-group > h2 {
     padding-top: 0;
   }
 }
@@ -387,10 +384,10 @@ h1, h2, h3 {
   transform: translateX(-50%) translateY(0);
 }
 .pulse-add {
-  color: #1a7f37;
+  color: #3fb950;
 }
 .pulse-del {
-  color: #cf222e;
+  color: #f85149;
   margin-left: 0.25rem;
 }
 .pulse-dot {
@@ -485,63 +482,7 @@ h1, h2, h3 {
 
 /* ---- Project pages --------------------------------------------------- */
 
-/* All three project categories share one page; rows on the home page
-   link straight to the relevant article. */
-.collection-heading h1 {
-  font-size: 1.25rem;
-  font-weight: 500;
-}
-.collection-nav {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  padding: 1.25rem 0;
-  margin-bottom: 2rem;
-  background: var(--bg);
-  border-bottom: 1px solid var(--rule);
-}
-.collection .page::before {
-  height: 3rem;
-}
-.collection-section,
-.collection-project,
-.project-family {
-  scroll-margin-top: 5rem;
-}
-.collection-section + .collection-section {
-  margin-top: 5rem;
-}
-.collection-section > h2 {
-  color: var(--soft);
-  margin-bottom: 2rem;
-}
-.collection-project + .collection-project,
-.collection-project + .project-family,
-.project-family + .collection-project {
-  margin-top: 3.5rem;
-  padding-top: 3.5rem;
-  border-top: 1px solid var(--rule);
-}
-.collection-project > header h3,
-.collection-project > header h4,
-.project-family > h3 {
-  font-size: 1.125rem;
-  line-height: 1.5;
-  font-weight: 500;
-  margin: 0;
-}
-.family-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 1rem 0 2rem;
-  font-size: 0.8125rem;
-}
-
-/* The back control: the site's ring-and-chevron mark on a small white
+/* The back control: the site's ring-and-chevron mark on a small dark
    disc pinned to the top-left corner. The live-demo overlay rebuilds the
    same mark inside its own .ld-back, so the mark's classes are shared. */
 .back {
@@ -556,9 +497,9 @@ h1, h2, h3 {
   height: 40px;
   border-radius: 50%;
   color: var(--muted);
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  background: var(--bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24), 0 4px 16px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 1px var(--rule);
   transition: color 0.15s ease, transform 0.15s ease;
 }
 .back:hover,
@@ -668,7 +609,7 @@ h1, h2, h3 {
   font-size: 0.9375rem;
   letter-spacing: 0.01rem;
   font-variation-settings: "opsz" 10;
-  color: #000;
+  color: var(--fg);
 }
 .article strong {
   font-weight: 600;
@@ -833,8 +774,8 @@ h1, h2, h3 {
   width: var(--dot);
   height: var(--dot);
   border-radius: 50%;
-  background: #fff;
-  box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.12);
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1.5px var(--underline);
   transform: translateX(-50%);
   z-index: 1;
 }
@@ -850,7 +791,7 @@ h1, h2, h3 {
   top: calc((1.25rem + var(--dot)) / 2 + 6px);
   height: calc(100% + var(--gap) - var(--dot) - 12px);
   width: 1px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--rule);
   transform: translateX(-50%);
 }
 .timeline li:first-child:not(:last-child)::after {
@@ -860,7 +801,7 @@ h1, h2, h3 {
   display: block;
   padding-top: 0.125rem;
   font-size: 0.6875rem;
-  color: rgba(0, 0, 0, 0.32);
+  color: var(--muted);
 }
 .timeline p {
   padding-top: 0.5rem;
@@ -874,12 +815,8 @@ h1, h2, h3 {
 
 /* ---- Source pages ---------------------------------------------------- */
 
-/* code.css was written for the dark edition; these are its knobs, relit. */
+/* Keep code.css's original dark syntax palette. */
 .source {
-  --code-bg: #f8f8f8;
-  --code-gutter: #b3b3b3;
-  --code-warm: #9a5b2f;
-  --code-cool: #2a5d8f;
   --line: var(--rule);
 }
 .source .page {

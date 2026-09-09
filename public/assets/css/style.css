@@ -1,0 +1,2426 @@
+/* Type:
+   --font-sans   Inter, self-hosted as one variable file (weights 100-900)
+                 so every visitor renders the same face. It used to ask for
+                 Söhne and Helvetica Neue first, which meant a Mac drew the
+                 site in one font and Windows in another. "Inter Fallback"
+                 is Arial with its metrics overridden to Inter's, so text
+                 laid out before the file lands wraps in the same places and
+                 nothing moves when the swap happens.
+   --font-serif  Newsreader italic, for emphasized lead-ins. Loads from
+                 Google Fonts via a <link> in each page's head (with
+                 preconnect), so the fetch starts alongside this stylesheet
+                 instead of being serialized behind it. Inter is preloaded
+                 the same way. */
+
+@font-face {
+  font-family: "InterVariable";
+  src: url("/assets/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterVariable";
+  src: url("/assets/fonts/InterVariable-Italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  size-adjust: 107.4%;
+}
+
+:root {
+  /* Dark theme + greys */
+  --bg: #1a1a1a;
+  --fg: #f2f2f2;
+  --muted: #a0a0a0;         /* gray11: descriptions and intro body */
+  --faint: #7e7e7e;         /* gray10: section labels */
+  --line: rgba(242, 242, 242, 0.1);   /* hairline: artifact frames, spec rules */
+  --head-size: 0.9375rem;   /* 15px: page title and its description, one size */
+  --content-width: 48rem;   /* content column width (768px) */
+  --work-width: 78rem;      /* wider column for the two-up work bands (1248px) */
+  --ld-corner: 40px;        /* rounded corner on the demo preview boxes; the
+                               single knob: the thumb and inline embed read it
+                               directly, and live-demo.js reads it to scale the
+                               parked live app's corner to match */
+  --font-sans: "InterVariable", "Inter Fallback", -apple-system,
+    BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
+}
+
+/* The site was designed at 90% browser zoom; render everything at that
+   scale so 100% zoom looks the same. Desktop only — phone sizes were
+   tuned at 100% (the 40rem breakpoints below). */
+@media (min-width: 40.0625rem) {
+  html {
+    zoom: 0.9;
+  }
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  /* stop iOS Safari from inflating text in landscape; the site sets every
+     size explicitly, so the "adjustment" only breaks the scale */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv01", "ss03";  /* only affects the Inter fallback */
+  font-optical-sizing: auto;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* plain links inherit the text color so they stay visible on the dark
+   background; cards set their own link colors at higher specificity */
+a {
+  color: inherit;
+}
+
+/* Home: a greeting, the links, then work laid out
+   across three labelled columns. Left-aligned in a fixed 640px column
+   centered on the page. The greeting block is anchored near the top and
+   the work grid floats in the space left below it, so the columns sit
+   vertically centered on tall screens. */
+body.home main {
+  box-sizing: border-box;
+  width: var(--content-width);
+  max-width: calc(100vw - 3rem);
+  min-height: 100vh;
+  margin: 0 auto;
+  /* the bottom is deliberately thin: the work grid's auto margins already
+     hold it off the bottom edge whenever the window has slack, so this
+     padding only shows on a short window - where 4rem of it was enough to
+     push the page past 100vh and make a laptop screen scroll */
+  padding: 20vh 1.5rem 1.5rem;
+  font-size: 1.0625rem;   /* 17px body */
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The page opens on the greeting and goes straight into the links */
+.greeting {
+  margin: 0 auto;
+  max-width: 42rem;
+  text-align: center;
+  font-size: inherit;     /* sit at body size, like the old name line */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* The intro sits between the greeting and the links: body copy in the
+   muted grey so the greeting above it still reads as the first line */
+.intro {
+  max-width: 42rem;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--muted);
+}
+
+.intro p {
+  margin: 1.1rem 0 0;
+  line-height: 1.5;
+}
+
+/* The one emphasized phrase lifts to full white against the muted body
+   copy. A plain span, not <em>, because the browser's default italic for <em>
+   would need overriding, and a stale stylesheet would show it italic */
+.intro .stress {
+  color: var(--fg);
+}
+
+/* Three work columns */
+.work-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  /* The gap above the logos and the gap above these columns are the same
+     2rem on purpose — the intro, the social row, and the grid read as one
+     evenly-spaced stack. All of the window's leftover height goes below
+     the grid (margin-bottom auto), not into the gaps. */
+  margin: 0 0 auto;
+  padding-top: 2rem;
+}
+
+/* Only the column label is centered: it is the one line that has to sit
+   on the same axis as the About link above it. Everything under it goes
+   back to a left edge, which is what the stacked items want. */
+.col > h2 {
+  text-align: center;
+  /* the link inside carries 0.45em of padding so the pill outline has
+     somewhere to sit; the negative top and the trimmed bottom give that
+     back, so the label and the items under it land where they did before
+     the padding existed */
+  margin: -0.45em 0 calc(1.25rem - 0.45em);
+  font-size: 0.8125rem;   /* 13px: a step below the 17px item titles */
+  font-weight: 400;
+  color: var(--faint);
+}
+
+/* Each label links to the top of its own page and draws the same outline
+   as About me on hover, brightening as the pill closes */
+.col > h2 a {
+  position: relative;
+  display: inline-block;
+  padding: 0.45em 1.15em;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.col > h2 a:hover,
+.col > h2 a:focus-visible {
+  color: var(--fg);
+}
+
+.col ul.stack {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.col ul.stack li {
+  margin-bottom: 1.15rem;
+}
+
+.col ul.stack li:last-child {
+  margin-bottom: 0;
+}
+
+/* Item: a bare title with a muted description stacked beneath it. No
+   underline at rest: with nothing marking these as links, the hover
+   draws one under the title so pointing at one still registers as a
+   target. */
+.col .item-title {
+  display: inline;
+  color: var(--fg);
+  text-decoration: none;
+  /* The rule is a background gradient rather than a pseudo-element so a
+     wrapped title draws one per line: box-decoration-break clones the
+     background onto each line fragment, where an absolutely-positioned
+     pseudo could only span the whole box. Growing background-size wipes
+     it out of the left edge on hover; the anchor sits at the right edge
+     at rest, so on the way out it retracts to the right instead of
+     rewinding the same stroke backwards (the anchor swap happens while
+     the rule is invisible or full-width, so it never shows). */
+  padding-bottom: 0.18em;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: 0 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.col .item-title:hover,
+.col .item-title:focus-visible {
+  background-position: left bottom;
+  background-size: 100% 1px;
+}
+
+.item-desc {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;   /* a step under the 17px title above it */
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* LinkedIn / GitHub sit between the intro and the work columns.
+   Keep the list narrow so the hover preview cards stay a sensible size
+   within the wide layout */
+/* A fixed 2rem off the intro, matching the 2rem the work grid keeps off
+   this row — the intro, the logos, and the columns are one evenly-spaced
+   stack, and the window's spare height all falls below the grid instead
+   of stretching these gaps. */
+.elsewhere {
+  padding-top: 2rem;
+  /* centers the about-me line under the (already centered) social row */
+  text-align: center;
+}
+
+/* The block is centered in the column: the two marks center as a pair */
+.elsewhere ul.links {
+  max-width: 22rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.elsewhere ul.links ul.social-row {
+  justify-content: center;
+}
+
+/* The outline is two SVG halves rather than a border, so it can be drawn
+   instead of switched on: both start at the bottom centre and travel up
+   the opposite sides to meet at the top. landing.js sizes the paths to
+   their link, since the geometry depends on its rendered box. Used by the
+   three column labels; anything that wraps one of these only has to be
+   position:relative with the padding to hold the outline. */
+.pill-border {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pill-border path {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1;
+  /* dash 100, gap 200: the gap is longer than the path on purpose. With
+     an equal 100/100 pattern the *next* dash begins exactly at the far end
+     of the path, and at rest it antialiases into a faint dot at the top
+     where the two halves meet. An oversized gap puts that repeat out past
+     the end of the path, so the stroke is the one dash and nothing else. */
+  stroke-dasharray: 100 200;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.45s ease;
+}
+
+a:hover > .pill-border path,
+a:focus-visible > .pill-border path {
+  stroke-dashoffset: 0;
+}
+
+/* Collapse the three columns to one on narrow screens */
+@media (max-width: 40rem) {
+  body.home main {
+    width: auto;
+    max-width: none;
+    /* no corners on phones (see the stats strip), so the bottom is just
+       air under the last work item rather than room reserved for a strip */
+    padding: 10vh 1.5rem 2.5rem;
+    /* small viewport units: the phone browser chrome collapsing and
+       expanding doesn't reflow the centered layout */
+    min-height: 100svh;
+  }
+  .work-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  /* a little more air between one column's last item and the next label */
+  .col > h2 {
+    margin-bottom: calc(1.4rem - 0.45em);
+  }
+}
+
+body.home a {
+  text-decoration: none;
+}
+
+/* Interior pages: block centered horizontally, anchored near the top */
+body.page main {
+  position: relative;
+  max-width: 30em;
+  margin: 0 auto;
+  /* the back mark used to sit in the flow here and push the first line
+     down; it's fixed to the viewport now, so the column carries that
+     space itself and the page opens where it always did */
+  padding-top: 11.25rem;
+  padding-bottom: 4em;
+}
+
+main {
+  max-width: 24em;
+  padding: 0 1.5em;
+}
+
+/* Phones: the interior pages open closer to the top: 11.25rem of headroom
+   was sized for a desktop window, and on a phone it reads as a blank
+   first screen. The floating back disc sits in the top 3.5rem, so the
+   column still clears it comfortably. */
+@media (max-width: 40rem) {
+  body.page main {
+    padding-top: 7rem;
+  }
+}
+
+h1 {
+  margin: 0 0 2em;
+  font-size: 1.25em;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
+p {
+  line-height: 1.6;
+}
+
+ul.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.links li {
+  margin-bottom: 0.75em;
+}
+
+/* Home: LinkedIn and GitHub are icon-only marks sitting side by side
+   under the About link. Each one expands into a rounded profile preview
+   on hover, growing out of the icon to the right and down. */
+ul.links ul.social-row {
+  --icon: 1.4em;
+  display: flex;
+  gap: 0.6em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* the marks are their own row, so the list's per-item gap doesn't
+   reappear between them */
+ul.links ul.social-row li {
+  margin-bottom: 0;
+}
+
+/* The item is just the icon's footprint; the card is revealed as an
+   overlay on top of the page, so nothing else shifts */
+ul.links li.li-hover {
+  position: relative;
+  width: var(--icon);
+  height: var(--icon);
+}
+
+ul.links li.li-hover:hover,
+ul.links li.li-hover:focus-within {
+  /* lift the hovered item so its expanding card paints over the links
+     and columns below it instead of being covered by them */
+  z-index: 10;
+}
+
+/* On hover the mark travels from its spot in the row onto the top-left
+   of the card (over the banner photo for LinkedIn, into the header
+   gutter for GitHub) while the card expands out from under it */
+.li-link {
+  display: block;
+  height: 100%;
+}
+
+/* Positioned relative to the li so it can travel onto the card */
+.li-logo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--icon);
+  height: var(--icon);
+  z-index: 3;
+  /* full strength: the marks carry their own white, so any dimming here
+     reads as a gray logo against the dark page */
+  opacity: 1;
+  transition: top 0.5s ease, left 0.5s ease, filter 0.5s ease;
+}
+
+li.li-hover:hover .li-logo,
+li.li-hover:focus-within .li-logo {
+  top: 0.6em;
+  left: 0.55em;
+}
+
+/* The LinkedIn card opens the other way: down and to the LEFT, into the
+   empty page margin rather than over the work columns. Pinning the
+   reveal's right edge to the mark makes the box grow leftward, and the
+   mark lands inside the card's top-right corner, which sits right where
+   the mark already is. landing.js only adds .opens-left when there's
+   actually room to the left; otherwise the card opens right as usual. */
+li.li-hover.opens-left .li-hover-reveal {
+  left: auto;
+  right: 0;
+}
+
+li.li-hover.opens-left:hover .li-logo,
+li.li-hover.opens-left:focus-within .li-logo {
+  left: -0.55em;
+}
+
+/* The reveal is an absolute overlay pinned to the icon, so growing it
+   opens the card right and down over the page without moving any other
+   text. It starts at the icon's own width and widens to the card's final
+   width (--liw / --ghw); the grid row animates its height 0 -> auto. */
+.li-hover-reveal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--icon);
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.6s ease, width 0.6s ease;
+}
+
+.li-hover-reveal > .li-hover-card {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 0;
+  /* fills the box, which grows from the top-left, right and down */
+  transition: opacity 0.5s ease 0.1s, transform 0.5s ease,
+    box-shadow 0.5s ease;
+}
+
+/* Content is laid out at the card's final width (set by landing.js as
+   --liw) and pinned top-left, so the growing box uncovers it rather than
+   squishing it */
+.li-card-inner {
+  width: calc(var(--liw, 100%) - 2px);
+  white-space: normal;
+}
+
+li.li-hover:hover .li-hover-reveal,
+li.li-hover:focus-within .li-hover-reveal {
+  grid-template-rows: 1fr;
+  width: var(--liw, 22rem);
+}
+
+li.li-hover:hover .li-hover-card,
+li.li-hover:focus-within .li-hover-card {
+  opacity: 1;
+}
+
+.li-hover-card {
+  margin-top: 0;
+  /* the cards reproduce LinkedIn's and GitHub's own layouts, so they have
+     to opt out of whatever the surrounding list is doing; the centered
+     About block would otherwise centre the name, headline and location */
+  text-align: left;
+  border-radius: 0.6em;
+  /* flat card: a soft drop shadow and a hairline border, no 3d tilt.
+     Both cards are dark like the page, so the shadow has to be deep
+     enough to separate them from it, and each card sets its own border
+     color from its site's dark palette */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.6);
+}
+
+.li-hover-card .li-banner {
+  border-radius: 0.55em 0.55em 0 0;
+}
+
+/* Back: a bare chevron, no label and no underline, pinned to the top-left
+   of the viewport rather than to the content column. The columns differ
+   page to page (30em on About, 78rem on the work pages, a centered block
+   on the Work index) so a mark sitting in the flow lands somewhere
+   different on each one; fixed to the viewport it's in the same place
+   everywhere. On About that also puts it clear of the cliff face, which
+   is drawn down the left edge of the text column.
+
+   It's a direct child of <body>, not of <main>, so it positions against
+   the page rather than the column; main is position:relative and would
+   otherwise be its containing block, putting it back on a different x per
+   page. Fixed rather than absolute so it stays pinned to the top-left of
+   the viewport as the page scrolls, keeping the exit in reach anywhere
+   down the page.
+
+   z-index stays well below the live-demo overlay (1000) so a fullscreen
+   demo still covers it. */
+.back {
+  position: fixed;
+  top: 2.5rem;
+  left: 2.5rem;
+  z-index: 5;
+  display: flex;
+  width: max-content;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--fg);
+}
+
+/* The mark swells on hover. The scale lives on the <svg> rather than the
+   anchor so nothing around it reflows mid-gesture. Going in it overshoots
+   a touch and settles back; coming out it just eases. */
+.back-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  transform-origin: 50% 50%;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back:hover .back-mark,
+.back:focus-visible .back-mark {
+  transform: scale(1.14);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Shallower than a 45° chevron: 8 across to 6 down each way, so it reads
+   as a soft arrow rather than a bracket */
+.back-chevron {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The ring is drawn on, not switched on: one dash the length of the
+   circle, parked out of sight at rest and closed on hover. The gap is
+   longer than the circumference on purpose, same reason as .pill-border,
+   an equal pattern would repeat a second dash onto the far end. The
+   rotate(-90) attribute in the markup starts the draw at the top.
+
+   The dash values are duplicated as attributes in the markup so the ring
+   is hidden at rest even on a stale stylesheet; the CSS here only has to
+   win the transition, which it does, presentation attributes being the
+   weakest thing in the cascade.
+
+   Leaving is the fast half: the stroke lets go quickly on an accelerating
+   curve, while arriving is a decelerating one that covers most of the
+   circle early and closes the last arc slowly. */
+.back-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-dasharray: 98 200;   /* 2πr, r = 15.5 ≈ 97.4 */
+  stroke-dashoffset: 98;
+  transition: stroke-dashoffset 0.32s cubic-bezier(0.55, 0, 0.85, 0.2);
+}
+
+.back:hover .back-ring,
+.back:focus-visible .back-ring {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Phones: the viewport-pinned mark floats over the text column as the page
+   scrolls (there is no spare margin for it to live in), so it carries its
+   own contrast the way the live-demo overlay's back control does: a dark
+   disc with a hairline and a shadow, legible over anything it crosses.
+   The .ld-back variant opts out: it already has this styling at a larger
+   size, and reshaping it here would shrink the one exit from a demo. */
+@media (max-width: 40rem) {
+  .back:not(.ld-back) {
+    top: 0.9rem;
+    left: 0.9rem;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(26, 26, 26, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18),
+                0 0.3rem 1rem rgba(0, 0, 0, 0.4);
+  }
+  .back:not(.ld-back) .back-mark {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+}
+
+/* ── On-page section rail ─────────────────────────────────────────────
+   A table of contents for the work pages, built by toc.js from the band
+   titles already in the markup. Like .back it's pinned to the viewport
+   (position:fixed) so it rides along as the page scrolls, the list running
+   down the left gutter.
+
+   Each section is a plain title in the faint grey; the one you're currently
+   reading lifts to full white (toc.js sets .active from scroll position),
+   as does whichever you point at. Click one to scroll to its band.
+
+   The two-up bands run in a wide 78rem column, so the titles only have
+   margin to sit in on a wide viewport; the rail is dropped below the width
+   where they'd start to reach the content (the query at the foot of the
+   block). z-index sits above the parked demo previews (20) as a safety, so
+   a title that reaches the column edge is never hidden behind one, but
+   under the open live-demo overlay (1000) so a fullscreen demo covers it. */
+.toc {
+  position: fixed;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+.toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc-link {
+  display: block;
+  max-width: 10rem;
+  padding: 0.55rem 0;   /* the air between entries */
+  overflow: hidden;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--faint);
+  text-decoration: none;
+  transition: color 0.2s ease,
+              padding-inline-start 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Pointing at an entry lifts its title toward white and scoots it aside,
+   opening the space the dot will slide into if you click. The active entry
+   holds that same offset, since its dot is already parked there. */
+.toc-link:hover,
+.toc-link:focus-visible,
+.toc-item.active .toc-link {
+  color: var(--fg);
+  padding-inline-start: 0.9rem;
+}
+
+/* A single white dot marks the active section. It's the only one on the
+   rail, so when you jump to another entry it slides from the old section to
+   the new one rather than blinking across. toc.js sets its vertical offset;
+   this transform transition does the travelling. */
+.toc-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg);
+  pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Shown only where the margin can hold the titles clear of the 78rem
+   column; below that the rail is dropped. */
+@media (max-width: 94rem) { .toc { display: none; } }
+
+/* Small lead-in text at the top of a page */
+.kicker {
+  margin: 0 0 2.5em;
+  font-size: 1em;
+  min-height: 1.6em;
+}
+
+/* Typing caret for the kicker */
+.caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.1em;
+  margin-inline-start: 2px;
+  vertical-align: -0.18em;
+  background: currentColor;
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+.caret.done {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+/* Timeline: a vertical rule with a node marking each point in time.
+   Each entry reveals itself as it scrolls into view. */
+ul.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.timeline li {
+  position: relative;
+  padding-left: 1.75em;
+  padding-bottom: 2.5em;
+}
+
+ul.timeline li:last-child {
+  padding-bottom: 0;
+}
+
+/* The node itself, centered on the rule. In stickman mode the JS sets
+   --dotx per entry to the x of the cliff's inner line at that height,
+   so each dot sits on the rock; without it the dot centers on the rule */
+ul.timeline li::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--dotx, 0em) - 0.21em);
+  top: 0.4em;
+  width: 0.42em;
+  height: 0.42em;
+  background: #f2f2f2;
+  border-radius: 50%;
+}
+
+/* The stretch of rule between this node and the next */
+ul.timeline li::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0.4em;
+  width: 2px;
+  height: 100%;
+  background: #f2f2f2;
+  transform-origin: top;
+}
+
+/* Anchor bolts (stickman mode): every second dot is a ring on the face
+   line the rope hangs threaded through. The ring is drawn in the rig
+   svg by JS so it can show before its entry reveals; the CSS dot for
+   those entries is dropped to avoid doubling up */
+html.man ul.timeline li.anchor::before {
+  display: none;
+}
+
+/* With JS, entries start hidden and reveal on scroll (.shown) */
+html.js ul.timeline li {
+  opacity: 0;
+}
+
+html.js ul.timeline li::after {
+  transform: scaleY(0);
+}
+
+ul.timeline li.shown {
+  animation: tl-fade 0.4s ease forwards;
+}
+
+ul.timeline li.shown::after {
+  animation: tl-draw 0.6s ease forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes tl-fade {
+  to { opacity: 1; }
+}
+
+@keyframes tl-draw {
+  to { transform: scaleY(1); }
+}
+
+/* The rope falls off the end of the timeline and runs straight down
+   into the ground at the bottom of the page */
+.rope {
+  display: block;
+  margin-left: -1px;
+  overflow: visible;
+}
+
+/* Let the rope reach the very bottom edge of the page */
+body.page main:has(.rope) {
+  padding-bottom: 0;
+}
+
+/* Stickman mode (html.man): the rope he rides in on IS the timeline rule,
+   so the per-entry rule segments are hidden and a single rope line grows
+   down the page behind him. */
+html.man ul.timeline li::after {
+  display: none;
+}
+
+/* The rope hangs from the ceiling through the header area,
+   so keep the intro text clear of it */
+html.man .kicker {
+  margin-left: 1.75em;
+}
+
+.stickman {
+  display: none;
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+}
+
+html.man .stickman.on {
+  display: block;
+}
+
+/* The rope rig: full-length rope and anchor rings, drawn behind the
+   climber and on the wall from page load */
+.rig {
+  display: none;
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+}
+
+html.man .rig {
+  display: block;
+}
+
+/* A cleaned ring eases into a bare bolt instead of flipping */
+.rig circle {
+  transition: fill 0.3s ease, r 0.3s ease;
+}
+
+/* The wall he rappels down: the timeline rule itself, hatched on its
+   far side like a cross-section */
+/* The cliff face: jagged edge and rock texture are drawn into the svg
+   by JS, since the profile depends on the page height */
+.wall {
+  position: absolute;
+  top: 0;
+  display: none;
+  pointer-events: none;
+}
+
+html.man .wall {
+  display: block;
+}
+
+/* Room in the margin for the rope beside the wall */
+html.man body.page main:has(.rope) {
+  padding-left: 3.5em;
+}
+
+/* The floor: the campground meadow drawn across the full viewport width
+   at the base of the descent */
+.floor {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Stickman mode draws the rope live all the way into the turf, so the
+   static tail only reserves the layout space; its stroke is hidden */
+html.man .rope {
+  visibility: hidden;
+}
+
+.date {
+  display: block;
+  margin-bottom: 0.25em;
+  font-style: italic;
+}
+
+.entry-title {
+  margin: 0 0 0.35em;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+ul.timeline p {
+  margin: 0;
+}
+
+/* ── Work pages: alternating artifact / prose bands ───────────────────
+   Each project is a two-column band, and the columns swap sides down the
+   page: artifact left on odd bands, right on even ones.
+
+   Every band reads the same way: a title, a short summary, then the
+   technical specifications under a rule. The summary is what a skimmer
+   takes; the spec sheet is the reference layer for anyone who wants the
+   build details.
+
+   The artifact column carries the evidence: a live preview of the thing
+   running (see live-demo.css). A project with no interface to show (a
+   pipeline, an agent, a stub) drops the column entirely and runs as a
+   .solo band, because the spec sheet already states the stack and a
+   plate repeating it was the same facts twice.
+
+   Adding a project means copying an <li>; alternation is positional, so
+   nothing downstream needs renumbering. */
+
+body.page.work main {
+  max-width: var(--work-width);
+  padding-top: 9.5rem;   /* as above: absorbs the space the back mark held */
+}
+
+.page-head {
+  margin-bottom: 5rem;
+}
+
+/* The page label repeats the landing page's column heading verbatim:
+   you clicked "Personal" over there, you're under "Personal" here. */
+.page-title {
+  margin: 0;
+  font-size: var(--head-size);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Title over description, centered on the page. Scoped to .page-line so
+   the pages that are still a bare left-aligned label are left alone. */
+.page-line {
+  text-align: center;
+}
+
+.page-sub {
+  margin: 0.45rem 0 0;
+  font-size: var(--head-size);
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+ul.bands {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The artifact takes the larger share: a live demo parked at half the band
+   was too small to read anything in. Prose still clears ~440px, which keeps
+   the summary and the spec sheet at a sane measure. */
+ul.bands > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+  gap: 4.5rem;
+  align-items: center;
+  margin-bottom: 5.5rem;
+}
+
+ul.bands > li:last-child {
+  margin-bottom: 0;
+}
+
+/* Deep-linked from the landing grid: leave air above so the band doesn't
+   land jammed against the top of the viewport */
+ul.bands > li[id] {
+  scroll-margin-top: 3rem;
+}
+
+/* Placed explicitly rather than by source order, so the columns can swap
+   without the markup moving; the prose always follows the title for a
+   screen reader, whichever side it's painted on. */
+.band-artifact { grid-row: 1; grid-column: 1; }
+.band-prose    { grid-row: 1; grid-column: 2; }
+ul.bands > li:nth-child(even) .band-artifact { grid-column: 2; }
+ul.bands > li:nth-child(even) .band-prose    { grid-column: 1; }
+
+/* Sides swap on even bands, so the wide track has to swap with them;
+   otherwise every other artifact lands in the narrow column. */
+ul.bands > li:nth-child(even) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+}
+
+/* A project with no interface to show: one column at a reading measure, wide
+   enough that the spec sheet below the summary still gets a label column and a
+   value column. The :nth-child(even) duplicate isn't redundant: the even rule
+   above out-specifies a bare .solo, so a solo band sitting in an even slot
+   would otherwise get handed the two-column track. */
+ul.bands > li.solo,
+ul.bands > li.solo:nth-child(even) {
+  /* minmax(0, …) like the two-up tracks: a bare 1fr means minmax(auto, 1fr),
+     and a fixed-width embed inside would push the track past the column */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+ul.bands > li.solo .band-prose,
+ul.bands > li.solo:nth-child(even) .band-prose {
+  grid-column: 1;
+  max-width: 42rem;
+}
+
+.band-title {
+  margin: 0 0 0.8rem;
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* Which part of a multi-band project this is. Set down a size and into the
+   faint colour so three consecutive bands read as one project seen three
+   ways, not as three projects that happen to share a name. */
+.band-part {
+  font-size: 0.9375rem;
+  color: var(--faint);
+}
+
+.band-part::before {
+  content: "\00b7";
+  margin: 0 0.5em;
+}
+
+/* When the project was built, riding just off the end of the title. Small and
+   faint so it reads as a footnote to the name, not part of it; nowrap keeps the
+   month and year together when a long title pushes it onto its own line. */
+.band-date {
+  margin-inline-start: 0.7em;
+  font-size: 0.8125rem;
+  color: var(--faint);
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* On the multi-part Unpak titles a second, slightly smaller dot separates the
+   part label from the date, echoing the one between name and part. */
+.band-part + .band-date::before {
+  content: "\00b7";
+  margin-inline-end: 0.7em;
+  font-size: 0.85em;
+}
+
+/* An accolade riding after the date, at the same size and position in the title
+   line, but the text itself is a slowly drifting rainbow gradient (clipped to
+   the glyphs) so it glints without shouting. A leading dot separates it from
+   the date the way the date is separated from a part label. */
+.band-award {
+  margin-inline-start: 0.7em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.band-award::before {
+  content: "\00b7";
+  margin-inline-end: 0.7em;
+  font-size: 0.85em;
+  color: var(--faint);
+  font-weight: 400;
+}
+
+/* Each letter carries its own copy of the gradient and its own hop, both
+   staggered by --i so the colour and the jump travel down the word as one
+   wave. font-style resets the <i> wrappers, which are only there because
+   background-clip and transform need a per-letter box. */
+.band-award i {
+  display: inline-block;
+  font-style: normal;
+  background: linear-gradient(
+    90deg,
+    #d97757, #c9a24f, #5aa87a, #4f9cc9, #8b6fc9, #c1699e, #d97757
+  );
+  background-size: 900% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    award-drift 14s linear calc(var(--i) * -0.08s) infinite,
+    award-jump 2.4s ease-in-out calc(var(--i) * 0.08s) infinite;
+}
+
+@keyframes award-drift {
+  to { background-position: -900% 0; }
+}
+
+@keyframes award-jump {
+  0%, 12%, 100% { transform: translateY(0); }
+  6% { transform: translateY(-0.22em); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-award i { animation: none; }
+}
+
+/* A caveat under a demo: what the visitor is looking at isn't real data */
+.band-note {
+  margin-top: 0.9rem;
+  font-size: 0.875rem;
+  color: var(--faint);
+}
+
+.band-prose p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.band-prose p + p {
+  margin-top: 0.9rem;
+}
+
+/* Title row: the project name on the left, its repo link pinned to the right
+   edge of the prose column, both sharing the title's baseline. */
+.band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* More than one way into the same project. They travel as a single block so a
+   wrap moves the pair together, and so space-between can't fling one to each
+   end of the row; the gap is wider than the one inside a link, so the two read
+   as two destinations rather than one long string of words. */
+.band-links {
+  display: flex;
+  align-items: baseline;
+  flex: none;
+  gap: 1.15rem;
+}
+
+/* A title plus a PAIR of links doesn't fit the ~428px prose column at any
+   size, so this row wraps and the links ride underneath, left-aligned below
+   the name, the way a single link already does on a phone. Breaking the title
+   across two lines instead would split the name from the date and accolade
+   that qualify it. :has keeps this to the two-link rows: the single-link
+   titles elsewhere still hold one line, and ag-analytics keeps the title wrap
+   its own comment calls for. */
+.band-head:has(.band-links) {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+  /* Once the row wraps, the title's own bottom margin falls BETWEEN the two
+     lines instead of under them, which leaves the links sitting on top of the
+     summary. Move that spacing to the whole head, so the gap above the links
+     stays smaller than the gap below and they read as part of the title rather
+     than as the first line of the paragraph. */
+  margin-bottom: 0.95rem;
+}
+
+.band-head:has(.band-links) .band-title {
+  margin-bottom: 0;
+}
+
+/* A quiet way to the source, riding alongside the title. Muted at rest like
+   the label it sits under; on hover it brightens and the arrow nudges
+   up-and-right, the same gesture an external link makes. */
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.repo-link:hover,
+.repo-link:focus-visible {
+  color: var(--fg);
+}
+
+.repo-link svg {
+  width: 0.85em;
+  height: 0.85em;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.repo-link:hover svg,
+.repo-link:focus-visible svg {
+  transform: translate(1px, -1px);
+}
+
+/* Same link, staying on the site: it carries a `< >` mark instead of the
+   outbound arrow, and opens outward from the centre rather than nudging
+   up-and-right, which is the gesture that means "leaving". */
+.repo-link.is-internal svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.repo-link.is-internal:hover svg,
+.repo-link.is-internal:focus-visible svg {
+  transform: none;
+}
+
+.repo-link.is-internal svg path {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+.repo-link.is-internal:hover svg path:first-child,
+.repo-link.is-internal:focus-visible svg path:first-child {
+  transform: translateX(-1px);
+}
+
+.repo-link.is-internal:hover svg path:last-child,
+.repo-link.is-internal:focus-visible svg path:last-child {
+  transform: translateX(1px);
+}
+
+/* Live preview sits flush in the band, framed by a hairline */
+.band-artifact .ld-thumb {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--ld-corner);
+}
+
+/* An always-live embed: same hairline frame as a thumb, but the demo runs
+   in place: no expansion step, the iframe itself is the interface. */
+.band-artifact .ld-inline {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--line);
+  border-radius: var(--ld-corner);
+  background: #FCFCFB;
+}
+
+/* With JS, live-demo.js wraps the inline embed in .ld-inline-box and lays the
+   iframe out at a desktop width, scaled down to fit, so a narrow column gets
+   a shrunken desktop view instead of a squeezed one. The frame chrome moves
+   up to the box: on the iframe it would scale down with the content. */
+.band-artifact .ld-inline-box {
+  /* clip, not hidden: a hidden-overflow box is still a scroll container,
+     and anything that scrolls it (scrollIntoView, a focus jump) would
+     shove the scaled canvas off its top-left anchor */
+  overflow: clip;
+  /* anchors the absolutely-positioned iframe below */
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--line);
+  border-radius: var(--ld-corner);
+  background: #FCFCFB;
+}
+
+.band-artifact .ld-inline-box .ld-inline {
+  /* Fill the box outright; without an explicit height the iframe falls to
+     its 150px default and the demo's own vertical centering happens inside
+     that sliver at the top of the box. live-demo.js overrides the size
+     with a desktop layout (scaled down) when the box is narrow.
+     Absolute, so the oversized layout height never counts as content:
+     in flow it would stretch the box past its 16/10 aspect, leaving a
+     band of bare background under the scaled canvas. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border: none;
+  border-radius: 0;
+}
+
+/* The Notch demo is a lit screen on a dark desk; the pale boot colour the
+   other embeds use would flash white before it paints. */
+#notch .ld-inline,
+#notch .ld-inline-box { background: #1b1c2b; }
+
+/* The system map's page shares the site background, so a frame would draw a
+   box around what should read as part of the page itself, and for the same
+   reason it stays square while the other previews round off. */
+#unpak-system .ld-thumb {
+  border: none;
+  border-radius: 0;
+}
+
+/* Technical specifications: the reference layer under a band's summary.
+   Set a step down in size and colour from the prose so a skimmer reads the
+   summary and stops, and anyone who wants the build details reads on. */
+.band-spec {
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+}
+
+.band-spec h3 {
+  margin: 0 0 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* Label column fixed rather than auto-sized, so the values line up on one
+   edge instead of stepping in and out with each label's length. The row
+   wrappers are display:contents; they exist to pair a dt with its dd for
+   the single-column collapse below, not to lay anything out. */
+.band-spec dl {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 0.85rem 1.4rem;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.band-spec dl > div {
+  display: contents;
+}
+
+.band-spec dt {
+  color: var(--faint);
+}
+
+.band-spec dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Narrow screens: bands stack, prose above artifact every time: the
+   title and summary introduce the demo before it appears. The threshold
+   tracks the band width; once the two-up can't give the prose ~440px it
+   stops being two-up. */
+@media (max-width: 64rem) {
+  body.page.work main {
+    padding-top: 4em;
+  }
+  .page-head {
+    margin-bottom: 3rem;
+  }
+  /* :nth-child(even) is listed too: the wide layout's even-band rule
+     carries that same specificity, so a bare `ul.bands > li` here would
+     lose to it and leave every second band on the two-column track,
+     squeezing its stacked children into the narrow 1fr share. */
+  ul.bands > li,
+  ul.bands > li:nth-child(even),
+  ul.bands > li.solo {
+    /* minmax(0, …), not 1fr: same guard as the wide tracks, so the
+       desktop-width demo canvases can't push the band past the column */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+  .band-prose,
+  ul.bands > li:nth-child(even) .band-prose {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .band-artifact,
+  ul.bands > li:nth-child(even) .band-artifact {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  /* Too narrow for a label column, so stack each label over its value. The row
+     wrappers stop being display:contents here and become the blocks that
+     carry the spacing, since a dt and its dd are never DOM siblings. */
+  .band-spec dl {
+    display: block;
+  }
+  .band-spec dl > div {
+    display: block;
+    margin-bottom: 0.9rem;
+  }
+  .band-spec dl > div:last-child {
+    margin-bottom: 0;
+  }
+  .band-spec dt {
+    margin-bottom: 0.2rem;
+  }
+}
+
+/* Phones proper. The 40px preview corner was drawn for a 700px-wide
+   artifact column; on a 360px thumb it eats the picture, so the one knob
+   steps down and the parked live app follows it (live-demo.js reads the
+   computed value). Title rows are allowed to wrap: "Agricultural
+   Analytics Platform" plus a date and a repo link is more than one phone
+   line holds. */
+@media (max-width: 40rem) {
+  :root {
+    --ld-corner: 22px;
+  }
+  .band-head {
+    flex-wrap: wrap;
+    row-gap: 0.15rem;
+  }
+  .band-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* LinkedIn profile header, replicated 1:1 (font stack, type scale,
+   colors, and layout matching linkedin.com), in LinkedIn's own dark
+   theme, since the site around it is dark: #1d2226 surfaces, #38434f
+   hairlines, and the lighter #70b5f9 for the blue accents */
+.li-card {
+  font-family: -apple-system, system-ui, "Segoe UI", Roboto,
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #1d2226;
+  color: rgba(255, 255, 255, 0.9);
+  border-color: #38434f;
+  -webkit-font-smoothing: antialiased;
+}
+
+.li-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 1; /* LinkedIn banners are 1584x396 */
+  object-fit: cover;
+}
+
+.li-avatar {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: -38px 0 0 16px;
+  object-fit: cover;
+  /* the ring is the card surface punched through the banner */
+  background: #1d2226;
+  border: 2px solid #1d2226;
+  border-radius: 50%;
+}
+
+.li-info {
+  padding: 4px 16px 16px;
+}
+
+.li-name {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.li-headline {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.li-meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.li-connections {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #70b5f9;
+}
+
+/* GitHub card: 53 weeks of boxes need more room than the text column,
+   so on hover this card grows past the list width: as wide as the year
+   wants, capped by the viewport. One shared value (--ghw) sizes both
+   the growing box and the content laid out inside it, so the card can
+   never clip its own right edge. */
+ul.links li.li-hover.gh {
+  /* compact: only as wide as the calendar needs, never past the right
+     viewport edge (the card's left edge sits at the octocat, one icon
+     plus the row gap right of the text column) */
+  --ghw: min(29em, 100vw - 6em, 50vw + 9.5em);
+}
+
+ul.links li.li-hover.gh:hover .li-hover-reveal,
+ul.links li.li-hover.gh:focus-within .li-hover-reveal {
+  width: var(--ghw);
+}
+
+.gh-card .li-card-inner {
+  width: calc(var(--ghw) - 2px);
+}
+
+/* GitHub profile card, replicated like the LinkedIn one (GitHub's font
+   stack, type scale, and colors), with a live contribution calendar */
+.gh-card {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans", Helvetica, Arial, sans-serif;
+  /* GitHub's own dark theme, to match the page: #0d1117 canvas, #30363d
+     hairlines, #e6edf3 ink; the green calendar still carries the color,
+     on the darker ramp landing.js draws */
+  background: #0d1117;
+  color: #e6edf3;
+  border-color: #30363d;
+  -webkit-font-smoothing: antialiased;
+}
+
+.gh-inner {
+  /* padding counts inside the width, so the inner layout is exactly as
+     wide as the card box and nothing clips at the right edge */
+  box-sizing: border-box;
+  padding: 10px 12px 12px;
+}
+
+.gh-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+  /* clear the octocat, which lands in the card's top-left on hover */
+  padding-left: 28px;
+}
+
+/* The octocat is near-black (#1f2328), so it's forced to pure white:
+   brightness(0) crushes it to black first, because inverting #1f2328 on
+   its own only reaches an off-white #e0dcd7. It keeps that white on the
+   dark card too, parked vertically centered on the avatar */
+.li-logo[src*="gh-logo"] {
+  filter: brightness(0) invert(1);
+}
+
+li.li-hover:hover .li-logo[src*="gh-logo"],
+li.li-hover:focus-within .li-logo[src*="gh-logo"] {
+  top: 0.9em;
+  left: 0.45em;
+}
+
+.gh-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.gh-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.gh-login {
+  margin: 0;
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.gh-graph {
+  position: relative; /* anchors the day tooltip */
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+/* The hovered day lights up its outline immediately */
+.gh-graph rect:hover {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
+/* Instant per-day tooltip (a step up from the canvas so the bubble reads
+   against the dark card) */
+.gh-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: #30363d;
+  color: #e6edf3;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.gh-tip::after {
+  content: "";
+  position: absolute;
+  /* landing.js sets --ax so the arrow tracks the hovered cell even
+     when the bubble itself is clamped at the graph's edge */
+  left: var(--ax, 50%);
+  bottom: -4px;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #30363d;
+  border-bottom: none;
+}
+
+.gh-tip.on {
+  opacity: 1;
+}
+
+.gh-graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.gh-month {
+  font-size: 9px;
+  fill: #8b949e;
+}
+
+.gh-graph-fallback {
+  font-size: 13px;
+  color: #8b949e;
+  text-align: center;
+  padding: 1.5em 8px;
+}
+
+/* The headline stat rides the header row, pushed to the right edge */
+.gh-total {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  color: #8b949e;
+}
+
+/* Page transitions, driven by transition.js. Forward navigation slides the
+   page left as it fades; the new page arrives from the right. Going back
+   mirrors it. The html background stops the white flash between documents. */
+html {
+  background: #1a1a1a;
+}
+
+html.page-exit body,
+html.page-exit-back body {
+  animation: page-fade-out 180ms ease-in both;
+}
+
+html.page-enter body,
+html.page-enter-back body {
+  animation: page-fade-in 320ms ease-out both;
+}
+
+/* On arrival each top-level block rises into place, one after another. The
+   work bands list is skipped as a slab so its items can stagger on their
+   own instead. About's cliff scenery (.wall, .floor, .rig, rope, stickman)
+   is pinned to measured positions in the margin, so rising it would tear
+   it away from the timeline it's anchored to; it just fades in with the
+   page instead. */
+html.page-enter main > :not(.bands, .wall, .floor, .rig, .rope, .stickman),
+html.page-enter-back main > :not(.bands, .wall, .floor, .rig, .rope, .stickman),
+html.page-enter .bands > li,
+html.page-enter-back .bands > li {
+  animation: page-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+html.page-enter main > :nth-child(2),
+html.page-enter-back main > :nth-child(2),
+html.page-enter .bands > li:nth-child(1),
+html.page-enter-back .bands > li:nth-child(1) { animation-delay: 70ms; }
+html.page-enter main > :nth-child(3),
+html.page-enter-back main > :nth-child(3),
+html.page-enter .bands > li:nth-child(2),
+html.page-enter-back .bands > li:nth-child(2) { animation-delay: 140ms; }
+html.page-enter main > :nth-child(4),
+html.page-enter-back main > :nth-child(4),
+html.page-enter .bands > li:nth-child(3),
+html.page-enter-back .bands > li:nth-child(3) { animation-delay: 210ms; }
+html.page-enter main > :nth-child(5),
+html.page-enter-back main > :nth-child(5),
+html.page-enter .bands > li:nth-child(4),
+html.page-enter-back .bands > li:nth-child(4) { animation-delay: 280ms; }
+html.page-enter main > :nth-child(n+6),
+html.page-enter-back main > :nth-child(n+6),
+html.page-enter .bands > li:nth-child(n+5),
+html.page-enter-back .bands > li:nth-child(n+5) { animation-delay: 350ms; }
+
+/* The pinned scenery still joins the entrance, but with a pure fade and
+   no translate, so it never leaves its measured spot. Delayed to land
+   with the tail of the stagger instead of popping in first. */
+html.page-enter main > :is(.wall, .floor, .rig, .rope, .stickman),
+html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
+  animation: page-fade-in 520ms ease-out both;
+  animation-delay: 210ms;
+}
+
+@keyframes page-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.page-exit body,
+  html.page-exit-back body,
+  html.page-enter body,
+  html.page-enter-back body,
+  html.page-enter main > *,
+  html.page-enter-back main > *,
+  html.page-enter .bands > li,
+  html.page-enter-back .bands > li {
+    animation: none;
+  }
+}
+
+/* Language switcher: a fixed flag button in the top-right corner. The flag
+   SVG carries its real colors; a grayscale filter holds it down to the
+   site's dark grays until hover, where it grows slightly and colors in. */
+.lang-switch {
+  position: fixed;
+  top: 1.15rem;
+  right: 1.25rem;
+  z-index: 60;
+  /* The switcher is chrome, not content: it keeps the same corner and the
+     same reading order whatever direction the page it sits on runs in.
+     Without this, choosing Arabic would flip the menu and send English
+     from the top left of the list to the top right. Each language's own
+     name still shapes correctly, since that is the text's own direction. */
+  direction: ltr;
+}
+
+.lang-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 4px;
+  /* the flag turns over on a language change; without depth the flip reads
+     as a horizontal squash instead of a rotation */
+  perspective: 240px;
+}
+
+.lang-btn svg {
+  width: 27px;
+  height: 18px;
+  display: block;
+  border-radius: 4px;
+  /* dark gray and black at rest, in line with the page */
+  filter: grayscale(1) brightness(0.55) contrast(1.05);
+  opacity: 0.85;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.lang-btn:hover svg,
+.lang-btn:focus-visible svg,
+.lang-switch.open .lang-btn svg {
+  filter: none;
+  opacity: 1;
+  transform: scale(1.12);
+  box-shadow: 0 0 0 1px rgba(242, 242, 242, 0.25), 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.lang-btn:focus-visible {
+  outline: 1px solid var(--muted);
+  outline-offset: 3px;
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  width: 17.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: #202020;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  /* it opens out of the button, which sits off its top-right corner */
+  transform-origin: top right;
+}
+
+.lang-menu[hidden] { display: none; }
+
+.lang-menu button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  padding: 0.4rem 0.5rem;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-menu button:hover { background: rgba(242, 242, 242, 0.07); }
+
+/* Each row carries its own flag. They stay muted in the list so the menu
+   reads as one grey panel, and the row you are on brings its flag up to
+   full colour: the same rest-to-colour move the button makes on hover. */
+.lang-menu .ln-flag {
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.lang-menu .ln-flag svg {
+  width: 20px;
+  height: 13.5px;
+  display: block;
+  border-radius: 2.5px;
+  filter: grayscale(1) brightness(0.62);
+  opacity: 0.9;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.lang-menu button:hover .ln-flag svg,
+.lang-menu button:focus-visible .ln-flag svg,
+.lang-menu button[aria-selected="true"] .ln-flag svg {
+  filter: none;
+  opacity: 1;
+}
+
+.lang-menu .ln-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lang-menu button .ln-en {
+  color: var(--faint);
+  font-size: 0.6875rem;
+}
+
+.lang-menu button[aria-selected="true"] {
+  background: rgba(242, 242, 242, 0.1);
+}
+
+@media (max-width: 40rem) {
+  .lang-switch { top: 0.85rem; right: 0.9rem; }
+  .lang-btn svg { width: 24px; height: 16px; }
+  .lang-menu { width: 15rem; }
+}
+
+/* ── About link ──────────────────────────────────────────────────────
+   "[ more about me ]", under the social logos. The affordance is
+   typographic: the bracketed line is the only one of its kind on the
+   page, and the brackets step outward on hover.
+
+   It replaced a folded-corner animation that never truly navigated (it
+   grew an iframe over the page), which is also why this must be a real
+   link: the fixed corners — the stats strip, the last-seen line — belong
+   to the home page only, and a real navigation is what leaves them
+   behind. */
+.about-more {
+  display: inline-block;
+  margin-top: 1.2rem;
+  font-size: 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* The brackets are drawn here rather than typed in the markup so the
+   language switcher can swap the words without eating them, and so a
+   screen reader gets "more about me" and not the punctuation.
+
+   The translateY is optical correction: a square bracket is drawn to
+   enclose full-height text — ascender to under the baseline — so against
+   a lowercase phrase it hangs visibly low. Lifting it half that overshoot
+   centers the bracket on the words as drawn, which is what the eye
+   expects even though the font doesn't do it. They also slide outward a
+   step when the link wakes up. */
+.about-more::before,
+.about-more::after {
+  display: inline-block;
+  color: var(--faint);
+  transform: translateY(-0.04em);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.about-more::before { content: "[\00a0\00a0"; }
+.about-more::after  { content: "\00a0\00a0]"; }
+
+.about-more:hover,
+.about-more:focus-visible {
+  color: var(--fg);
+}
+
+.about-more:hover::before,
+.about-more:focus-visible::before {
+  color: var(--muted);
+  transform: translate(-0.2em, -0.04em);
+}
+
+.about-more:hover::after,
+.about-more:focus-visible::after {
+  color: var(--muted);
+  transform: translate(0.2em, -0.04em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-more,
+  .about-more::before,
+  .about-more::after { transition: none; }
+}
+
+/* ---- Stats strip ------------------------------------------------------
+
+   Three live numbers in the bottom-right corner of the home page: how many
+   people came in the last 30 days, what the last commit to the site did,
+   and how many are here now. The middle one is stamped into the page at
+   deploy time (its age is worked out in the browser), the other two come
+   from /api/pulse. All of it is wired up in pulse.js.
+
+   One corner of four: last-seen top-left, language top-right, music
+   bottom-left, and this one bottom-right. */
+
+.pulse {
+  /* Fixed to the window, not to the 48rem text column: this is corner chrome,
+     like the language switcher, and it belongs on the edge of the screen
+     rather than lined up with the last work column. Out of the flow, so it
+     costs the column no height: the home page is tuned to fit a single
+     screen, with the work grid's auto margins doing that arithmetic, and
+     anything added to the flow down here would push a laptop window past
+     100vh and bring the scrollbar back. So there is nothing for it to scroll
+     over — phones, where the page does scroll, don't draw it at all (see the
+     narrow-screen block below). */
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.25rem;
+  z-index: 60;   /* the layer the other fixed corner pieces sit on */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1.25;
+  /* every digit on the same advance width: a number changing under you
+     shouldn't shuffle the ones beside it */
+  font-variant-numeric: tabular-nums;
+  /* Chrome, not content: hovering is how the labels open, and an I-beam
+     there advertises text to select in a strip that's a readout. The
+     arrow stays, and the numbers won't highlight. */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  /* it arrives when the first response does, rather than sitting there as a
+     row of zeros while the request is in flight */
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.pulse.is-live {
+  opacity: 1;
+}
+
+/* Each row sets on one line and the whole stack right-aligns, so the rows end
+   together and the numbers inside them fall where their own digit counts put
+   them. The left padding is hit area rather than spacing — each stat is its
+   own hover target, and three digits is a mean thing to ask anyone to hit. */
+.pulse-stat {
+  padding: 0.1rem 0 0.1rem 2.5rem;
+}
+
+.pulse-label {
+  display: block;
+  font-size: 0.6875rem;     /* 11px */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The numbers carry the page's own text colour; everything attached to them —
+   the unit that names them, the label that explains them — stays grey, so the
+   figure is what the eye lands on and the words are there when wanted. */
+.pulse-num {
+  font-size: 1rem;          /* 16px */
+  color: var(--fg);
+}
+
+.pulse-unit {
+  margin-left: 0.35em;
+  font-size: 0.75rem;       /* 12px */
+  color: var(--faint);
+}
+
+/* The one number on the strip that is true only at this second. Green because
+   that is what a live indicator is everywhere else; it's five pixels of the
+   only colour on an otherwise monochrome page, which is about the weight the
+   distinction deserves. */
+/* Flag glyphs for the platforms that don't draw them.
+   Twemoji, by Twitter, CC-BY 4.0 — https://github.com/twitter/twemoji
+   Packaged as a flags-only woff2 by country-flag-emoji-polyfill (MIT).
+
+   Windows ships no flag glyphs at all: a country's two regional-indicator
+   letters come out as two boxed capitals instead of ligating into a flag.
+   That is a policy decision at Microsoft rather than a gap in the font, so
+   there is nothing to fix in CSS — the glyphs have to be brought along.
+
+   unicode-range keeps this to the regional-indicator block, so it is the
+   only thing the file is ever consulted for, and the browser only fetches
+   it once a flag is actually on the page. */
+@font-face {
+  font-family: "Twemoji Country Flags";
+  src: url("/assets/fonts/TwemojiCountryFlags.woff2") format("woff2");
+  unicode-range: U+1F1E6-1F1FF;
+  font-display: swap;
+}
+
+/* One flag per country currently reading, deduplicated server-side. Sits
+   where the other two stats keep their label, so the whole strip opens the
+   same way wherever the cursor lands.
+
+   The stack is doing something specific, and the omission is the point.
+   "Apple Color Emoji" exists only on Apple platforms and does carry flags,
+   so naming it first gets a Mac its own native ones and never fetches the
+   webfont at all. Every other platform falls straight through to Twemoji.
+
+   Segoe UI Emoji is deliberately NOT named: it *does* have glyphs for these
+   codepoints — the boxed letters — so naming it would satisfy the lookup on
+   Windows and stop the fallback dead, which is the one outcome this whole
+   arrangement exists to avoid. */
+.pulse-flags {
+  display: block;
+  font-family: "Apple Color Emoji", "Twemoji Country Flags", sans-serif;
+  font-size: 0.8125rem;     /* 13px */
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: #5ec27e;
+  /* an empty inline-block sits its bottom edge on the baseline, so it needs
+     lifting to centre against the x-height of the digits beside it */
+  vertical-align: 0.06em;
+}
+
+/* ---- The commit row ---------------------------------------------------
+
+   The middle row of the strip: what the last commit did, "+142 −16", in
+   GitHub's dark-theme green and red. Two numbers set exactly like the ones
+   below them — same face, same size, same tabular digits — with colour the
+   only thing that marks them out. It's the one row that is a link (the
+   whole row goes to the commit), so it gets the pointer the rest of the
+   readout deliberately withholds, and a hover dims the numbers rather than
+   underlining them: an underline under a "+" and a "−" is just clutter.
+
+   The signs are set at the unit size, the way GitHub sets them: Inter's
+   "+" and "−" are drawn at digit height and wider than a tabular digit,
+   so at full size they outweigh the numbers they're attached to. Smaller,
+   they read as a mark on the number rather than a glyph beside it. */
+.pulse-commit {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.pulse-commit .pulse-num {
+  transition: opacity 0.2s ease;
+}
+
+.pulse-commit .pulse-num + .pulse-num {
+  margin-left: 0.4em;
+}
+
+.pulse-sign {
+  font-size: 0.75rem;       /* 12px, same as .pulse-unit */
+  margin-right: 0.08em;
+  /* a smaller glyph on the baseline sits with its middle below the digits'
+     middle; lift it so the two centres meet */
+  vertical-align: 0.15em;
+}
+
+.pulse-add { color: #3fb950; }   /* GitHub dark: success-fg */
+.pulse-del { color: #f85149; }   /* GitHub dark: danger-fg  */
+
+.pulse-commit:hover .pulse-num,
+.pulse-commit:focus-visible .pulse-num {
+  opacity: 0.8;
+}
+
+/* Where there's a pointer, the strip is three bare numbers and nothing else.
+   Each one answers for itself: hovering a number brings up its own label and
+   leaves the other two alone, so the corner is only ever as busy as the one
+   thing being asked about.
+
+   The labels collapse rather than fade, so they reserve no empty band above
+   each number — and since the strip is anchored by its bottom edge, opening
+   one pushes the stack upward into the margin instead of shifting the
+   numbers under the cursor.
+
+   Touch screens have no hover to give, so there the labels are always on. */
+@media (hover: hover) {
+  .pulse-label,
+  .pulse-flags {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .pulse-stat:hover .pulse-label,
+  .pulse-stat:focus-within .pulse-label {
+    max-height: 1.2rem;
+    opacity: 1;
+  }
+
+  /* emoji set taller than their point size, so the flags need more room to
+     open into than a line of 11px capitals does */
+  .pulse-stat:hover .pulse-flags,
+  .pulse-stat:focus-within .pulse-flags {
+    max-height: 1.6rem;
+    opacity: 1;
+  }
+}
+
+/* Phones don't get the corners at all — not this strip, not the music
+   line, not the location line. Phones are the one place the home page
+   genuinely scrolls, and a fixed strip would ride along on top of the
+   stacked work list the whole way down; laid in the flow instead, with no
+   hover to hold the labels back, it was a seven-line block of readouts
+   under a portfolio. The corners are chrome for a screen that has spare
+   corners; a phone doesn't.
+
+   Only the drawing goes. pulse.js still beats to /api/pulse on every
+   page load, so phone visits count the same as any other — the strip
+   just isn't there to show the number. */
+@media (max-width: 40rem) {
+  .pulse {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse,
+  .pulse-label {
+    transition: none;
+  }
+}
+
+/* .pulse sets its own display, which outranks the UA rule that [hidden]
+   relies on, so the pre-response state has to be spelled out */
+.pulse[hidden] {
+  display: none;
+}
+
+/* ---- Last seen at -----------------------------------------------------
+
+   The top-left corner, across from the language switcher: the last public
+   place I was at. It rides in on the same /api/pulse response the numbers do, so it
+   costs no extra request, and it's drawn by the same script.
+
+   The two corners are deliberately not symmetrical in kind. The right-hand
+   one counts other people and is always true; this one is about me and is
+   often simply absent — there is no venue most evenings, and the corner is
+   empty rather than padded with a fallback. */
+.whereat {
+  position: fixed;
+  top: 1.15rem;             /* level with the language switcher opposite */
+  left: 1.25rem;
+  z-index: 60;              /* the layer the other fixed corner pieces sit on */
+  max-width: calc(100vw - 6rem);   /* stays clear of the flag opposite */
+  line-height: 1.4;
+  /* Chrome, not content, like the corners below: arrow cursor, nothing to
+     select. */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* One line, always. Venue names are arbitrary text from OpenStreetMap, so
+   the guard against a pathological one is an ellipsis at the viewport's
+   edge rather than a wrap. On the line, not the corner — same reason as
+   .listening-line: the hint below is a block of its own, and text-overflow
+   set on the parent stops applying the moment there's more than the one
+   line inside. */
+.whereat-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.whereat.is-live {
+  opacity: 1;
+}
+
+/* One sentence, one size, one line. Colour carries the little structure
+   there is: the connecting words in grey, the venue in the page's text
+   colour, the city a shade fainter. */
+/* The pin rides on currentColor at the lede's grey, sized to the text and
+   dropped a touch below the baseline so its tip sits where a letter's
+   descender would — icons set on the baseline itself look like they're
+   floating. */
+.whereat-pin {
+  width: 1em;
+  height: 1em;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  vertical-align: -0.15em;
+  margin-right: 0.15em;
+}
+
+.whereat-lede {
+  font-size: 0.9375rem;     /* 15px, everything in this corner */
+  color: var(--muted);
+}
+
+.whereat-place {
+  font-size: 0.9375rem;
+  color: var(--fg);
+}
+
+/* "in Eugene" — context for readers far away, subordinate by colour alone. */
+.whereat-city {
+  font-size: 0.9375rem;
+  color: var(--faint);
+}
+
+/* Phones: hidden, with the other corners — see the stats strip's
+   narrow-screen block. (It used to stay, capped to ellipsize before the
+   language flag, which at 393px cut the city to "San Fr…".) */
+@media (max-width: 40rem) {
+  .whereat {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whereat,
+  .whereat-hint {
+    transition: none;
+  }
+}
+
+/* The hover hint: the neighbourhood the venue sits in ("South Beach"),
+   in the family of the music corner's hint below — tracked capitals in
+   grey, a size smaller still — set on its own line under the sentence and
+   indented a step, so it reads as a sub-entry of the place above it. This
+   corner is anchored by its top edge, so unlike .listening-hint (which
+   opens upward into the bottom margin) this one grows down into the page,
+   and nothing shifts beneath the cursor. Empty means no hint at all —
+   most towns have no mapped neighbourhoods — and :empty is what keeps the
+   always-on touch-screen state from reserving a blank band. */
+.whereat-hint {
+  display: block;
+  /* Fallback only: pulse.js measures where the city name starts in the
+     sentence above and overrides this, so the hint sits tabbed in under
+     "San Francisco" itself. This holds for the frame before that
+     measurement, or if it ever comes back zero. */
+  margin-left: 2em;
+  font-size: 0.625rem;      /* 10px, a step below the hints elsewhere */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.whereat-hint:empty {
+  display: none;
+}
+
+@media (hover: hover) {
+  .whereat-hint {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .whereat:hover .whereat-hint {
+    max-height: 1.2rem;
+    opacity: 1;
+  }
+}
+
+.whereat[hidden] {
+  display: none;
+}
+
+/* ---- Listening to ------------------------------------------------------
+
+   The bottom-left corner, opposite the stats strip: what's on Spotify.
+   Same family as "Last seen at" above — one line, same sizes, same fade —
+   and like it, absent is a real state: no Spotify connection means no
+   corner, not a placeholder. */
+.listening {
+  position: fixed;
+  bottom: 1.25rem;          /* level with the stats strip opposite */
+  left: 1.25rem;
+  z-index: 60;
+  max-width: calc(100vw - 16rem);   /* stays clear of the numbers opposite */
+  line-height: 1.4;
+  /* Chrome, not content: hovering is how the hint opens, and an I-beam
+     there advertises text to select in a corner that's a readout. The
+     arrow stays, and the text won't highlight. */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* The song line gets the ellipsis, not the corner itself: the hint above is
+   a block of its own, and text-overflow only clips a box's inline content —
+   set on the parent it would quietly stop applying the moment the hint
+   moved in. Track titles are arbitrary text from Spotify; clip at the
+   edge rather than wrap. */
+.listening-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listening.is-live {
+  opacity: 1;
+}
+
+.listening-note {
+  width: 1em;
+  height: 1em;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  vertical-align: -0.15em;
+  margin-right: 0.15em;
+}
+
+/* "by" — the one connecting word, subordinate by colour like "at" above,
+   and a step smaller with the artist it introduces. */
+.listening-by {
+  font-size: 0.8125rem;     /* 13px, the "by <artist>" pair together */
+  color: var(--muted);
+}
+
+/* The hover hint, dressed exactly like the labels the stats strip opens:
+   11px tracked capitals in grey, on its own line above the song. It
+   collapses rather than fades so it reserves no empty band, and since the
+   corner is anchored by its bottom edge, opening pushes the line upward
+   into the margin instead of shifting the text under the cursor. */
+.listening-hint {
+  display: block;
+  font-size: 0.6875rem;     /* 11px */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Touch screens have no hover to give, so there the hint is always on —
+   the same trade the stats strip makes. */
+@media (hover: hover) {
+  .listening-hint {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .listening:hover .listening-hint {
+    max-height: 1.2rem;
+    opacity: 1;
+  }
+}
+
+.listening-track {
+  font-size: 0.9375rem;
+  color: var(--fg);
+}
+
+/* The artist, subordinate twice over — fainter and smaller than the title,
+   like the city opposite but a step further back. */
+.listening-artist {
+  font-size: 0.8125rem;
+  color: var(--faint);
+}
+
+/* Phones: hidden, with the other corners — see the stats strip's
+   narrow-screen block. */
+@media (max-width: 40rem) {
+  .listening {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listening,
+  .listening-hint {
+    transition: none;
+  }
+}
+
+.listening[hidden] {
+  display: none;
+}
