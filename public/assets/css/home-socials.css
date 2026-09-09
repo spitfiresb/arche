@@ -427,3 +427,56 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
     transition: none;
   }
 }
+
+.about-more {
+  display: inline-block;
+  margin-top: 1.2rem;
+  font-size: 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* The brackets are drawn here rather than typed in the markup so the
+   language switcher can swap the words without eating them, and so a
+   screen reader gets "more about me" and not the punctuation.
+
+   The translateY is optical correction: a square bracket is drawn to
+   enclose full-height text — ascender to under the baseline — so against
+   a lowercase phrase it hangs visibly low. Lifting it half that overshoot
+   centers the bracket on the words as drawn, which is what the eye
+   expects even though the font doesn't do it. They also slide outward a
+   step when the link wakes up. */
+.about-more::before,
+.about-more::after {
+  display: inline-block;
+  color: var(--faint);
+  transform: translateY(-0.04em);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.about-more::before { content: "[\00a0\00a0"; }
+.about-more::after  { content: "\00a0\00a0]"; }
+
+.about-more:hover,
+.about-more:focus-visible {
+  color: var(--fg);
+}
+
+.about-more:hover::before,
+.about-more:focus-visible::before {
+  color: var(--muted);
+  transform: translate(-0.2em, -0.04em);
+}
+
+.about-more:hover::after,
+.about-more:focus-visible::after {
+  color: var(--muted);
+  transform: translate(0.2em, -0.04em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-more,
+  .about-more::before,
+  .about-more::after { transition: none; }
+}

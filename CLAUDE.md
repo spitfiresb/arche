@@ -36,15 +36,19 @@ README).
 
 ## The pages
 
-The homepage stylesheet is `site.css`: a 36.375rem column with a 0.875rem
-body font and an 80% root font size, making the layout 20% smaller.
-Inter at weight 460, off-white on charcoal (#1a1a1a), with main's grey
-palette. The home page has the original short intro,
-expanding social cards (`home-socials.css` and `home-socials.js`), a project
-list grouped into Personal, Contract, and Experiments without a Work heading,
-and a footer.
-The categories are plain homepage labels. Each project row links to an
-anchor on `/work/`, one continuous list without category sections or tabs.
+The homepage stylesheet is `site.css`: a 638px outer column with 30px
+side padding, 15px intro text, and Inter on charcoal (#1a1a1a).
+The home page keeps main's intro wording, centered expanding social cards
+(`home-socials.css` and `home-socials.js`), and bracketed About link.
+One Projects heading introduces seven projects in a two-column grid,
+with short descriptions and subtle row rules. Entries fill left to right;
+below 460px the grid becomes one column. There are no category labels.
+Each entry links to an anchor on `/work/`, one continuous list without
+category sections or tabs. The landscape uses the static
+`lookout-panorama-v2.png` from `home-illustration`, with space reserved
+below the copy for its skyline. The homepage scrolls as needed instead of
+shrinking text to fit one screen. Live footer rows appear only when populated.
+Standalone pages retain the 36.375rem column and 80% root font size.
 The fixed left table of contents lists every project by name, with a single
 dot following the active article (`toc.js`). It stays on the left at every screen width, with a reserved gutter beside
 the projects and vertical scrolling when the list is taller than the window. The project page loads main's original

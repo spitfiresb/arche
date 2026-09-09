@@ -1,9 +1,9 @@
 /* The site, second edition: one narrow column of prose on a charcoal
-   page. The home page is a short intro, grouped project rows and a hairline
+   page. The home page is a short intro, a two-column project index and a hairline
    footer carrying the live bits; each project is an article in the same
    column with its demo up top; About is a timeline. Everything is 14px
    Inter at weight 460 in off-white, with the grey palette from main.
-   style.css is the previous edition and nothing loads it now. */
+   style.css supplies the original bands on the combined project page. */
 
 @font-face {
   font-family: "InterVariable";
@@ -213,34 +213,80 @@ h1, h2, h3 {
   outline: 2px solid rgba(0, 122, 255, 0.5);
 }
 
-/* ---- Grouped project rows -------------------------------------------- */
+/* ---- Homepage and project index -------------------------------------- */
+
+html:has(body.home) {
+  font-size: 100%;
+}
+
+body.home {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+body.home > .page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 638px;
+  padding: 52px 30px 0;
+  flex: none;
+}
+
+body.home > .page::before {
+  content: none;
+}
+
+/* Keep the intro and icon previews at main's scale and alignment. */
+body.home .bio {
+  font-size: inherit;
+}
+
+/* The image's empty sky can extend behind the content. Reserve space for
+   the mountain and lookout in normal flow so growing lists remain readable. */
+.home-landscape {
+  position: relative;
+  min-height: 22vw;
+  flex: 1 0 auto;
+  overflow: clip;
+  overflow-clip-margin: 12vw;
+  pointer-events: none;
+}
+.home-landscape img {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  mix-blend-mode: screen;
+}
 
 .work {
-  padding-top: 3rem;
+  padding-top: 2.0625rem;
 }
 
-.work-group {
-  display: grid;
-  grid-template-columns: 6rem minmax(0, 1fr);
-  gap: 1.125rem;
-  padding: 1.0625rem 0;
-  border-top: 1px solid var(--rule);
-}
-.work-group:first-of-type {
-  padding-top: 0;
-  border-top: 0;
-}
-.work-group:last-child {
-  padding-bottom: 0;
-}
-.work-group > h2 {
-  padding-top: 0.6875rem;
-  font-size: 0.75rem;
+.work > h2 {
+  margin-bottom: 0.625rem;
   color: var(--soft);
+  font-size: 0.75rem;
   font-weight: 400;
 }
-.work-group > ul {
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2rem;
   list-style: none;
+}
+.project-grid > li {
+  min-width: 0;
+  border-top: 1px solid var(--rule);
 }
 
 .work-project {
@@ -249,7 +295,8 @@ h1, h2, h3 {
   justify-content: space-between;
   gap: 0.75rem;
   min-height: 2.75rem;
-  padding: 0.5625rem 0;
+  height: 100%;
+  padding: 0.8125rem 0;
   list-style: none;
   cursor: pointer;
 }
@@ -260,7 +307,8 @@ h1, h2, h3 {
 }
 .work-title {
   display: block;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 460;
   transition: color 0.15s ease;
 }
 .work-description {
@@ -288,13 +336,24 @@ h1, h2, h3 {
 .work-project:hover .work-title {
   color: var(--soft);
 }
-@media (max-width: 32.5rem) {
-  .work-group {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.4375rem;
+@media (max-width: 460px) {
+  body.home > .page {
+    padding: 32px 22px 0;
   }
-  .work-group > h2 {
-    padding-top: 0;
+  .project-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .work-project {
+    padding: 0.6875rem 0;
+  }
+  .home-landscape {
+    min-height: 36vw;
+    overflow-clip-margin: 0;
+  }
+  .home-landscape img {
+    width: 145%;
+    max-width: none;
+    left: -30%;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -307,7 +366,11 @@ h1, h2, h3 {
 /* ---- The footer ------------------------------------------------------ */
 
 .foot {
-  padding: 2.5rem 0 5rem;
+  padding: 1.5rem 0 0;
+}
+.foot:not(:has(.pulse:not([hidden]), .whereat:not([hidden]), .listening:not([hidden]))),
+.foot .row:not(:has(.pulse:not([hidden]), .whereat:not([hidden]), .listening:not([hidden]))) {
+  display: none;
 }
 .foot::before {
   content: "";
@@ -315,7 +378,7 @@ h1, h2, h3 {
   height: 1px;
   width: 3.125rem;
   background: var(--rule);
-  margin-bottom: 2.375rem;
+  margin-bottom: 1.25rem;
 }
 
 .foot,

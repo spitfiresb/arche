@@ -7,11 +7,11 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — the landing page
+- **Home** — the original intro and social previews, a two-column project index,
+  and the illustrated lookout landscape
 - **About** — a timeline of how I got here
-- **Work / Personal** — what I built for myself
-- **Work / Contract** — what I built for other people
-- **Work / Cool** — a running collection of things I found interesting
+- **Work** — all projects and demos on one page with project navigation;
+  individual project pages also remain available
 
 ## Demos
 
