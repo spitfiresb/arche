@@ -431,7 +431,8 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 .about-more {
   display: inline-block;
   margin-top: 1.2rem;
-  font-size: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
   color: var(--muted);
   text-decoration: none;
   transition: color 0.3s ease;

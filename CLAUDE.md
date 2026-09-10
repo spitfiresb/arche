@@ -56,7 +56,11 @@ when changing the illustration: the current layout lives in `site.css`.
 ## The pages
 
 The homepage stylesheet is `site.css`: a 638px outer column with 30px
-side padding, a 15px name heading, and Inter on charcoal (#1a1a1a).
+side padding and Inter on charcoal (#1a1a1a). Homepage text follows
+benji.org's scale: 14px with a 20px line height for the name, update date,
+project heading, titles, descriptions and About link; 13px footer text.
+The name uses weight 500 and regular text 460. Profile-preview cards retain
+their own LinkedIn/GitHub typography.
 The home page has a centered, content-width header with Zain Saeed above
 Last update, both aligned to the same left edge, and no interests paragraph.
 It keeps main's centered expanding social cards

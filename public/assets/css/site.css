@@ -174,9 +174,9 @@ h1, h2, h3 {
   align-self: flex-start;
   text-align: left;
   color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  font-weight: 460;
+  line-height: 1.25rem;
 }
 .site-updated:hover time,
 .site-updated:focus-visible time {
@@ -242,8 +242,8 @@ body.home {
   position: relative;
   isolation: isolate;
   background: var(--bg);
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 body.home > .page {
@@ -259,9 +259,12 @@ body.home > .page::before {
   content: none;
 }
 
-/* Keep the intro and icon previews at main's scale and alignment. */
+/* Match benji.org's 14px / 20px homepage text. The embedded profile cards
+   retain their own typography; the name has the reference's medium weight. */
 body.home .bio {
   font-size: inherit;
+  font-weight: 460;
+  line-height: inherit;
 }
 
 body.home .bio > header {
@@ -270,6 +273,10 @@ body.home .bio > header {
   margin-inline: auto;
   align-items: flex-start;
   text-align: left;
+}
+
+body.home .bio > header h1 {
+  font-weight: 500;
 }
 
 /* Anchor the landscape inside the viewport rather than appending its height
@@ -300,8 +307,8 @@ body.home .bio > header {
 .work > h2 {
   margin-bottom: 0.625rem;
   color: var(--soft);
-  font-size: 0.75rem;
-  font-weight: 400;
+  font-size: 0.875rem;
+  font-weight: 460;
 }
 
 .project-grid {
@@ -333,7 +340,7 @@ body.home .bio > header {
 }
 .work-title {
   display: block;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 460;
   transition: color 0.15s ease;
 }
@@ -341,9 +348,9 @@ body.home .bio > header {
   display: block;
   margin-top: 0.1875rem;
   color: var(--soft);
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  font-weight: 460;
+  line-height: 1.25rem;
 }
 .work-chevron {
   flex: none;
