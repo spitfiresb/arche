@@ -264,6 +264,14 @@ body.home .bio {
   font-size: inherit;
 }
 
+body.home .bio > header {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  align-items: flex-start;
+  text-align: left;
+}
+
 /* Anchor the landscape inside the viewport rather than appending its height
    below the copy. Give its blend group an opaque charcoal backdrop so the
    image's black sky blends into the same grey as the rest of the page. */

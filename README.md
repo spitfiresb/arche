@@ -7,7 +7,7 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — a greeting, deployment date and social previews, a two-column project index,
+- **Home** — a name, deployment date and social previews, a two-column project index,
   and the illustrated lookout landscape
 - **About** — a timeline of how I got here
 - **Work** — all projects and demos on one page with project navigation;
@@ -115,7 +115,7 @@ tools/deploy.sh --dry-run    # show what would be stamped, deploy nothing
 It refuses a dirty tree, so what's live is always a commit. `gh` has to be
 signed in, for the one call that checks whether the repo is public.
 
-The gray **Last updated** line beneath the greeting is stamped with the
+The gray **Last update** line beneath the name is stamped with the
 deployment's UTC date and an exact timestamp, and links to the deployed
 commit (or the GitHub profile when that commit is not publicly accessible).
 It changes on every deployment, including redeploys of the same commit.
