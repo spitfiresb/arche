@@ -28,7 +28,7 @@ page, not a screenshot.
 
 ## Live numbers
 
-The home page carries three of them in its bottom-right corner: how many
+The home page carries three of them in its top-left status group: how many
 people have visited in the last 30 days, what the last commit to the site
 did, and how many are reading right now.
 
@@ -87,7 +87,10 @@ python3 tools/serve.py    # http://localhost:8712
 The illustration layer inspector is at `/__scene`; `?edit` enables local
 text editing. The homepage uses the static panorama, while the original
 layered artwork and tools remain available for further illustration work.
-For the live footer and other Cloudflare Pages Functions, use Wrangler:
+The location, music, and analytics widgets also work on this preview server:
+it reads the public live site's status without registering local visitors
+or online tabs. It never forwards browser cookies or heartbeat identifiers.
+To test the Pages Functions themselves or FloorSense detection, use Wrangler:
 
 ```sh
 cp .dev.vars.example .dev.vars     # then fill both values in
@@ -124,7 +127,7 @@ placeholder after uploading, including on failure.
 
 ## The location corner
 
-The bottom-left of the home page says where I was last seen, when that
+The top-left status group says where I was last seen, when that
 somewhere was public. A LaunchAgent on my Mac takes a coarse CoreLocation fix
 every three minutes and posts it to `/api/where`, which asks OpenStreetMap
 what's there and writes a venue name only if it passes an allowlist of public

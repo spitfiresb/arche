@@ -1,0 +1,192 @@
+/* Main's location, music and analytics readouts, temporarily grouped together. */
+.home-status {
+  position: fixed;
+  top: 20px;
+  left: 24px;
+  z-index: 20;
+  width: min(340px, calc((100vw - 638px) / 2 - 40px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.home-status:not(:has(.is-live)) {
+  display: none;
+}
+.home-status > * {
+  position: relative;
+  max-width: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.home-status > .is-live {
+  opacity: 1;
+}
+.home-status [hidden] {
+  display: none;
+}
+.whereat,
+.listening {
+  width: 100%;
+  cursor: default;
+}
+.whereat-line,
+.listening-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.whereat-pin,
+.listening-note {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  margin-right: 0.15em;
+}
+.whereat-line,
+.listening-track {
+  font-size: 0.875rem;
+}
+.whereat-place,
+.listening-track {
+  color: var(--fg);
+}
+.whereat-city,
+.listening-artist {
+  color: var(--faint);
+}
+.whereat-hint,
+.listening-hint,
+.pulse-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.whereat-hint {
+  margin-left: 2em;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.whereat-hint:empty,
+.listening-hint:empty,
+.pulse-flags:empty {
+  display: none;
+}
+.pulse {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.pulse-stat {
+  display: block;
+  padding-block: 2px;
+}
+.pulse-num {
+  color: var(--fg);
+  font-size: 0.875rem;
+}
+.pulse-unit {
+  margin-left: 0.35em;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+.pulse-sign {
+  font-size: 0.75rem;
+  margin-right: 0.08em;
+  vertical-align: 0.1em;
+}
+.pulse-commit {
+  cursor: pointer;
+}
+.pulse-commit .pulse-num + .pulse-num {
+  margin-left: 0.4em;
+}
+.pulse-add {
+  color: #3fb950;
+}
+.pulse-del {
+  color: #f85149;
+}
+.pulse-commit:hover .pulse-num,
+.pulse-commit:focus-visible .pulse-num {
+  opacity: 0.8;
+}
+.pulse-commit:focus-visible {
+  outline: 1px solid var(--muted);
+  outline-offset: 3px;
+}
+.pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: var(--live);
+  vertical-align: 0.06em;
+}
+.pulse-flags {
+  display: block;
+  font-family: "Apple Color Emoji", "Twemoji Country Flags", sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+}
+@media (hover: hover) {
+  .pulse-label,
+  .pulse-flags,
+  .whereat-hint,
+  .listening-hint {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+  .pulse-stat:hover .pulse-label,
+  .pulse-stat:focus-within .pulse-label,
+  .pulse-stat:hover .pulse-flags,
+  .pulse-stat:focus-within .pulse-flags,
+  .whereat:hover .whereat-hint,
+  .listening:hover .listening-hint {
+    max-height: 5rem;
+    opacity: 1;
+  }
+}
+/* On smaller screens the stack takes its own space above the name instead
+   of covering the centered content. It remains aligned with the left edge. */
+@media (max-width: 1160px) {
+  .home-status {
+    position: relative;
+    inset: auto;
+    width: calc(100% - 44px);
+    margin: 20px 22px 0;
+    gap: 8px;
+  }
+  .home-status .pulse {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  body.home:has(.home-status .is-live) > .page {
+    padding-top: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-status > *,
+  .pulse-label,
+  .pulse-flags,
+  .whereat-hint,
+  .listening-hint {
+    transition: none;
+  }
+}

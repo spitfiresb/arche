@@ -41,9 +41,11 @@ production baseline. Use one preview server: `python3 tools/serve.py` on
 
 `tools/serve.py` serves `public/` with Cloudflare's clean-URL rule, so
 `/work/notch` resolves the way it does live. Any other static server works
-but needs the `.html`. Neither runs the Pages Functions, so the live footer
-stays empty; for that use `npx wrangler pages dev` (needs `.dev.vars`, see
-README).
+but needs the `.html`. The preview server bridges `POST /api/pulse` to the
+public production response, caching it for 20 seconds. It always sends an
+empty body upstream and never forwards local tab IDs, fresh flags, cookies
+or headers, so local previews do not register visits or presence. Other Pages
+Functions still need `npx wrangler pages dev` (needs `.dev.vars`, see README).
 
 The same server exposes `/__scene` for the preserved illustration layer
 inspector and `?edit` for in-place text previews, with no-store responses.
@@ -58,7 +60,8 @@ when changing the illustration: the current layout lives in `site.css`.
 The homepage stylesheet is `site.css`: a 638px outer column with 30px
 side padding and Inter on charcoal (#1a1a1a). Homepage text follows
 benji.org's scale: 14px with a 20px line height for the name, update date,
-project heading, titles, descriptions and About link; 13px footer text.
+project heading, titles, descriptions and About link. Live status readouts
+use 13–14px text and smaller hover labels.
 The name uses weight 500 and regular text 460. Profile-preview cards retain
 their own LinkedIn/GitHub typography.
 The home page has a centered, content-width header with Zain Saeed above
@@ -75,8 +78,11 @@ category sections or tabs. The landscape uses the static
 anchored at the bottom of the viewport behind the copy. Both the body and
 landscape blend container have an opaque charcoal background, so the image's
 black sky blends into the page grey. The homepage is one viewport with no
-scrolling; short screens use tighter spacing. Live footer rows appear only
-when populated.
+scrolling; short screens use tighter spacing. Location, music and analytics
+are grouped in `.home-status` at the top left, styled by `home-status.css`.
+At widths below 1160px the group takes space above the name rather than
+overlapping it. Each widget appears when its data arrives. No language UI
+or translation script is loaded.
 Standalone pages retain the 36.375rem column and 80% root font size.
 The fixed left table of contents lists every project by name, with a single
 dot following the active article (`toc.js`). It stays on the left at every screen width, with a reserved gutter beside
@@ -107,7 +113,7 @@ standalone page retains `system-preview-light.svg`.
 
 ## The stats strip
 
-The three numbers on the right of the home page's footer: visits in the
+The three numbers in the home page's top-left status group: visits in the
 last 30 days, the last commit's diff stat, and how many people are reading
 now.
 `pulse.js` runs on every page and beats to `POST /api/pulse` on load and
@@ -132,12 +138,11 @@ into an emoji by shifting its letters into the regional-indicator block.
 
 Things to remember when touching it:
 
-- **The corners are footer rows now, on every width.** The previous
-  edition pinned them to the window's corners and hid all three below
-  40rem; this one puts the strip, the location line and the music line in
-  the footer's flow, so nothing is hidden by width and `indentHint` in
-  `pulse.js` (which measured the location hint's indent from layout) is
-  vestigial: the hint is a trailing span in the sentence here.
+- **The original corner widgets now share one top-left group.** Keep
+  `.whereat-line`, `.listening-line` and the hint spans: `pulse.js` uses
+  these for the location indent and metadata. Hover reveals location/music
+  ages, commit age and country flags; touch displays the details directly.
+  The status group remains available at narrow widths.
 - **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
   Without it, the visitor hashes are a plain hash of an IP, which is
   enumerable over the whole IPv4 space and therefore not anonymous at all.
@@ -157,9 +162,9 @@ Things to remember when touching it:
 
 ## The music corner
 
-A row of the home page's footer: "<note icon> <track> by <artist>" — no
-lede, nothing clickable. The hint follows the sentence as a trailing
-span: "Now Playing" while something is live, "Last Played · 3 hours ago"
+A row in the home page's top-left status group: "<note icon> <track> by <artist>" — no
+lede, nothing clickable. The hint opens above the sentence on hover:
+"Now Playing" while something is live, "Last Played · 3 hours ago"
 once it isn't. No reporter anywhere —
 Spotify's own servers know what's playing, so `/api/pulse` pulls it and
 the result rides back on the response every page is already fetching,
@@ -258,7 +263,7 @@ being one.
 
 ## The location corner
 
-A row of the home page's footer: "Last seen at <venue>". A LaunchAgent on my
+A row in the home page's top-left status group: "Last seen at <venue>". A LaunchAgent on my
 Mac (`tools/where/`) takes a coarse CoreLocation fix every three minutes and
 posts it to `POST /api/where`, which asks OpenStreetMap what's there and
 writes a venue name only if it clears an allowlist. The result rides back on
