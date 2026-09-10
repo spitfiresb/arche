@@ -11,7 +11,7 @@
   gap: 12px;
   color: var(--muted);
   font-size: 0.8125rem;
-  line-height: 1.4;
+  line-height: 1.25rem;
   pointer-events: none;
 }
 .home-presence {
@@ -51,9 +51,9 @@
 }
 .whereat-pin,
 .listening-note {
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
+  width: 0.875rem;
+  height: 0.875rem;
+  vertical-align: -0.125rem;
   margin-right: 0.15em;
 }
 .whereat-line,
@@ -94,12 +94,13 @@
   align-items: flex-end;
   justify-self: end;
   text-align: right;
+  gap: 12px;
   font-variant-numeric: tabular-nums;
   cursor: default;
 }
 .pulse-stat {
   display: block;
-  padding-block: 2px;
+  padding: 0;
 }
 .pulse-num {
   color: var(--fg);
@@ -191,6 +192,9 @@
   }
   .home-presence {
     max-width: 100%;
+    gap: 8px;
+  }
+  .pulse {
     gap: 8px;
   }
   body.home:has(.home-status .is-live) > .page {
