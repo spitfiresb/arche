@@ -217,14 +217,17 @@ h1, h2, h3 {
 
 html:has(body.home) {
   font-size: 100%;
+  height: 100%;
+  overflow: clip;
 }
 
 body.home {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+  height: 100dvh;
+  min-height: 0;
+  overflow: clip;
   position: relative;
   isolation: isolate;
+  background: var(--bg);
   font-size: 0.9375rem;
   line-height: 1.5;
 }
@@ -247,14 +250,15 @@ body.home .bio {
   font-size: inherit;
 }
 
-/* The image's empty sky can extend behind the content. Reserve space for
-   the mountain and lookout in normal flow so growing lists remain readable. */
+/* Anchor the landscape inside the viewport rather than appending its height
+   below the copy. Give its blend group an opaque charcoal backdrop so the
+   image's black sky blends into the same grey as the rest of the page. */
 .home-landscape {
-  position: relative;
-  min-height: 22vw;
-  flex: 1 0 auto;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--bg);
   overflow: clip;
-  overflow-clip-margin: 12vw;
   pointer-events: none;
 }
 .home-landscape img {
@@ -346,14 +350,35 @@ body.home .bio {
   .work-project {
     padding: 0.6875rem 0;
   }
-  .home-landscape {
-    min-height: 36vw;
-    overflow-clip-margin: 0;
-  }
   .home-landscape img {
     width: 145%;
     max-width: none;
     left: -30%;
+  }
+}
+/* Short windows use less spacing, leaving the bottom of the viewport for
+   the drawing while keeping the intro and project text at their normal size. */
+@media (max-height: 780px) {
+  body.home > .page {
+    padding-top: 24px;
+  }
+  body.home .elsewhere {
+    padding-top: 1.25rem;
+  }
+  body.home .about-more {
+    margin-top: 0.75rem;
+  }
+  body.home .work {
+    padding-top: 1.5rem;
+  }
+  body.home .work-project {
+    padding-block: 0.5625rem;
+  }
+}
+@media (max-width: 460px) and (max-height: 780px) {
+  .project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {

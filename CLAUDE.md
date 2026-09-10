@@ -55,12 +55,16 @@ The home page keeps main's intro wording, centered expanding social cards
 (`home-socials.css` and `home-socials.js`), and bracketed About link.
 One Projects heading introduces seven projects in a two-column grid,
 with short descriptions and subtle row rules. Entries fill left to right;
-below 460px the grid becomes one column. There are no category labels.
+below 460px the grid becomes one column, except on short screens where
+two columns conserve height. There are no category labels.
 Each entry links to an anchor on `/work/`, one continuous list without
 category sections or tabs. The landscape uses the static
-`lookout-panorama-v2.png` from `home-illustration`, with space reserved
-below the copy for its skyline. The homepage scrolls as needed instead of
-shrinking text to fit one screen. Live footer rows appear only when populated.
+`lookout-panorama-v2.png` from the former `home-illustration` branch,
+anchored at the bottom of the viewport behind the copy. Both the body and
+landscape blend container have an opaque charcoal background, so the image's
+black sky blends into the page grey. The homepage is one viewport with no
+scrolling; short screens use tighter spacing. Live footer rows appear only
+when populated.
 Standalone pages retain the 36.375rem column and 80% root font size.
 The fixed left table of contents lists every project by name, with a single
 dot following the active article (`toc.js`). It stays on the left at every screen width, with a reserved gutter beside
