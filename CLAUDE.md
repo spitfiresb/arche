@@ -23,6 +23,12 @@ on exit whatever happens. Running `npx wrangler pages deploy` by hand still
 works (`wrangler.toml` declares the output directory and project name) but
 ships the placeholder commit row.
 
+The greeting is followed by a gray Last updated link. The same script
+stamps its `time[data-deployed]` with the deployment time in UTC, separate
+from the commit timestamp, and points the link at the deployed revision.
+The local source keeps a dash as its placeholder. Use `tools/deploy.sh`
+so this date updates even when redeploying an unchanged commit.
+
 Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
 `/work/contract` redirect).
 
@@ -51,7 +57,7 @@ when changing the illustration: the current layout lives in `site.css`.
 
 The homepage stylesheet is `site.css`: a 638px outer column with 30px
 side padding, 15px intro text, and Inter on charcoal (#1a1a1a).
-The home page keeps main's intro wording, centered expanding social cards
+The home page keeps main's intro paragraph, centered expanding social cards
 (`home-socials.css` and `home-socials.js`), and bracketed About link.
 One Projects heading introduces seven projects in a two-column grid,
 with short descriptions and subtle row rules. Entries fill left to right;

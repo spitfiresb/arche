@@ -170,6 +170,19 @@ h1, h2, h3 {
   color: var(--muted);
 }
 
+.site-updated {
+  align-self: center;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.site-updated:hover time,
+.site-updated:focus-visible time {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .bio > p {
   padding-top: 1rem;
 }
