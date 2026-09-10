@@ -237,7 +237,7 @@ body.home > .page {
   z-index: 1;
   width: 100%;
   max-width: 638px;
-  padding: 52px 30px 0;
+  padding: 76px 30px 0;
   flex: none;
 }
 
@@ -342,7 +342,7 @@ body.home .bio {
 }
 @media (max-width: 460px) {
   body.home > .page {
-    padding: 32px 22px 0;
+    padding: 48px 22px 0;
   }
   .project-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -360,7 +360,7 @@ body.home .bio {
    the drawing while keeping the intro and project text at their normal size. */
 @media (max-height: 780px) {
   body.home > .page {
-    padding-top: 24px;
+    padding-top: 40px;
   }
   body.home .elsewhere {
     padding-top: 1.25rem;
