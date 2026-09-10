@@ -28,7 +28,7 @@ page, not a screenshot.
 
 ## Live numbers
 
-The home page carries three of them in its top-left status group: how many
+The home page carries three of them in its top-right metrics group: how many
 people have visited in the last 30 days, what the last commit to the site
 did, and how many are reading right now.
 

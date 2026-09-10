@@ -79,10 +79,10 @@ anchored at the bottom of the viewport behind the copy. Both the body and
 landscape blend container have an opaque charcoal background, so the image's
 black sky blends into the page grey. The homepage is one viewport with no
 scrolling; short screens use tighter spacing. Location, music and analytics
-are grouped in `.home-status` at the top left, styled by `home-status.css`.
-At widths below 1160px the group takes space above the name rather than
-overlapping it. Each widget appears when its data arrives. No language UI
-or translation script is loaded.
+share `.home-status`, styled by `home-status.css`: location and music on
+the top left, metrics on the top right. Hover details expand beneath their
+readouts. Below 1160px the two columns take space above the name. Each widget
+appears when its data arrives. No language UI or translation script is loaded.
 Standalone pages retain the 36.375rem column and 80% root font size.
 The fixed left table of contents lists every project by name, with a single
 dot following the active article (`toc.js`). It stays on the left at every screen width, with a reserved gutter beside
@@ -113,7 +113,7 @@ standalone page retains `system-preview-light.svg`.
 
 ## The stats strip
 
-The three numbers in the home page's top-left status group: visits in the
+The three numbers in the home page's top-right metrics group: visits in the
 last 30 days, the last commit's diff stat, and how many people are reading
 now.
 `pulse.js` runs on every page and beats to `POST /api/pulse` on load and
@@ -138,7 +138,7 @@ into an emoji by shifting its letters into the regional-indicator block.
 
 Things to remember when touching it:
 
-- **The original corner widgets now share one top-left group.** Keep
+- **Location/music sit top left and metrics top right.** Keep
   `.whereat-line`, `.listening-line` and the hint spans: `pulse.js` uses
   these for the location indent and metadata. Hover reveals location/music
   ages, commit age and country flags; touch displays the details directly.
@@ -163,7 +163,7 @@ Things to remember when touching it:
 ## The music corner
 
 A row in the home page's top-left status group: "<note icon> <track> by <artist>" — no
-lede, nothing clickable. The hint opens above the sentence on hover:
+lede, nothing clickable. The hint opens below the sentence on hover:
 "Now Playing" while something is live, "Last Played · 3 hours ago"
 once it isn't. No reporter anywhere —
 Spotify's own servers know what's playing, so `/api/pulse` pulls it and

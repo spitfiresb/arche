@@ -1,29 +1,37 @@
-/* Main's location, music and analytics readouts, temporarily grouped together. */
+/* Location and music at top left; analytics at top right. */
 .home-status {
   position: fixed;
   top: 20px;
   left: 24px;
+  right: 24px;
   z-index: 20;
-  width: min(340px, calc((100vw - 638px) / 2 - 40px));
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
   gap: 12px;
-  background: var(--bg);
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.4;
+  pointer-events: none;
+}
+.home-presence {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  max-width: min(340px, calc((100vw - 638px) / 2 - 40px));
 }
 .home-status:not(:has(.is-live)) {
   display: none;
 }
-.home-status > * {
+.home-status :is(.whereat, .listening, .pulse) {
   position: relative;
+  pointer-events: auto;
   max-width: 100%;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
-.home-status > .is-live {
+.home-status .is-live {
   opacity: 1;
 }
 .home-status [hidden] {
@@ -83,7 +91,9 @@
 .pulse {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
+  justify-self: end;
+  text-align: right;
   font-variant-numeric: tabular-nums;
   cursor: default;
 }
@@ -170,8 +180,7 @@
     opacity: 1;
   }
 }
-/* On smaller screens the stack takes its own space above the name instead
-   of covering the centered content. It remains aligned with the left edge. */
+/* Reserve space above the name on smaller screens, keeping both corners. */
 @media (max-width: 1160px) {
   .home-status {
     position: relative;
@@ -180,18 +189,16 @@
     margin: 20px 22px 0;
     gap: 8px;
   }
-  .home-status .pulse {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 1.25rem;
+  .home-presence {
+    max-width: 100%;
+    gap: 8px;
   }
   body.home:has(.home-status .is-live) > .page {
     padding-top: 28px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .home-status > *,
+  .home-status :is(.whereat, .listening, .pulse),
   .pulse-label,
   .pulse-flags,
   .whereat-hint,
