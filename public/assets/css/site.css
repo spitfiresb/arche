@@ -171,7 +171,8 @@ h1, h2, h3 {
 }
 
 .site-updated {
-  align-self: center;
+  align-self: flex-start;
+  text-align: left;
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 400;

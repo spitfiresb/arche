@@ -7,7 +7,7 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — the original intro and social previews, a two-column project index,
+- **Home** — a greeting, deployment date and social previews, a two-column project index,
   and the illustrated lookout landscape
 - **About** — a timeline of how I got here
 - **Work** — all projects and demos on one page with project navigation;

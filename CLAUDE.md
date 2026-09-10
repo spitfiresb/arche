@@ -56,8 +56,9 @@ when changing the illustration: the current layout lives in `site.css`.
 ## The pages
 
 The homepage stylesheet is `site.css`: a 638px outer column with 30px
-side padding, 15px intro text, and Inter on charcoal (#1a1a1a).
-The home page keeps main's intro paragraph, centered expanding social cards
+side padding, a 15px greeting, and Inter on charcoal (#1a1a1a).
+The home page has a centered greeting, a left-aligned Last updated line,
+and no interests paragraph. It keeps main's centered expanding social cards
 (`home-socials.css` and `home-socials.js`), and bracketed About link.
 One Projects heading introduces seven projects in a two-column grid,
 with short descriptions and subtle row rules. Entries fill left to right;
