@@ -153,11 +153,20 @@
   }
   .pulse-stat:hover .pulse-label,
   .pulse-stat:focus-within .pulse-label,
-  .pulse-stat:hover .pulse-flags,
-  .pulse-stat:focus-within .pulse-flags,
   .whereat:hover .whereat-hint,
   .listening:hover .listening-hint {
-    max-height: 5rem;
+    /* Match main: oversized limits make the visible reveal finish early. */
+    max-height: 1.2rem;
+    opacity: 1;
+  }
+  .pulse-label,
+  .whereat-hint,
+  .listening-hint {
+    white-space: nowrap;
+  }
+  .pulse-stat:hover .pulse-flags,
+  .pulse-stat:focus-within .pulse-flags {
+    max-height: 1.6rem;
     opacity: 1;
   }
 }
