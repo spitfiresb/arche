@@ -298,7 +298,7 @@ body.home .elsewhere {
   overflow: clip;
   pointer-events: none;
 }
-.home-landscape img {
+.home-landscape .home-panorama {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -327,7 +327,6 @@ body.home .elsewhere {
 }
 .project-grid > li {
   min-width: 0;
-  border-top: 1px solid var(--rule);
 }
 
 .work-project {
@@ -338,6 +337,8 @@ body.home .elsewhere {
   min-height: 2.75rem;
   height: 100%;
   padding: 0.8125rem 0;
+  /* Include the divider in the link so adjacent hover areas touch. */
+  border-top: 1px solid var(--rule);
   list-style: none;
   cursor: pointer;
 }
@@ -359,9 +360,10 @@ body.home .elsewhere {
   display: block;
   margin-top: 0.1875rem;
   color: var(--soft);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 460;
-  line-height: 1.25rem;
+  line-height: 1.0625rem;
+  transition: color 0.15s ease;
 }
 .work-chevron {
   flex: none;
@@ -373,13 +375,24 @@ body.home .elsewhere {
   border-right: 1px solid currentColor;
   color: var(--soft);
   transform: rotate(45deg);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, color 0.15s ease;
 }
 .work-project:hover .work-chevron {
   transform: translateX(0.125rem) rotate(45deg);
 }
-.work-project:hover .work-title {
-  color: var(--soft);
+@media (hover: hover) {
+  .project-grid:has(.work-project:hover) .work-project:not(:hover) :is(.work-title, .work-description, .work-chevron) {
+    color: var(--faint);
+  }
+  .work-project:hover :is(.work-title, .work-description, .work-chevron) {
+    color: var(--fg);
+  }
+}
+.project-grid:has(.work-project:focus-visible) .work-project:not(:focus-visible) :is(.work-title, .work-description, .work-chevron) {
+  color: var(--faint);
+}
+.work-project:focus-visible :is(.work-title, .work-description, .work-chevron) {
+  color: var(--fg);
 }
 @media (max-width: 460px) {
   body.home > .page {
@@ -391,7 +404,7 @@ body.home .elsewhere {
   .work-project {
     padding: 0.6875rem 0;
   }
-  .home-landscape img {
+  .home-landscape .home-panorama {
     width: 145%;
     max-width: none;
     left: -30%;
@@ -424,6 +437,7 @@ body.home .elsewhere {
 }
 @media (prefers-reduced-motion: reduce) {
   .work-title,
+  .work-description,
   .work-chevron {
     transition: none;
   }

@@ -1,0 +1,18 @@
+/* Separate project pages retain the original copy and demo bands. */
+body.page.work.project-detail:not(.collection) main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--work-width) + 3rem);
+}
+@media (min-width: 64.0625rem) {
+  body.project-detail ul.bands > li {
+    grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+  }
+  body.project-detail ul.bands > li .band-artifact { grid-column: 1; }
+  body.project-detail ul.bands > li .band-prose { grid-column: 2; }
+  body.project-detail ul.bands > li.band-reversed {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+  }
+  body.project-detail ul.bands > li.band-reversed .band-artifact { grid-column: 2; }
+  body.project-detail ul.bands > li.band-reversed .band-prose { grid-column: 1; }
+}

@@ -49,7 +49,10 @@ Functions still need `npx wrangler pages dev` (needs `.dev.vars`, see README).
 
 The same server exposes `/__scene` for the preserved illustration layer
 inspector and `?edit` for in-place text previews, with no-store responses.
-The homepage currently uses the static panorama. The layer sources and older
+The homepage uses the panorama inside an inline SVG with a separate cabin-light
+layer. `home-cabin.css` adds amber window tint, bloom and gentle flickering;
+reduced motion keeps the glow steady. Panorama and light share the same viewBox
+and responsive crop in `site.css`. The layer sources and older
 scene/theme scripts are retained for future illustration work, but are not
 loaded by the homepage; editing the layer manifest only updates the inspector.
 Do not re-enable the old viewport-fitting script or three-column stylesheet
@@ -60,7 +63,9 @@ when changing the illustration: the current layout lives in `site.css`.
 The homepage stylesheet is `site.css`: a 638px outer column with 30px
 side padding and Inter on charcoal (#1a1a1a). Homepage text follows
 benji.org's scale: 14px with a 20px line height for the name, update date,
-project heading, titles, descriptions and About link. Live status readouts
+project heading, titles and About link. Project descriptions use 12px / 17px;
+hovering or keyboard-focusing a project keeps it white and dims the others.
+Live status readouts
 use 13–14px text and smaller hover labels.
 The name uses weight 500 and regular text 460. Profile-preview cards retain
 their own LinkedIn/GitHub typography.
@@ -72,8 +77,8 @@ One Projects heading introduces seven projects in a two-column grid,
 with short descriptions and subtle row rules. Entries fill left to right;
 below 460px the grid becomes one column, except on short screens where
 two columns conserve height. There are no category labels.
-Each entry links to an anchor on `/work/`, one continuous list without
-category sections or tabs. The landscape uses the static
+Each entry links directly to its project at `/work/<slug>`. Unpak links to
+`/work/unpak`, containing only its System, Dashboard and Website sections. The landscape uses the static
 `lookout-panorama-v2.png` from the former `home-illustration` branch,
 anchored at the bottom of the viewport behind the copy. Both the body and
 landscape blend container have an opaque charcoal background, so the image's
@@ -83,33 +88,38 @@ share `.home-status`, styled by `home-status.css`: location and music on
 the top left, metrics on the top right. Hover details expand beneath their
 readouts. Below 1160px the two columns take space above the name. Each widget
 appears when its data arrives. No language UI or translation script is loaded.
-Standalone pages retain the 36.375rem column and 80% root font size.
-The fixed left table of contents lists every project by name, with a single
-dot following the active article (`toc.js`). It stays on the left at every screen width, with a reserved gutter beside
-the projects and vertical scrolling when the list is taller than the window. The project page loads main's original
-`style.css` and uses its alternating side-by-side bands, original project
-copy, typography, technical specifications, and demo sizes. All nine bands,
-including Unpak System, Dashboard, and Website, are in `tools/project-bands.html`,
-copied from main at 07c5768. `project-navigation.css` only adapts the table of
-contents to the combined page; it reserves a left gutter at every width so the navigation never moves
-above the content. Wide screens retain main's original band width.
-There is no footer clock.
-Individual project pages remain at
-`/work/<slug>` with its demo up top, prose, a label/value spec list and
-previous/next links; `/about` is the same column as a timeline. The
-project pages are generated: `tools/build-work.py` holds one dict per
-project for the individual pages, and reads `tools/project-bands.html` for
-`work/index.html`. The output is committed, so edit the appropriate source,
-run the script, and commit both. The home page's project list is hand-written
-and has to be kept in step with it. `_redirects` sends the previous
-edition's section URLs (`/work/personal`, `/work/contract`, `/work/cool`)
-to a project page each.
+The right metrics use an 8px gap; desktop left widgets keep 12px.
+`home-status.js` measures the centered header so the left widgets can extend
+to 24px before it, instead of clipping at a fixed width.
+Project pages load main's original `style.css`, preserving their copy, typography,
+technical specifications, demo sizes and alternating side-by-side layouts.
+`project-pages.css` preserves each band's original left/right orientation after
+splitting the collection. The six single-section projects have no sidebar gutter.
+Unpak alone keeps a fixed left table of contents (System, Dashboard, Website),
+with `toc.js` moving the active dot on scroll or anchor navigation.
+`project-navigation.css` reserves its sidebar gutter at every width.
+All nine content bands live in `tools/project-bands.html`, originally copied
+from main at 07c5768. There is no footer clock or cross-project navigation.
+`/about` preserves main's original timeline, typography,
+stickman/rope animation, car artwork and language behavior. It uses `style.css`,
+`about.js`, `car-art.js`, and `i18n.js` with the dictionaries in `assets/i18n/`;
+keep this page independent of the homepage redesign. All page-level back links
+use the shared `home-back.css` return-arrow + “home” control: gray at rest,
+white on hover or keyboard focus. The
+home link sits 80px from the top and left on desktop, with the project rail
+aligned below it at 168px. At widths up to 900px, the link uses 24px left /
+32px top insets and the rail starts at 100px. The
+project pages are generated: `tools/build-work.py` holds page metadata and reads
+`tools/project-bands.html` as the single source for their content. Edit the source,
+run the script, and commit both source and output. The homepage list is hand-written
+and links to the seven project pages. `/work/` is a compact index with no demos;
+`work-redirect.js` preserves old collection fragment links. Former Unpak page URLs
+redirect to the matching section of `/work/unpak`. `_redirects` retains the older
+category redirects (`/work/personal`, `/work/contract`, `/work/cool`).
 
-The collection uses the original demo framing (`live-demo.js`, `live-demo.css`,
-and `diagram-expand.js`), with main's 40px corners and desktop zoom. The
-standalone pages keep `site.css` and its 12px corners and overlay height
-adjustment. The collection uses the original dark Unpak system map; the
-standalone page retains `system-preview-light.svg`.
+All project pages use the original demo framing (`live-demo.js`, `live-demo.css`,
+and `diagram-expand.js`), with main's 40px corners and desktop zoom. Unpak uses the
+original dark system map. The About page and homepage keep their own layouts.
 
 ## The stats strip
 

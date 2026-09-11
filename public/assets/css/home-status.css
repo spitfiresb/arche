@@ -19,7 +19,8 @@
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  max-width: min(340px, calc((100vw - 638px) / 2 - 40px));
+  /* Use the space up to the centered header, measured by home-status.js. */
+  max-width: var(--home-presence-width, calc(50vw - 140px));
 }
 .home-status:not(:has(.is-live)) {
   display: none;
@@ -77,6 +78,7 @@
   line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  text-overflow: ellipsis;
 }
 .whereat-hint {
   margin-left: 2em;
@@ -94,7 +96,7 @@
   align-items: flex-end;
   justify-self: end;
   text-align: right;
-  gap: 12px;
+  gap: 8px;
   font-variant-numeric: tabular-nums;
   cursor: default;
 }
@@ -192,9 +194,6 @@
   }
   .home-presence {
     max-width: 100%;
-    gap: 8px;
-  }
-  .pulse {
     gap: 8px;
   }
   body.home:has(.home-status .is-live) > .page {

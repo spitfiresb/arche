@@ -1,0 +1,39 @@
+/* Independent light layer, registered to the panorama's window faces. */
+.home-cabin-windows {
+  filter: brightness(1);
+  animation: cabin-firelight 4.7s linear infinite;
+}
+.home-cabin-halo {
+  opacity: .24;
+  animation: cabin-fire-bloom 6.3s linear -1.8s infinite;
+}
+
+/* Small, uneven rises and dips suggest a fire without flashing or going dark. */
+@keyframes cabin-firelight {
+  0%, 100% { filter: brightness(1); }
+  9% { filter: brightness(.94); }
+  15% { filter: brightness(1.06); }
+  23% { filter: brightness(.98); }
+  37% { filter: brightness(1.04); }
+  43% { filter: brightness(.92); }
+  49% { filter: brightness(1.02); }
+  64% { filter: brightness(.97); }
+  72% { filter: brightness(1.08); }
+  79% { filter: brightness(1.01); }
+  91% { filter: brightness(.95); }
+}
+@keyframes cabin-fire-bloom {
+  0%, 100% { opacity: .24; }
+  17% { opacity: .19; }
+  26% { opacity: .29; }
+  41% { opacity: .22; }
+  48% { opacity: .27; }
+  63% { opacity: .2; }
+  76% { opacity: .3; }
+  88% { opacity: .23; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-cabin-windows,
+  .home-cabin-halo { animation: none; }
+}

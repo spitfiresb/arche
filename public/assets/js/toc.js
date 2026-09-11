@@ -1,4 +1,4 @@
-/* Project-name navigation, adapted from main's section rail. The markup is
+/* Section navigation, adapted from main's section rail. The markup is
    generated with the articles so the links also work without JavaScript.
    One dot follows the current project through scrolling and anchor jumps. */
 (() => {
@@ -95,7 +95,7 @@
   function resolveLegacyHash() {
     const aliases = { '#personal': 'steward-ai', '#contract': 'ai-sales-agent', '#experiments': 'notch', '#unpak': 'unpak-system' };
     const id = aliases[location.hash];
-    if (id) {
+    if (id && document.getElementById(id)) {
       history.replaceState(null, '', '#' + id);
       document.getElementById(id).scrollIntoView({ block: 'start' });
     }

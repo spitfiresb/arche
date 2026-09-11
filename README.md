@@ -10,8 +10,8 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 - **Home** — a name, deployment date and social previews, a two-column project index,
   and the illustrated lookout landscape
 - **About** — a timeline of how I got here
-- **Work** — all projects and demos on one page with project navigation;
-  individual project pages also remain available
+- **Work** — a separate page for each project, preserving its original layout and demos.
+  Unpak groups System, Dashboard, and Website with a left-hand table of contents
 
 ## Demos
 
@@ -85,8 +85,10 @@ python3 tools/serve.py    # http://localhost:8712
 ```
 
 The illustration layer inspector is at `/__scene`; `?edit` enables local
-text editing. The homepage uses the static panorama, while the original
-layered artwork and tools remain available for further illustration work.
+text editing. The homepage displays the panorama inside an SVG, with a separate
+amber cabin-light layer and subtle CSS firelight animation (steady with reduced
+motion). The original layered artwork and tools remain available for further
+illustration work.
 The location, music, and analytics widgets also work on this preview server:
 it reads the public live site's status without registering local visitors
 or online tabs. It never forwards browser cookies or heartbeat identifiers.

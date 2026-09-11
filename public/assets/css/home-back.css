@@ -1,0 +1,68 @@
+/* Shared home navigation, independent of each page's original styling. */
+.back.home-back {
+  top: 80px;
+  left: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  width: max-content;
+  height: 28px;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  color: #a0a0a0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  text-decoration: none;
+  transform: none;
+  transition: color 0.18s ease;
+}
+.back.home-back:hover,
+.back.home-back:focus-visible {
+  color: #f2f2f2;
+  transform: none;
+}
+.home-back .home-arrow {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+/* Keep the home link and project navigation on the same inset rail. */
+body.collection:has(> .home-back) {
+  --toc-left: 80px;
+  --toc-gutter: calc(var(--toc-left) + var(--toc-width) + var(--toc-gap));
+}
+.home-back ~ .toc {
+  top: 168px;
+  transform: none;
+  max-height: calc(100dvh - 200px);
+}
+@media (max-width: 900px) {
+  .back.home-back {
+    top: 32px;
+    left: 24px;
+  }
+  body.collection:has(> .home-back) {
+    --toc-left: 24px;
+  }
+  .home-back ~ .toc {
+    top: 100px;
+    max-height: calc(100dvh - 124px);
+  }
+  /* The link occupies a separate top row when side margins are narrow. */
+  body:has(> .home-back) > main,
+  body.page.work.collection:has(> .home-back) > main {
+    padding-top: 92px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .back.home-back {
+    transition: none;
+  }
+}

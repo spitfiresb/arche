@@ -31,45 +31,66 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=compact-work">
+<link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/live-demo.css">
+<link rel="stylesheet" href="/assets/css/project-navigation.css">
+<link rel="stylesheet" href="/assets/css/project-pages.css">
 <script src="/assets/js/transition.js"></script>
+<link rel="stylesheet" href="/assets/css/home-back.css">
 </head>
-<body class="project">
-  <a class="back" href="/" aria-label="Back to the home page">
-    <svg class="back-mark" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true">
-      <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
-      <path class="back-chevron" d="M24 14 L16 20 L24 26" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+<body class="page work project-detail">
+  <a class="back home-back" href="/" aria-label="Back to the home page">
+    <svg class="home-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M8 8 3 13 8 18M3 13h13a5 5 0 0 0 0-10h-2"/>
     </svg>
+    <span>home</span>
   </a>
-  <main class="page">
-    <article class="article">
-      <header>
-        <h1>Liquid Glass</h1>
-        <div class="meta">
-          <time datetime="2026-07">July 2026</time>
+
+  <main>
+    <h1 class="visually-hidden">Liquid Glass</h1>
+    <ul class="bands">
+<li id="liquid-glass" tabindex="-1" aria-labelledby="liquid-glass-heading">
+        <div class="band-artifact">
+          <iframe class="ld-inline" src="/demos/liquid-glass/"
+          title="Liquid glass - interactive demo" loading="lazy"></iframe>
         </div>
-      </header>
-      <p class="links"><a class="styled-link is-internal" href="/work/liquid-glass-code">View code <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11 L3 8 L6 5"/><path d="M10 5 L13 8 L10 11"/></svg></a></p>
-      <figure class="artifact">
-        <iframe class="ld-inline" src="/demos/liquid-glass/" title="Liquid glass - interactive demo" loading="lazy"></iframe>
-        <figcaption>Live. Click a tab and the glass follows.</figcaption>
-      </figure>
-      <p>My implementation of Apple's Liquid Glass. A pill of glass slides between the tabs, bending the background as it goes and stretching before it settles. One of my personal favorites.</p>
-      <p>The pill is a signed distance field, and the refraction at its edge follows Snell's law with a little dispersion per colour channel, which is where the faint rainbow fringe comes from. A fresnel term and a glare highlight in LCH space give it the wet look, and a spring drives the motion so the glass overshoots and settles instead of easing to a stop.</p>
-      <dl class="spec">
-        <dt>How it works</dt>
-        <dd>A refractive lens over a tab row: SDF pill, Snell-law edge refraction with per-channel dispersion, LCH fresnel and glare, spring-driven motion</dd>
-        <dt>Built on</dt>
-        <dd>WebGL and JavaScript</dd>
-      </dl>
-    </article>
-    <nav class="neighbours" aria-label="Neighbouring projects">
-      <a class="prev" href="/work/unpak-website"><small>Newer</small>Unpak Website</a>
-      <a class="next" href="/work/notch"><small>Older</small>Notch</a>
-    </nav>
+        <div class="band-prose">
+          <div class="band-head">
+            <h2 class="band-title" id="liquid-glass-heading">Liquid Glass<time class="band-date" datetime="2026-07">July 2026</time></h2>
+            <a class="repo-link is-internal" href="/work/liquid-glass-code">
+              <span data-i18n="common.viewcode">View code</span>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+                <path d="M6 11 L3 8 L6 5"/>
+                <path d="M10 5 L13 8 L10 11"/>
+              </svg>
+            </a>
+          </div>
+          <p data-i18n="work.lg.p1">My implementation of Apple's Liquid Glass. A pill of glass slides
+          between the tabs, bending the background as it goes and stretching
+          before it settles. One of my personal favorites</p>
+
+          <div class="band-spec">
+            <h3 data-i18n="spec.title">Technical specifications</h3>
+            <dl>
+              <div>
+                <dt data-i18n="spec.how">How it works</dt>
+                <dd data-i18n="work.lg.how">A refractive lens over a tab row: SDF pill, Snell-law edge
+                refraction with per-channel dispersion, LCH fresnel and glare,
+                spring-driven motion</dd>
+              </div>
+              <div>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.lg.builton">WebGL and JavaScript</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </li>
+    </ul>
   </main>
-  <script src="/assets/js/live-demo.js"></script>
+  <script src="/assets/js/live-demo.js" defer></script>
   <script src="/assets/js/pulse.js" defer></script>
 </body>
 </html>

@@ -31,50 +31,90 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=compact-work">
+<link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/live-demo.css">
+<link rel="stylesheet" href="/assets/css/project-navigation.css">
+<link rel="stylesheet" href="/assets/css/project-pages.css">
 <script src="/assets/js/transition.js"></script>
+<link rel="stylesheet" href="/assets/css/home-back.css">
 </head>
-<body class="project">
-  <a class="back" href="/" aria-label="Back to the home page">
-    <svg class="back-mark" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true">
-      <circle class="back-ring" cx="20" cy="20" r="15.5" fill="none" stroke-width="1.1" stroke-dasharray="98 200" stroke-dashoffset="98" transform="rotate(-90 20 20)"/>
-      <path class="back-chevron" d="M24 14 L16 20 L24 26" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+<body class="page work project-detail">
+  <a class="back home-back" href="/" aria-label="Back to the home page">
+    <svg class="home-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M8 8 3 13 8 18M3 13h13a5 5 0 0 0 0-10h-2"/>
     </svg>
+    <span>home</span>
   </a>
-  <main class="page">
-    <article class="article">
-      <header>
-        <h1>Steward AI</h1>
-        <div class="meta">
-          <time datetime="2026-01">January 2026</time>
-          <span class="note">NexHacks '26 winner</span>
+
+  <main>
+    <h1 class="visually-hidden">Steward AI</h1>
+    <ul class="bands">
+<li id="steward-ai" tabindex="-1" aria-labelledby="steward-ai-heading">
+        <div class="band-artifact">
+          <figure class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html"
+          data-bg="#f7f5f0" data-title="Steward AI dashboard - live demo"
+          tabindex="0" role="button"
+          aria-label="Expand the Steward AI dashboard live demo to fullscreen">
+            <img src="/assets/img/steward/dashboard-preview.png"
+            alt="The Steward AI dashboard: a use-case donut chart with hoverable subcategories, top model rankings, a daily average bar chart and a security overview">
+          </figure>
         </div>
-      </header>
-      <p class="links"><a class="styled-link" href="https://github.com/spitfiresb/steward-ai" target="_blank" rel="noopener">View repo <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a>
-      <a class="styled-link" href="https://devpost.com/software/nexhacks" target="_blank" rel="noopener">View DevPost <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11 L11 5"/><path d="M6 5 H11 V10"/></svg></a></p>
-      <figure class="artifact">
-        <div class="ld-thumb" data-live-demo="/demos/steward-ai/dashboard/index.html" data-title="Steward AI dashboard - live demo" data-bg="#f7f5f0"
-        tabindex="0" role="button" aria-label="Expand the Steward AI dashboard to fullscreen">
-          <img src="/assets/img/steward/dashboard-preview.png" alt="The Steward AI dashboard: a use-case donut chart with hoverable subcategories, top model rankings, a daily average bar chart and a security overview">
+        <div class="band-prose">
+          <div class="band-head">
+            <h2 class="band-title" id="steward-ai-heading">Steward AI<time class="band-date" datetime="2026-01">January 2026</time><span class="band-award" aria-label="Hackathon winner" data-i18n-letters="work.steward.award"><i style="--i:0">H</i><i style="--i:1">a</i><i style="--i:2">c</i><i style="--i:3">k</i><i style="--i:4">a</i><i style="--i:5">t</i><i style="--i:6">h</i><i style="--i:7">o</i><i style="--i:8">n</i> <i style="--i:9">w</i><i style="--i:10">i</i><i style="--i:11">n</i><i style="--i:12">n</i><i style="--i:13">e</i><i style="--i:14">r</i></span></h2>
+            <div class="band-links">
+              <a class="repo-link" href="https://github.com/spitfiresb/steward-ai"
+              target="_blank" rel="noopener">
+                <span data-i18n="common.viewrepo">View repo</span>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                  <path d="M5 11 L11 5"/>
+                  <path d="M6 5 H11 V10"/>
+                </svg>
+              </a>
+              <a class="repo-link" href="https://devpost.com/software/nexhacks"
+              target="_blank" rel="noopener">
+                <span data-i18n="common.viewdevpost">View DevPost</span>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                  <path d="M5 11 L11 5"/>
+                  <path d="M6 5 H11 V10"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <p data-i18n="work.steward.p1">A desktop application that lets businesses understand their
+          employees' AI usage. An Electron app and a browser extension read the
+          accessibility-tree text of AI tools as people use them and a Haiku
+          4.5 model categorizes each conversation. The platform also
+          identifies PII's included in prompts, along with files, which it
+          displays inside the dashboard</p>
+
+          <div class="band-spec">
+            <h3 data-i18n="spec.title">Technical specifications</h3>
+            <dl>
+              <div>
+                <dt data-i18n="spec.how">How it works</dt>
+                <dd data-i18n="work.steward.how">Use-case analytics, per-employee drill-downs, a
+                prompt-flow breakdown, and a security log where flagged
+                uploads open in a file viewer</dd>
+              </div>
+              <div>
+                <dt data-i18n="spec.builton">Built on</dt>
+                <dd data-i18n="work.steward.builton">An Electron app built on HTML and JavaScript displays
+                data, and uses Swift to grab data from macOS desktop
+                applications, paired with a browser extension to grab DOM
+                text from Chrome. Data is stored in Supabase</dd>
+              </div>
+            </dl>
+          </div>
         </div>
-        <figcaption>The dashboard, running. Click to open it fullscreen.</figcaption>
-      </figure>
-      <p>A desktop application that lets businesses understand their employees' AI usage. An Electron app and a browser extension read the accessibility-tree text of AI tools as people use them and a Haiku 4.5 model categorizes each conversation. The platform also identifies PII included in prompts, along with files, which it displays inside the dashboard.</p>
-      <p>Built at Carnegie Mellon for NexHacks '26, my first hackathon win.</p>
-      <dl class="spec">
-        <dt>How it works</dt>
-        <dd>Use-case analytics, per-employee drill-downs, a prompt-flow breakdown, and a security log where flagged uploads open in a file viewer</dd>
-        <dt>Built on</dt>
-        <dd>An Electron app built on HTML and JavaScript displays data, and uses Swift to grab data from macOS desktop applications, paired with a browser extension to grab DOM text from Chrome. Data is stored in Supabase</dd>
-      </dl>
-    </article>
-    <nav class="neighbours" aria-label="Neighbouring projects">
-      <a class="prev" href="/work/ai-sales-agent"><small>Newer</small>AI Sales Agent</a>
-      <a class="next" href="/work/floorsense"><small>Older</small>FloorSense</a>
-    </nav>
+      </li>
+    </ul>
   </main>
-  <script src="/assets/js/live-demo.js"></script>
+  <script src="/assets/js/live-demo.js" defer></script>
   <script src="/assets/js/pulse.js" defer></script>
 </body>
 </html>
