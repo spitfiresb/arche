@@ -73,17 +73,18 @@ The home page has a centered, content-width header with Zain Saeed above
 Last update, both aligned to the same left edge, and no interests paragraph.
 It keeps main's centered expanding social cards
 (`home-socials.css` and `home-socials.js`), and bracketed About link.
-One Projects heading introduces seven projects in a two-column grid,
-with short descriptions and subtle row rules. Entries fill left to right;
-below 460px the grid becomes one column, except on short screens where
-two columns conserve height. There are no category labels.
+Work sits on the left and Projects on the right, with plain lists and no row rules.
+Work lists four role titles. Projects shows the first four entries (Steward AI,
+Unpak, FloorSense, AI Sales Agent), with short descriptions and a View all projects
+button linking to the complete single-column list at `/work/`. Below 460px,
+the sections stack with Work first.
 Each entry links directly to its project at `/work/<slug>`. Unpak links to
 `/work/unpak`, containing only its System, Dashboard and Website sections. The landscape uses the static
 `lookout-panorama-v2.png` from the former `home-illustration` branch,
 anchored at the bottom of the viewport behind the copy. Both the body and
 landscape blend container have an opaque charcoal background, so the image's
-black sky blends into the page grey. The homepage is one viewport with no
-scrolling; short screens use tighter spacing. Location, music and analytics
+black sky blends into the page grey. The homepage fills at least one viewport;
+narrow or short screens can scroll and reserve space for the landscape below the lists. Location, music and analytics
 share `.home-status`, styled by `home-status.css`: location and music on
 the top left, metrics on the top right. Hover details expand beneath their
 readouts. Below 1160px the two columns take space above the name. Each widget
@@ -113,7 +114,7 @@ aligned below it at 168px. At widths up to 900px, the link uses 24px left /
 project pages are generated: `tools/build-work.py` holds page metadata and reads
 `tools/project-bands.html` as the single source for their content. Edit the source,
 run the script, and commit both source and output. The homepage list is hand-written
-and links to the seven project pages. `/work/` is a compact index with no demos;
+and features four projects; the generated index links to all seven project pages. `/work/` is a compact index with no demos;
 `work-redirect.js` preserves old collection fragment links. Former Unpak page URLs
 redirect to the matching section of `/work/unpak`. `_redirects` retains the older
 category redirects (`/work/personal`, `/work/contract`, `/work/cool`).

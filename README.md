@@ -7,10 +7,12 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — a name, deployment date and social previews, a two-column project index,
+- **Home** — a name, deployment date and social previews, Work and Projects columns,
   and the illustrated lookout landscape
 - **About** — a timeline of how I got here
-- **Work** — a separate page for each project, preserving its original layout and demos.
+- **Projects** — the homepage features the first four projects, with a View all projects
+  button linking to the complete list at `/work/`. Each project keeps its separate page,
+  original layout and demos.
   Unpak groups System, Dashboard, and Website with a left-hand table of contents
 
 ## Demos
@@ -50,7 +52,7 @@ location, and Spotify status every 30 seconds while visible.
 
 ```
 ├── public/           # the deployed site, served as-is
-│   ├── index.html    # bio, the Work list, the live footer
+│   ├── index.html    # bio, Work and Projects lists, live status
 │   ├── about.html    # the story, as a timeline
 │   ├── work/         # one page per project (tools/build-work.py), and
 │   │                 # the Liquid Glass source

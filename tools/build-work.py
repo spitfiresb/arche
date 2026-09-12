@@ -187,7 +187,7 @@ def index_page():
 <script src="/assets/js/work-redirect.js"></script>
 <script src="/assets/js/transition.js"></script>
 </head>
-<body>
+<body class="projects-index">
 {BACK}
   <main class="page">
     <h1>Projects</h1>
