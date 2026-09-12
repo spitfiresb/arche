@@ -104,6 +104,5 @@
   "work.lg.builton": "WebGL и JavaScript",
 
   "pulse.commit": "последний коммит",
-  "pulse.visits": "визиты (30 дн)",
-  "pulse.online": "онлайн"
+  "pulse.visits": "визиты (30 дн)"
 }

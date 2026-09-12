@@ -2,39 +2,22 @@
    page. The home page is a name, a two-column project index and a separate
    live status group (home-status.css); each project is an article in the same
    column with its demo up top; About is a timeline. Everything is 14px
-   Inter at weight 460 in off-white, with the grey palette from main.
+   Hanken Grotesk at weight 460 in off-white, with the grey palette from main.
    style.css supplies the original bands on the combined project page. */
 
 @font-face {
-  font-family: "InterVariable";
-  src: url("/assets/fonts/InterVariable.woff2") format("woff2");
+  font-family: "Hanken Grotesk";
+  src: url("/assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "InterVariable";
-  src: url("/assets/fonts/InterVariable-Italic.woff2") format("woff2");
+  font-family: "Hanken Grotesk";
+  src: url("/assets/fonts/HankenGrotesk-VariableItalic.ttf") format("truetype");
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
-}
-/* Flag glyphs for platforms that don't draw them (Windows). Apple's own
-   emoji font goes first so a Mac downloads nothing; never add Segoe UI
-   Emoji here, it "has" the range as boxed capitals and blocks the fallback. */
-@font-face {
-  font-family: "Twemoji Country Flags";
-  src: url("/assets/fonts/TwemojiCountryFlags.woff2") format("woff2");
-  unicode-range: U+1F1E6-1F1FF;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Inter Fallback";
-  src: local("Arial");
-  ascent-override: 90.2%;
-  descent-override: 22.48%;
-  line-gap-override: 0%;
-  size-adjust: 107.4%;
 }
 
 :root {
@@ -48,13 +31,12 @@
   --rule: rgba(242, 242, 242, 0.1);
   --underline: #555;
   --underline-hover: #a0a0a0;
-  --live: #3fb950;
   --link: #74b1fd;
   --link-hover: #a3ccff;
   --faint: #7e7e7e;
   --column: 36.375rem;
   --ld-corner: 12px;      /* the demo previews' corner; live-demo.js reads it */
-  --font-sans: "InterVariable", "Inter Fallback", -apple-system,
+  --font-sans: "Hanken Grotesk", -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Newsreader", "Times New Roman", Times, serif;
   --font-mono: "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
@@ -82,7 +64,6 @@ body {
   font-weight: 460;
   line-height: 1.25rem;
   letter-spacing: -0.00563rem;
-  font-feature-settings: "cv01", "ss03";
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

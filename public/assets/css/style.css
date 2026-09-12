@@ -1,38 +1,19 @@
-/* Type:
-   --font-sans   Inter, self-hosted as one variable file (weights 100-900)
-                 so every visitor renders the same face. It used to ask for
-                 Söhne and Helvetica Neue first, which meant a Mac drew the
-                 site in one font and Windows in another. "Inter Fallback"
-                 is Arial with its metrics overridden to Inter's, so text
-                 laid out before the file lands wraps in the same places and
-                 nothing moves when the swap happens.
-   --font-serif  Newsreader italic, for emphasized lead-ins. Loads from
-                 Google Fonts via a <link> in each page's head (with
-                 preconnect), so the fetch starts alongside this stylesheet
-                 instead of being serialized behind it. Inter is preloaded
-                 the same way. */
+/* Type: Hanken Grotesk is self-hosted in normal and italic variable files
+   (weights 100–900). Newsreader remains the serif for emphasized lead-ins. */
 
 @font-face {
-  font-family: "InterVariable";
-  src: url("/assets/fonts/InterVariable.woff2") format("woff2");
+  font-family: "Hanken Grotesk";
+  src: url("/assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "InterVariable";
-  src: url("/assets/fonts/InterVariable-Italic.woff2") format("woff2");
+  font-family: "Hanken Grotesk";
+  src: url("/assets/fonts/HankenGrotesk-VariableItalic.ttf") format("truetype");
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
-}
-@font-face {
-  font-family: "Inter Fallback";
-  src: local("Arial");
-  ascent-override: 90.2%;
-  descent-override: 22.48%;
-  line-gap-override: 0%;
-  size-adjust: 107.4%;
 }
 
 :root {
@@ -49,7 +30,7 @@
                                single knob: the thumb and inline embed read it
                                directly, and live-demo.js reads it to scale the
                                parked live app's corner to match */
-  --font-sans: "InterVariable", "Inter Fallback", -apple-system,
+  --font-sans: "Hanken Grotesk", -apple-system,
     BlinkMacSystemFont, Helvetica, Arial, sans-serif;
   --font-serif: "Newsreader", "Signifier", "Times New Roman", Times, serif;
 }
@@ -74,7 +55,6 @@ html, body {
 
 body {
   font-family: var(--font-sans);
-  font-feature-settings: "cv01", "ss03";  /* only affects the Inter fallback */
   font-optical-sizing: auto;
   background: var(--bg);
   color: var(--fg);
@@ -1928,11 +1908,8 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
 /* ---- Stats strip ------------------------------------------------------
 
-   Three live numbers in the bottom-right corner of the home page: how many
-   people came in the last 30 days, what the last commit to the site did,
-   and how many are here now. The middle one is stamped into the page at
-   deploy time (its age is worked out in the browser), the other two come
-   from /api/pulse. All of it is wired up in pulse.js.
+   Visits in the last 30 days come from /api/pulse; the commit diff is
+   stamped into the page at deploy time. pulse.js refreshes its age.
 
    One corner of four: last-seen top-left, language top-right, music
    bottom-left, and this one bottom-right. */
@@ -2000,72 +1977,9 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   color: var(--fg);
 }
 
-.pulse-unit {
-  margin-left: 0.35em;
-  font-size: 0.75rem;       /* 12px */
-  color: var(--faint);
-}
-
-/* The one number on the strip that is true only at this second. Green because
-   that is what a live indicator is everywhere else; it's five pixels of the
-   only colour on an otherwise monochrome page, which is about the weight the
-   distinction deserves. */
-/* Flag glyphs for the platforms that don't draw them.
-   Twemoji, by Twitter, CC-BY 4.0 — https://github.com/twitter/twemoji
-   Packaged as a flags-only woff2 by country-flag-emoji-polyfill (MIT).
-
-   Windows ships no flag glyphs at all: a country's two regional-indicator
-   letters come out as two boxed capitals instead of ligating into a flag.
-   That is a policy decision at Microsoft rather than a gap in the font, so
-   there is nothing to fix in CSS — the glyphs have to be brought along.
-
-   unicode-range keeps this to the regional-indicator block, so it is the
-   only thing the file is ever consulted for, and the browser only fetches
-   it once a flag is actually on the page. */
-@font-face {
-  font-family: "Twemoji Country Flags";
-  src: url("/assets/fonts/TwemojiCountryFlags.woff2") format("woff2");
-  unicode-range: U+1F1E6-1F1FF;
-  font-display: swap;
-}
-
-/* One flag per country currently reading, deduplicated server-side. Sits
-   where the other two stats keep their label, so the whole strip opens the
-   same way wherever the cursor lands.
-
-   The stack is doing something specific, and the omission is the point.
-   "Apple Color Emoji" exists only on Apple platforms and does carry flags,
-   so naming it first gets a Mac its own native ones and never fetches the
-   webfont at all. Every other platform falls straight through to Twemoji.
-
-   Segoe UI Emoji is deliberately NOT named: it *does* have glyphs for these
-   codepoints — the boxed letters — so naming it would satisfy the lookup on
-   Windows and stop the fallback dead, which is the one outcome this whole
-   arrangement exists to avoid. */
-.pulse-flags {
-  display: block;
-  font-family: "Apple Color Emoji", "Twemoji Country Flags", sans-serif;
-  font-size: 0.8125rem;     /* 13px */
-  line-height: 1.3;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-
-.pulse-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 0.5em;
-  border-radius: 50%;
-  background: #5ec27e;
-  /* an empty inline-block sits its bottom edge on the baseline, so it needs
-     lifting to centre against the x-height of the digits beside it */
-  vertical-align: 0.06em;
-}
-
 /* ---- The commit row ---------------------------------------------------
 
-   The middle row of the strip: what the last commit did, "+142 −16", in
+   The commit row of the strip: what the last commit did, "+142 −16", in
    GitHub's dark-theme green and red. Two numbers set exactly like the ones
    below them — same face, same size, same tabular digits — with colour the
    only thing that marks them out. It's the one row that is a link (the
@@ -2093,7 +2007,7 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 }
 
 .pulse-sign {
-  font-size: 0.75rem;       /* 12px, same as .pulse-unit */
+  font-size: 0.75rem;       /* 12px */
   margin-right: 0.08em;
   /* a smaller glyph on the baseline sits with its middle below the digits'
      middle; lift it so the two centres meet */
@@ -2108,9 +2022,9 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
   opacity: 0.8;
 }
 
-/* Where there's a pointer, the strip is three bare numbers and nothing else.
+/* Where there's a pointer, the strip is two readouts and nothing else.
    Each one answers for itself: hovering a number brings up its own label and
-   leaves the other two alone, so the corner is only ever as busy as the one
+   leaves the other alone, so the corner is only ever as busy as the one
    thing being asked about.
 
    The labels collapse rather than fade, so they reserve no empty band above
@@ -2120,8 +2034,7 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
 
    Touch screens have no hover to give, so there the labels are always on. */
 @media (hover: hover) {
-  .pulse-label,
-  .pulse-flags {
+  .pulse-label {
     max-height: 0;
     overflow: hidden;
     opacity: 0;
@@ -2134,13 +2047,6 @@ html.page-enter-back main > :is(.wall, .floor, .rig, .rope, .stickman) {
     opacity: 1;
   }
 
-  /* emoji set taller than their point size, so the flags need more room to
-     open into than a line of 11px capitals does */
-  .pulse-stat:hover .pulse-flags,
-  .pulse-stat:focus-within .pulse-flags {
-    max-height: 1.6rem;
-    opacity: 1;
-  }
 }
 
 /* Phones don't get the corners at all — not this strip, not the music

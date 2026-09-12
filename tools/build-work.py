@@ -87,8 +87,8 @@ def head(p):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
-<link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/assets/css/style.css?v=hanken">
 <link rel="stylesheet" href="/assets/css/live-demo.css">
 <link rel="stylesheet" href="/assets/css/project-navigation.css">
 <link rel="stylesheet" href="/assets/css/project-pages.css">
@@ -139,7 +139,7 @@ def project_page(project, bands):
     scripts = ['/assets/js/live-demo.js']
     if unpak:
         scripts += ['/assets/js/toc.js', '/assets/js/diagram-expand.js']
-    scripts += ['/assets/js/pulse.js']
+    scripts += ['/assets/js/pulse.js?v=visits-only']
     script_tags = '\n'.join(f'  <script src="{src}" defer></script>' for src in scripts)
     return f'''{head(project)}
 <body class="page work project-detail{' collection' if unpak else ''}">
@@ -182,7 +182,7 @@ def index_page():
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Projects - Zain Saeed</title>
 <link rel="canonical" href="https://zsaeed.com/work/">
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/site.css?v=hanken">
 <link rel="stylesheet" href="/assets/css/home-back.css">
 <script src="/assets/js/work-redirect.js"></script>
 <script src="/assets/js/transition.js"></script>
@@ -195,7 +195,7 @@ def index_page():
 {items}
     </ul>
   </main>
-  <script src="/assets/js/pulse.js" defer></script>
+  <script src="/assets/js/pulse.js?v=visits-only" defer></script>
 </body>
 </html>
 '''

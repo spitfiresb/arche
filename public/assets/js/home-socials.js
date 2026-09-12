@@ -19,7 +19,9 @@
       /* set on the item, not the card: the reveal wrapper is the card's
          parent and widens out to --liw as well */
       var host = cards[i].closest("li.li-hover") || cards[i];
-      var width = list.clientWidth;
+      // The centered list is only as wide as its two icons. The preview
+      // needs its own reading width, independent of that small footprint.
+      var width = 22 * parseFloat(getComputedStyle(document.documentElement).fontSize);
       var viewport = document.documentElement.clientWidth;
 
       if (cards[i].classList.contains("gh-card")) {

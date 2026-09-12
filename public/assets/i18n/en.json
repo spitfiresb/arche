@@ -106,7 +106,6 @@
 
   "pulse.commit": "last commit",
   "pulse.visits": "visits (30d)",
-  "pulse.online": "online",
 
   "where.lede": "Last seen",
   "where.at": "at",

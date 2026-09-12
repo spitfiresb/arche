@@ -104,6 +104,5 @@
   "work.lg.builton": "WebGL과 JavaScript",
 
   "pulse.commit": "최근 커밋",
-  "pulse.visits": "방문 (30일)",
-  "pulse.online": "접속 중"
+  "pulse.visits": "방문 (30일)"
 }

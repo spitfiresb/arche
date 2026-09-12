@@ -86,8 +86,7 @@
   overflow-wrap: anywhere;
 }
 .whereat-hint:empty,
-.listening-hint:empty,
-.pulse-flags:empty {
+.listening-hint:empty {
   display: none;
 }
 .pulse {
@@ -107,11 +106,6 @@
 .pulse-num {
   color: var(--fg);
   font-size: 0.875rem;
-}
-.pulse-unit {
-  margin-left: 0.35em;
-  font-size: 0.75rem;
-  color: var(--faint);
 }
 .pulse-sign {
   font-size: 0.75rem;
@@ -138,25 +132,8 @@
   outline: 1px solid var(--muted);
   outline-offset: 3px;
 }
-.pulse-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 0.5em;
-  border-radius: 50%;
-  background: var(--live);
-  vertical-align: 0.06em;
-}
-.pulse-flags {
-  display: block;
-  font-family: "Apple Color Emoji", "Twemoji Country Flags", sans-serif;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-}
 @media (hover: hover) {
   .pulse-label,
-  .pulse-flags,
   .whereat-hint,
   .listening-hint {
     max-height: 0;
@@ -176,11 +153,6 @@
   .whereat-hint,
   .listening-hint {
     white-space: nowrap;
-  }
-  .pulse-stat:hover .pulse-flags,
-  .pulse-stat:focus-within .pulse-flags {
-    max-height: 1.6rem;
-    opacity: 1;
   }
 }
 /* Reserve space above the name on smaller screens, keeping both corners. */
@@ -203,7 +175,6 @@
 @media (prefers-reduced-motion: reduce) {
   .home-status :is(.whereat, .listening, .pulse),
   .pulse-label,
-  .pulse-flags,
   .whereat-hint,
   .listening-hint {
     transition: none;

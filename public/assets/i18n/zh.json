@@ -104,6 +104,5 @@
   "work.lg.builton": "WebGL 和 JavaScript",
 
   "pulse.commit": "最近提交",
-  "pulse.visits": "访问 (30 天)",
-  "pulse.online": "在线"
+  "pulse.visits": "访问 (30 天)"
 }

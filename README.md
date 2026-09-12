@@ -28,9 +28,8 @@ page, not a screenshot.
 
 ## Live numbers
 
-The home page carries three of them in its top-right metrics group: how many
-people have visited in the last 30 days, what the last commit to the site
-did, and how many are reading right now.
+The home page shows the 30-day visitor total and the last commit’s changes
+in its top-right metrics group.
 
 The commit row is "+115 −13" in GitHub's green and red, and clicking it opens
 the commit. The page can't know that about itself, so the deploy script
@@ -39,25 +38,13 @@ uploading, and puts the file back afterwards — the values in this repo are
 placeholders. Hovering says how long ago that was, worked out in the
 browser. If the repo is private, or the commit isn't pushed, the row links to
 my GitHub profile instead: the commit page would be a 404 for everyone but
-me. The other two numbers come from a Cloudflare D1 database, one row per person per day and one row per open
-tab. A visitor is a salted hash of the day and the IP, so the same person
-counts once however many times they reload, and the table can't be walked
-backwards to an address — the IP is never written down, and the identifier a
-person gets changes every midnight.
+me. The visitor total comes from Cloudflare D1, with one row per person per
+day. A visitor is a salted hash of the day and IP, so repeat visits on the
+same day count once. The IP is never written down, and the identifier changes
+every midnight.
 
-Hovering the live count opens a flag for each country currently reading, one
-per country however many people are in it. That country is the only thing
-either table records about anybody, and it rides on the row that expires with
-the open tab — so it says where people are, never where they were.
-
-Windows ships no flag glyphs — a Microsoft policy decision, not a missing
-font — so those two letters come out as two boxed capitals there. Apple
-platforms use their own flags and download nothing; everyone else is served a
-flags-only webfont, scoped by `unicode-range` so it is fetched only when a
-flag is actually on screen. The flags are
-[Twemoji](https://github.com/twitter/twemoji) by Twitter, CC-BY 4.0.
-
-Every page beats to `/api/pulse`; only the home page draws the answer.
+Every page calls `/api/pulse` on load. The homepage refreshes its visitor total,
+location, and Spotify status every 30 seconds while visible.
 
 ## Project Structure
 
@@ -91,7 +78,7 @@ motion). The original layered artwork and tools remain available for further
 illustration work.
 The location, music, and analytics widgets also work on this preview server:
 it reads the public live site's status without registering local visitors
-or online tabs. It never forwards browser cookies or heartbeat identifiers.
+or forwarding browser cookies.
 To test the Pages Functions themselves or FloorSense detection, use Wrangler:
 
 ```sh
@@ -126,6 +113,16 @@ commit (or the GitHub profile when that commit is not publicly accessible).
 It changes on every deployment, including redeploys of the same commit.
 The local source shows a dash until deployment; the script restores that
 placeholder after uploading, including on failure.
+
+After deploying the removal of the online indicator, clean up the unused table
+in existing databases once (the current `schema.sql` does not create it):
+
+```sh
+npx wrangler d1 execute zainsaeed-pulse --remote --file=tools/migrations/remove-online-presence.sql
+```
+
+Use `--local` for a local database. This only drops the retired table; the visitor
+total, location and Spotify data remain intact.
 
 ## The location corner
 

@@ -57,6 +57,7 @@ ul.links ul.social-row li {
 /* The item is just the icon's footprint; the card is revealed as an
    overlay on top of the page, so nothing else shifts */
 ul.links li.li-hover {
+  --liw: min(22rem, calc(100vw - 24px));
   position: relative;
   width: var(--icon);
   height: var(--icon);
@@ -141,7 +142,7 @@ li.li-hover.opens-left:focus-within .li-logo {
    --liw) and pinned top-left, so the growing box uncovers it rather than
    squishing it */
 .li-card-inner {
-  width: calc(var(--liw, 100%) - 2px);
+  width: calc(var(--liw, 22rem) - 2px);
   white-space: normal;
 }
 

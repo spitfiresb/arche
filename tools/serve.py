@@ -18,7 +18,7 @@ two Pages behaviours the site depends on:
 Add ?edit to any page to make its text editable in place; see edit-mode.js.
 
 The status widgets preview public production data through a read-only bridge:
-local tab IDs and visitor-counting flags are never sent upstream. FloorSense
+visitor-counting flags are never sent upstream. FloorSense
 detection and testing the Pages Functions themselves still need Wrangler.
 """
 import http.server
@@ -50,13 +50,13 @@ _pulse_at = 0
 
 
 def public_pulse():
-    """Read public status without recording a local visit or online presence."""
+    """Read public status without recording a local visit."""
     global _pulse_cache, _pulse_at
     with _pulse_lock:
         if _pulse_cache is not None and time.monotonic() - _pulse_at < PULSE_CACHE_SECONDS:
             return _pulse_cache
         # Deliberately independent of the incoming body, cookies and headers.
-        # pulse.js sends tab/fresh on production; local previews must not.
+        # pulse.js sends fresh on production; local previews must not.
         request = urllib.request.Request(PULSE_URL, data=b'{}', method='POST',
             headers={'Content-Type': 'application/json', 'User-Agent': 'arche-local-preview'})
         with urllib.request.urlopen(request, timeout=10) as response:

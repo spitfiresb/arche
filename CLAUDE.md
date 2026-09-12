@@ -43,8 +43,8 @@ production baseline. Use one preview server: `python3 tools/serve.py` on
 `/work/notch` resolves the way it does live. Any other static server works
 but needs the `.html`. The preview server bridges `POST /api/pulse` to the
 public production response, caching it for 20 seconds. It always sends an
-empty body upstream and never forwards local tab IDs, fresh flags, cookies
-or headers, so local previews do not register visits or presence. Other Pages
+empty body upstream and never forwards visitor-counting flags, cookies
+or headers, so local previews do not register visits. Other Pages
 Functions still need `npx wrangler pages dev` (needs `.dev.vars`, see README).
 
 The same server exposes `/__scene` for the preserved illustration layer
@@ -61,7 +61,7 @@ when changing the illustration: the current layout lives in `site.css`.
 ## The pages
 
 The homepage stylesheet is `site.css`: a 638px outer column with 30px
-side padding and Inter on charcoal (#1a1a1a). Homepage text follows
+side padding and Hanken Grotesk on charcoal (#1a1a1a). Homepage text follows
 benji.org's scale: 14px with a 20px line height for the name, update date,
 project heading, titles and About link. Project descriptions use 12px / 17px;
 hovering or keyboard-focusing a project keeps it white and dims the others.
@@ -91,7 +91,8 @@ appears when its data arrives. No language UI or translation script is loaded.
 The right metrics use an 8px gap; desktop left widgets keep 12px.
 `home-status.js` measures the centered header so the left widgets can extend
 to 24px before it, instead of clipping at a fixed width.
-Project pages load main's original `style.css`, preserving their copy, typography,
+The site uses self-hosted Hanken Grotesk variable fonts, with existing sizes and weights.
+Project pages load main's original `style.css`, preserving their copy,
 technical specifications, demo sizes and alternating side-by-side layouts.
 `project-pages.css` preserves each band's original left/right orientation after
 splitting the collection. The six single-section projects have no sidebar gutter.
@@ -100,7 +101,7 @@ with `toc.js` moving the active dot on scroll or anchor navigation.
 `project-navigation.css` reserves its sidebar gutter at every width.
 All nine content bands live in `tools/project-bands.html`, originally copied
 from main at 07c5768. There is no footer clock or cross-project navigation.
-`/about` preserves main's original timeline, typography,
+`/about` preserves main's original timeline,
 stickman/rope animation, car artwork and language behavior. It uses `style.css`,
 `about.js`, `car-art.js`, and `i18n.js` with the dictionaries in `assets/i18n/`;
 keep this page independent of the homepage redesign. All page-level back links
@@ -123,12 +124,10 @@ original dark system map. The About page and homepage keep their own layouts.
 
 ## The stats strip
 
-The three numbers in the home page's top-right metrics group: visits in the
-last 30 days, the last commit's diff stat, and how many people are reading
-now.
-`pulse.js` runs on every page and beats to `POST /api/pulse` on load and
-every 30s while the tab is visible; only `index.html` contains the `.pulse`
-markup that draws the result. Counts are stored in the `zainsaeed-pulse` D1
+The home page’s top-right metrics show visits in the last 30 days and the
+last commit’s diff stat.
+`pulse.js` calls `POST /api/pulse` once per page load; pages with status
+widgets refresh every 30s while visible. Only `index.html` draws the result. Counts are stored in the `zainsaeed-pulse` D1
 database (`schema.sql`).
 
 The commit row is static: "+142 −16" in GitHub's green and red, the whole
@@ -140,18 +139,18 @@ profile otherwise — a private repo's commit page is a 404 to everyone but
 its owner, so the row links to the one page guaranteed to open. The check
 is one `gh repo view` call on the deploying machine, never at request time.
 
-Hovering a number opens its label; hovering the live count opens one flag per
-country currently reading. The flags are `SELECT DISTINCT country` over the
-presence rows inside the online window, so people are deduplicated by country
-before they ever reach the browser, and the client turns each two-letter code
-into an emoji by shifting its letters into the regional-indicator block.
+Hovering a number opens its label. Requests only carry a `fresh` flag to
+register a visit, and the API returns `{ visits, place, track }`.
+`schema.sql` defines hits, place and spotify. After deploying this version,
+apply `tools/migrations/remove-online-presence.sql` once to existing databases
+with `wrangler d1 execute ... --file=...`; it removes only the retired table.
 
 Things to remember when touching it:
 
 - **Location/music sit top left and metrics top right.** Keep
   `.whereat-line`, `.listening-line` and the hint spans: `pulse.js` uses
   these for the location indent and metadata. Hover reveals location/music
-  ages, commit age and country flags; touch displays the details directly.
+  ages and commit age; touch displays the details directly.
   The status group remains available at narrow widths.
 - **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
   Without it, the visitor hashes are a plain hash of an IP, which is
@@ -160,15 +159,9 @@ Things to remember when touching it:
   own pages today (the old folded-corner About preview did), but the
   `window.top` guard in `pulse.js` stays: any future embed is a real page
   load, and every framed copy silently double-counts its visit.
-- **Country belongs on `presence`, not `hits`.** Presence rows expire minutes
-  after a tab closes; putting the country on the visit log instead would
-  quietly turn a counter into a 30-day record of where people were.
-- **Never add `Segoe UI Emoji` to the `.pulse-flags` stack.** It *does* have
-  glyphs for the regional-indicator range — the boxed capitals — so naming it
-  satisfies the lookup on Windows and stops the fallback to the bundled
-  Twemoji font, which is the whole reason that font is there. The stack names
-  `Apple Color Emoji` (Apple-only, has real flags, so a Mac downloads nothing)
-  and then the webfont, and nothing else.
+
+Run `node --test tools/test-pulse.mjs` when changing the API or browser status
+client; it checks the response contract, visit writes and polling behavior.
 
 ## The music corner
 
