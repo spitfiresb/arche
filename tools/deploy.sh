@@ -82,7 +82,9 @@ HREF=$href WHEN=$when ADD=$add DEL=$del DEPLOYED=$deployed LC_ALL=C perl -0pi -e
   $label =~ s/ +/ /g;
   my $updated_link = s{(<a class="site-updated"[^>]*?)href="[^"]*"}{$1href="$ENV{HREF}"};
   my $updated_time = s{<time data-deployed(?: datetime="[^"]*")?>[^<]*</time>}{<time data-deployed datetime="$iso">$label</time>};
-  die "deploy: missing Last updated markup\n" unless $updated_link == 1 && $updated_time == 1;
+  # Older layouts may retain the optional deployment-date line.
+  die "deploy: incomplete Last updated markup\n"
+    if ($updated_link || $updated_time) && !($updated_link == 1 && $updated_time == 1);
   s{(<a class="pulse-stat pulse-commit"[^>]*?)href="[^"]*"}{$1href="$ENV{HREF}"};
   s{(<a class="pulse-stat pulse-commit"[^>]*?)data-committed="[^"]*"}{$1data-committed="$ENV{WHEN}"};
   s{(<span class="pulse-sign">\+</span>)\d+}{$1$ENV{ADD}};

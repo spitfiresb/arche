@@ -23,11 +23,8 @@ on exit whatever happens. Running `npx wrangler pages deploy` by hand still
 works (`wrangler.toml` declares the output directory and project name) but
 ships the placeholder commit row.
 
-The name is followed by a gray Last update link. The same script
-stamps its `time[data-deployed]` with the deployment time in UTC, separate
-from the commit timestamp, and points the link at the deployed revision.
-The local source keeps a dash as its placeholder. Use `tools/deploy.sh`
-so this date updates even when redeploying an unchanged commit.
+The homepage no longer displays a Last update line. The deploy script accepts
+its absence and continues stamping the commit numbers and link in the footer.
 
 Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
 `/work/contract` redirect).
@@ -49,7 +46,9 @@ Functions still need `npx wrangler pages dev` (needs `.dev.vars`, see README).
 
 The same server exposes `/__scene` for the preserved illustration layer
 inspector and `?edit` for in-place text previews, with no-store responses.
-The homepage uses the panorama inside an inline SVG with a separate cabin-light
+The `bottom-artwork` branch preserves the visible landscape layout. On `reformatting`,
+the homepage hides the retained panorama markup with the `hidden` attribute.
+The panorama uses an inline SVG with a separate cabin-light
 layer. `home-cabin.css` adds amber window tint, bloom and gentle flickering;
 reduced motion keeps the glow steady. Panorama and light share the same viewBox
 and responsive crop in `site.css`. The layer sources and older
@@ -60,38 +59,40 @@ when changing the illustration: the current layout lives in `site.css`.
 
 ## The pages
 
-The homepage stylesheet is `site.css`: a 638px outer column with 30px
-side padding and Hanken Grotesk on charcoal (#1a1a1a). Homepage text follows
-benji.org's scale: 14px with a 20px line height for the name, update date,
-project heading, titles and About link. Project descriptions use 12px / 17px;
+The homepage stylesheet is `site.css`: a 576px outer column with 16px
+side padding and Hanken Grotesk on charcoal (#1a1a1a). The name uses 30px / 36px at weight 700. Homepage list typography matches
+samuelzhang.ca: uppercase section headings at 12px / 16px, weight 500;
+work titles at 15px / 24.375px, weight 400; project titles at 15px / 22.5px,
+weight 500; descriptions at 14px / 20px, weight 400. The About link stays 14px / 20px;
 hovering or keyboard-focusing a project keeps it white and dims the others.
 Live status readouts
 use 13–14px text and smaller hover labels.
-The name uses weight 500 and regular text 460. Profile-preview cards retain
+Regular text uses weight 460. Profile-preview cards retain
 their own LinkedIn/GitHub typography.
-The home page has a centered, content-width header with Zain Saeed above
-Last update, both aligned to the same left edge, and no interests paragraph.
-It keeps main's centered expanding social cards
-(`home-socials.css` and `home-socials.js`), and bracketed About link.
-Work sits on the left and Projects on the right, with plain lists and no row rules.
-Work lists four role titles. Projects shows the first four entries (Steward AI,
-Unpak, FloorSense, AI Sales Agent), with short descriptions and a View all projects
-button linking to the complete single-column list at `/work/`. Below 460px,
-the sections stack with Work first.
+The home page has a left-aligned header with Zain Saeed
+followed by location, music, and the bracketed About link. There is no interests
+paragraph. The LinkedIn/GitHub icons sit at the bottom left, with the commit
+numbers at the bottom right. The original expanding social cards remain in
+`home-socials.css` and `home-socials.js`; footer cards open upward and retain
+their traveling-icon animation. Visitor totals are no longer displayed.
+Work sits above Projects in one column, with plain lists and no row rules.
+Work lists four role titles. Projects shows the first two entries (Steward AI and Unpak), with short descriptions and a separate View all projects
+row below the list linking to the complete single-column list at `/work/`. The same top-down
+section order applies at every width. Spacing matches the reference: 64px top
+inset on desktop, 32px below 768px, 32px between sections, 8px below headings,
+6px between work entries and 12px between projects.
 Each entry links directly to its project at `/work/<slug>`. Unpak links to
 `/work/unpak`, containing only its System, Dashboard and Website sections. The landscape uses the static
 `lookout-panorama-v2.png` from the former `home-illustration` branch,
 anchored at the bottom of the viewport behind the copy. Both the body and
 landscape blend container have an opaque charcoal background, so the image's
 black sky blends into the page grey. The homepage fills at least one viewport;
-narrow or short screens can scroll and reserve space for the landscape below the lists. Location, music and analytics
-share `.home-status`, styled by `home-status.css`: location and music on
-the top left, metrics on the top right. Hover details expand beneath their
-readouts. Below 1160px the two columns take space above the name. Each widget
-appears when its data arrives. No language UI or translation script is loaded.
-The right metrics use an 8px gap; desktop left widgets keep 12px.
-`home-status.js` measures the centered header so the left widgets can extend
-to 24px before it, instead of clipping at a fixed width.
+narrow or short screens can scroll, with normal bottom padding while artwork is hidden. Location and music share `.home-status`, styled by `home-status.css`,
+inside the introduction's content column. Each widget appears when its data
+arrives; hover details expand beneath the readouts. The footer `.pulse` keeps
+the deployed commit link and age hint. No language UI or translation script is
+loaded. `home-status.js` retains the earlier width measurement for artwork layouts;
+the current inline status explicitly uses the full content width.
 The site uses self-hosted Hanken Grotesk variable fonts, with existing sizes and weights.
 Project pages load main's original `style.css`, preserving their copy,
 technical specifications, demo sizes and alternating side-by-side layouts.
@@ -114,7 +115,7 @@ aligned below it at 168px. At widths up to 900px, the link uses 24px left /
 project pages are generated: `tools/build-work.py` holds page metadata and reads
 `tools/project-bands.html` as the single source for their content. Edit the source,
 run the script, and commit both source and output. The homepage list is hand-written
-and features four projects; the generated index links to all seven project pages. `/work/` is a compact index with no demos;
+and features two projects; the generated index links to all seven project pages. `/work/` is a compact index with no demos;
 `work-redirect.js` preserves old collection fragment links. Former Unpak page URLs
 redirect to the matching section of `/work/unpak`. `_redirects` retains the older
 category redirects (`/work/personal`, `/work/contract`, `/work/cool`).
@@ -125,8 +126,8 @@ original dark system map. The About page and homepage keep their own layouts.
 
 ## The stats strip
 
-The home page’s top-right metrics show visits in the last 30 days and the
-last commit’s diff stat.
+The home page’s footer shows the last commit’s diff stat at the bottom right.
+The 30-day visitor count is absent from the UI; its API and storage remain intact.
 `pulse.js` calls `POST /api/pulse` once per page load; pages with status
 widgets refresh every 30s while visible. Only `index.html` draws the result. Counts are stored in the `zainsaeed-pulse` D1
 database (`schema.sql`).
@@ -148,7 +149,7 @@ with `wrangler d1 execute ... --file=...`; it removes only the retired table.
 
 Things to remember when touching it:
 
-- **Location/music sit top left and metrics top right.** Keep
+- **Location/music sit under the name; commit numbers sit in the footer.** Keep
   `.whereat-line`, `.listening-line` and the hint spans: `pulse.js` uses
   these for the location indent and metadata. Hover reveals location/music
   ages and commit age; touch displays the details directly.

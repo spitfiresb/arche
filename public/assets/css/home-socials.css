@@ -482,3 +482,17 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   .about-more::before,
   .about-more::after { transition: none; }
 }
+
+/* Footer previews expand upward so their contents stay above the page edge. */
+.home-footer .li-hover-reveal {
+  top: auto;
+  bottom: 0;
+}
+.home-footer li.li-hover:hover .li-logo,
+.home-footer li.li-hover:focus-within .li-logo {
+  top: calc(var(--icon) - var(--social-card-height, 260px) + 0.6em);
+}
+.home-footer li.li-hover.gh:hover .li-logo,
+.home-footer li.li-hover.gh:focus-within .li-logo {
+  top: calc(var(--icon) - var(--social-card-height, 160px) + 0.9em);
+}

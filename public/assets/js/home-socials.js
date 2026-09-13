@@ -61,6 +61,18 @@
     document.fonts.ready.then(sizeHoverCards);
   }
 
+  // Keep the traveling icon aligned with upward-opening footer previews,
+  // including after the contribution calendar and profile images arrive.
+  var footerCardObserver = new ResizeObserver(function (entries) {
+    entries.forEach(function (entry) {
+      entry.target.closest("li.li-hover").style.setProperty(
+        "--social-card-height", (entry.target.getBoundingClientRect().height + 2) + "px");
+    });
+  });
+  document.querySelectorAll(".home-footer .li-card-inner").forEach(function (inner) {
+    footerCardObserver.observe(inner);
+  });
+
   /* --- GitHub contribution calendar: live data via a public proxy of
          GitHub's GraphQL API (no token needed). Drawn as an SVG grid,
          one cell per day, using GitHub's own 0-4 intensity levels. --- */

@@ -7,11 +7,11 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — a name, deployment date and social previews, Work and Projects columns,
-  and the illustrated lookout landscape
+- **Home** — a larger left-aligned name and live status, stacked Work and
+  Projects lists, and a footer with social previews and commit numbers
 - **About** — a timeline of how I got here
-- **Projects** — the homepage features the first four projects, with a View all projects
-  button linking to the complete list at `/work/`. Each project keeps its separate page,
+- **Projects** — the homepage features the first two projects, with a View all projects
+  separate link below them leading to the complete list at `/work/`. Each project keeps its separate page,
   original layout and demos.
   Unpak groups System, Dashboard, and Website with a left-hand table of contents
 
@@ -30,8 +30,9 @@ page, not a screenshot.
 
 ## Live numbers
 
-The home page shows the 30-day visitor total and the last commit’s changes
-in its top-right metrics group.
+The home page shows the last commit’s changes at the bottom right, opposite
+LinkedIn and GitHub at the bottom left. The visitor count is no longer displayed;
+the existing analytics API remains available.
 
 The commit row is "+115 −13" in GitHub's green and red, and clicking it opens
 the commit. The page can't know that about itself, so the deploy script
@@ -45,8 +46,8 @@ day. A visitor is a salted hash of the day and IP, so repeat visits on the
 same day count once. The IP is never written down, and the identifier changes
 every midnight.
 
-Every page calls `/api/pulse` on load. The homepage refreshes its visitor total,
-location, and Spotify status every 30 seconds while visible.
+Every page calls `/api/pulse` on load. The homepage refreshes its
+location and Spotify status every 30 seconds while visible.
 
 ## Project Structure
 
@@ -74,7 +75,9 @@ python3 tools/serve.py    # http://localhost:8712
 ```
 
 The illustration layer inspector is at `/__scene`; `?edit` enables local
-text editing. The homepage displays the panorama inside an SVG, with a separate
+text editing. The `bottom-artwork` branch preserves the homepage with its visible landscape.
+On `reformatting`, the artwork markup is hidden and retained for reuse.
+The panorama lives inside an SVG, with a separate
 amber cabin-light layer and subtle CSS firelight animation (steady with reduced
 motion). The original layered artwork and tools remain available for further
 illustration work.
@@ -109,12 +112,8 @@ tools/deploy.sh --dry-run    # show what would be stamped, deploy nothing
 It refuses a dirty tree, so what's live is always a commit. `gh` has to be
 signed in, for the one call that checks whether the repo is public.
 
-The gray **Last update** line beneath the name is stamped with the
-deployment's UTC date and an exact timestamp, and links to the deployed
-commit (or the GitHub profile when that commit is not publicly accessible).
-It changes on every deployment, including redeploys of the same commit.
-The local source shows a dash until deployment; the script restores that
-placeholder after uploading, including on failure.
+The homepage no longer displays a Last update line. Deployment still stamps
+the commit numbers and link in the footer.
 
 After deploying the removal of the online indicator, clean up the unused table
 in existing databases once (the current `schema.sql` does not create it):
