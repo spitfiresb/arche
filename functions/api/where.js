@@ -166,6 +166,12 @@ const PINS = [
   // not amenity=cafe — so it fails ALLOW outright rather than losing a distance
   // contest. Coordinate is OSM's own node for the venue (102 South Park St).
   { name: "Caffe Centro", city: "San Francisco", lat: 37.7817082, lon: -122.3942534 },
+  // Not in OSM at all, so a Working Girls' Cafe node 45m away (their
+  // 259 Kearny shop, plotted mid-block on Bush) won the circle unopposed.
+  // Coordinate is from the locations page on corgicafe.com. OSM has no real
+  // address point for 9 Claude Ln (Nominatim interpolates one near Sutter),
+  // but 7 Claude Ln next door sits at the Bush end, which agrees with it.
+  { name: "Corgi Cafe", city: "San Francisco", lat: 37.79055, lon: -122.4047 },
 ];
 
 export async function onRequestPost({ request, env }) {
