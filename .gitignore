@@ -15,7 +15,7 @@
 # granted it rather than in git.
 tools/where/Locate.app/
 
-# Python bytecode from public/demos/unpak-dashboard/make-data.py
+# Python bytecode from local tools
 __pycache__/
 *.pyc
 

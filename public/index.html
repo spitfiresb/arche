@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Zain Saeed</title>
 <meta name="description" content="Zain Saeed: personal site.">
 <meta property="og:title" content="Zain Saeed">
@@ -20,7 +20,11 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="author" content="Zain Saeed">
 <link rel="canonical" href="https://zsaeed.com/">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -30,7 +34,7 @@
       "@id": "https://zsaeed.com/#person",
       "name": "Zain Saeed",
       "url": "https://zsaeed.com/",
-      "image": "https://zsaeed.com/assets/img/li-avatar.jpeg",
+      "image": "https://zsaeed.com/assets/img/li-avatar.webp",
       "homeLocation": {
         "@type": "Place",
         "name": "San Francisco Bay Area"
@@ -65,21 +69,19 @@
   ]
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
 <link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=hanken">
-<link rel="stylesheet" href="/assets/css/home-socials.css?v=card-width">
-<link rel="stylesheet" href="/assets/css/home-status.css?v=visits-only">
-<link rel="stylesheet" href="/assets/css/home-cabin.css?v=firelight">
-<script src="/assets/js/transition.js"></script>
+<script src="/assets/js/theme.js?v=theme-crossfade"></script>
+<link rel="stylesheet" href="/assets/css/site.css?v=fluid-layout">
+<link rel="stylesheet" href="/assets/css/home-socials.css?v=smooth-previews">
+<link rel="stylesheet" href="/assets/css/home-status.css?v=ink-trim">
+<script src="/assets/js/prefetch.js"></script>
 </head>
 <body class="home">
   <main class="page">
-    <article class="bio">
+    <article class="bio page-reveal" style="--reveal-order: 0">
       <header>
         <h1>Zain Saeed</h1>
+        <p class="home-local-meta">Bay Area, CA<span class="home-local-separator" aria-hidden="true" hidden> · </span><time class="home-local-time" aria-label="Current time in the San Francisco Bay Area" hidden></time></p>
       </header>
 
       <aside class="home-status" aria-label="Live site status">
@@ -107,46 +109,52 @@
 
 
       </aside>
-      <a class="about-more" href="/about">more about me</a>
 
     </article>
 
     <div class="home-columns">
-      <section class="work" aria-labelledby="work-heading">
+      <section class="work page-reveal" style="--reveal-order: 1" aria-labelledby="work-heading">
         <h2 id="work-heading">Work</h2>
         <ul class="experience-list">
-          <li>Software Engineer @ <span class="work-organization">Unpak</span></li>
-          <li>Data/ML Engineer @ <span class="work-organization">Trimble</span></li>
-          <li>Data Engineer @ <span class="work-organization">Expertflow</span></li>
-          <li>Undergraduate Research Assistant @ <span class="work-organization">University of Oregon</span></li>
+          <li><a class="experience-link animated-link" href="https://unpak.ai/" target="_blank" rel="noopener">Founding Product Engineer @ <span class="organization-link"><span class="work-organization link-label">Unpak</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+          <li><a class="experience-link animated-link" href="https://www.trimble.com/" target="_blank" rel="noopener">Data/ML Engineer @ <span class="organization-link"><span class="work-organization link-label">Trimble</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+          <li><a class="experience-link animated-link" href="https://www.expertflow.com/" target="_blank" rel="noopener">Data Engineer @ <span class="organization-link"><span class="work-organization link-label">Expertflow</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+          <li><a class="experience-link animated-link" href="https://www.uoregon.edu/" target="_blank" rel="noopener">Undergraduate Research Assistant @ <span class="organization-link"><span class="work-organization link-label">University of Oregon</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
         </ul>
       </section>
 
-      <section class="work" aria-labelledby="projects-heading">
+      <section class="work page-reveal" style="--reveal-order: 2" aria-labelledby="projects-heading">
         <h2 id="projects-heading">Projects</h2>
         <ul class="project-grid">
           <li>
-            <a class="work-project" href="/work/steward-ai">
-              <span><span class="work-title">Steward AI</span><span class="work-description">Understand how teams use AI.</span></span>
-              <span class="work-chevron" aria-hidden="true"></span>
-            </a>
+            <div class="work-project">
+              <div class="project-heading">
+                <h3 class="work-title">Notch</h3>
+                <a class="project-repo" href="https://github.com/spitfiresb/notch" target="_blank" rel="noopener" aria-label="Notch GitHub repository"><span class="project-repo-icon" aria-hidden="true"></span></a>
+              </div>
+              <p class="work-description">A macOS utility that turns your display notch into a workspace.</p>
+            </div>
           </li>
           <li>
-            <a class="work-project" href="/work/unpak">
-              <span><span class="work-title">Unpak</span><span class="work-description">Find where AI fits into work.</span></span>
-              <span class="work-chevron" aria-hidden="true"></span>
-            </a>
+            <div class="work-project">
+              <div class="project-heading">
+                <h3 class="work-title">Steward AI</h3>
+                <a class="project-repo" href="https://github.com/spitfiresb/steward-ai" target="_blank" rel="noopener" aria-label="Steward AI GitHub repository"><span class="project-repo-icon" aria-hidden="true"></span></a>
+                <a class="project-repo" href="https://devpost.com/software/nexhacks" target="_blank" rel="noopener" aria-label="Steward AI on Devpost"><span class="project-external-arrow" aria-hidden="true">↗</span></a>
+              </div>
+              <p class="work-description">A desktop app that helps businesses understand how teams use AI.</p>
+            </div>
           </li>
         </ul>
       </section>
     </div>
 
-    <nav class="project-actions" aria-label="More projects">
-        <a class="view-all-projects" href="/work/">View all projects <span aria-hidden="true">↗</span></a>
+    <nav class="project-actions page-reveal" style="--reveal-order: 3" aria-label="More projects">
+        <a class="view-all-projects animated-link" href="/projects/"><span class="link-label">View All Projects</span><span class="link-arrow" aria-hidden="true">↗</span></a>
     </nav>
 
-    <footer class="home-footer">
-    <nav class="elsewhere" aria-label="Social profiles">
+    <footer class="home-footer page-reveal" style="--reveal-order: 4">
+    <nav class="elsewhere" aria-label="Contact and social profiles">
       <ul class="links">
         <li class="socials">
           <ul class="social-row">
@@ -156,11 +164,11 @@
               <div class="li-hover-reveal">
                 <div class="li-hover-card li-card" aria-hidden="true">
                   <div class="li-card-inner">
-                    <img class="li-banner" src="/assets/img/li-banner.jpeg" alt="">
-                    <img class="li-avatar" src="/assets/img/li-avatar.jpeg" alt="">
+                    <img class="li-banner" data-src="/assets/img/li-banner.webp" width="704" height="176" decoding="async" alt="">
+                    <img class="li-avatar" data-src="/assets/img/li-avatar.webp" width="216" height="216" decoding="async" alt="">
                     <div class="li-info">
                       <p class="li-name">Zain Saeed</p>
-                      <p class="li-headline">CS &amp; Data Science | Prev @Trimble</p>
+                      <p class="li-headline">CS &amp; Data Science</p>
                       <p class="li-meta">San Francisco Bay Area</p>
                       <p class="li-connections">500+ connections</p>
                     </div>
@@ -176,7 +184,7 @@
                 <div class="li-hover-card gh-card" aria-hidden="true">
                   <div class="li-card-inner gh-inner">
                     <div class="gh-head">
-                      <img class="gh-avatar" src="https://github.com/spitfiresb.png?size=96" alt="">
+                      <img class="gh-avatar" data-src="https://github.com/spitfiresb.png?size=96" width="96" height="96" decoding="async" alt="">
                       <div>
                         <p class="gh-name">Zain Saeed</p>
                         <p class="gh-login">spitfiresb</p>
@@ -189,6 +197,14 @@
               </div>
               </a>
             </li>
+            <li class="email-item">
+              <a class="email-link" href="mailto:zainsaeed024@gmail.com" aria-label="Email Zain Saeed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2"/>
+                  <path d="m3 6 9 7 9-7"/>
+                </svg>
+              </a>
+            </li>
           </ul>
         </li>
       </ul>
@@ -196,43 +212,13 @@
     <div class="pulse">
       <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener" data-committed="2026-09-06T15:28:08-07:00">
         <span class="pulse-num pulse-add"><span class="pulse-sign">+</span>142</span><span class="pulse-num pulse-del"><span class="pulse-sign">&minus;</span>16</span>
-        <span class="pulse-label"><span>last commit</span> · <span class="pulse-age"></span></span>
+        <span class="pulse-label"><span>Last Commit</span> · <span class="pulse-age"></span></span>
       </a>
     </div>
     </footer>
   </main>
-  <!-- Artwork is retained here for reuse; bottom-artwork preserves the visible version. -->
-  <div class="home-landscape" aria-hidden="true" hidden>
-    <svg class="home-panorama" viewBox="0 0 2172 724" width="2172" height="724" focusable="false" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <!-- Window faces traced in panorama coordinates; retain the drawn mullions. -->
-        <path id="home-cabin-panes" d="M1518 388 L1593 371 L1593 396 L1518 407Z M1600 373 L1638 377 L1638 399 L1600 397Z M1649 381 L1663 383 L1663 404 L1649 402Z"/>
-        <clipPath id="home-cabin-window-clip"><use href="#home-cabin-panes"/></clipPath>
-        <filter id="home-cabin-amber" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feComponentTransfer>
-            <feFuncR type="linear" slope="1.08"/>
-            <feFuncG type="linear" slope=".78"/>
-            <feFuncB type="linear" slope=".36"/>
-          </feComponentTransfer>
-        </filter>
-        <filter id="home-cabin-bloom" x="-30%" y="-100%" width="160%" height="300%" color-interpolation-filters="sRGB">
-          <feGaussianBlur stdDeviation="5"/>
-        </filter>
-      </defs>
-      <image href="/assets/img/home/lookout-panorama-v2.png" width="2172" height="724"/>
-      <!-- Firelight is an independent layer; the panorama keeps its existing registration. -->
-      <g data-layer-id="cabin-light">
-        <use class="home-cabin-halo" href="#home-cabin-panes" fill="#ffd273" filter="url(#home-cabin-bloom)"/>
-        <g clip-path="url(#home-cabin-window-clip)">
-          <g class="home-cabin-windows">
-            <image href="/assets/img/home/lookout-panorama-v2.png" width="2172" height="724" filter="url(#home-cabin-amber)"/>
-          </g>
-        </g>
-      </g>
-    </svg>
-  </div>
-  <script src="/assets/js/home-socials.js?v=card-width" defer></script>
-  <script src="/assets/js/home-status.js" defer></script>
-  <script src="/assets/js/pulse.js?v=visits-only" defer></script>
+  <script src="/assets/js/pulse.js?v=ink-trim" defer></script>
+  <script src="/assets/js/home-socials.js?v=smooth-previews" defer></script>
+  <script src="/assets/js/home-clock.js?v=lowercase" defer></script>
 </body>
 </html>

@@ -1,201 +1,113 @@
 #!/usr/bin/env python3
-"""Build one page per project, preserving the original project bands.
-
-Unpak groups System, Dashboard and Website with its own section navigation.
-Edit project-bands.html for content, then run python3 tools/build-work.py.
-"""
+"""Build the projects list at /projects/; edit PROJECTS below, then run this script."""
 from pathlib import Path
 from html import escape
-import re
 import sys
 
-ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else '.')
-OUT = ROOT / 'public' / 'work'
+ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent
+OUT = ROOT / 'public' / 'projects'
 
-BACK = '''  <a class="back home-back" href="/" aria-label="Back to the home page">
-    <svg class="home-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M8 8 3 13 8 18M3 13h13a5 5 0 0 0 0-10h-2"/>
-    </svg>
-    <span>home</span>
-  </a>'''
-
-PROJECTS = [{'slug': 'steward-ai',
-  'title': 'Steward AI',
-  'date': '2026-01',
-  'desc': "A desktop app that lets businesses understand their employees' AI usage. Winner at NexHacks '26."},
- {'slug': 'unpak',
+PROJECTS = [{'slug': 'unpak',
+  'website': 'https://unpak.ai/',
   'title': 'Unpak',
-  'date': '2026-04',
-  'desc': 'The Unpak system, dashboard, and website: mapping how companies work and where AI can help.'},
- {'slug': 'floorsense',
-  'title': 'FloorSense',
-  'date': '2025-11',
-  'desc': 'Computer vision that reads architectural floorplans, with correction tools on top of the '
-          'detections.'},
- {'slug': 'ai-sales-agent',
-  'title': 'AI Sales Agent',
-  'date': '2026-04',
-  'desc': 'A chat agent for a Bay Area distribution company that answers questions from their ERP in plain '
-          'language.'},
- {'slug': 'ag-analytics',
-  'title': 'Agricultural Analytics Platform',
-  'date': '2025-11',
-  'desc': "Geospatial analytics for Oregon's largest equipment dealer, used by over 1,500 employees across "
-          'six states.'},
+  'desc': 'A platform for mapping company workflows and AI opportunities.',
+  'github': 'https://github.com/spitfiresb/unpak'},
  {'slug': 'notch',
   'title': 'Notch',
-  'date': '2026-05',
-  'desc': 'A macOS utility that lives in the display notch: music, playlists, Claude sessions, screenshots.'},
- {'slug': 'liquid-glass',
-  'title': 'Liquid Glass',
-  'date': '2026-07',
-  'desc': "My implementation of Apple's Liquid Glass: a WebGL lens that slides between nav tabs."}]
+  'desc': 'A macOS utility that turns your display notch into a workspace.',
+  'github': 'https://github.com/spitfiresb/notch'},
+{'slug': 'steward-ai',
+  'title': 'Steward AI',
+  'desc': 'A desktop app that helps businesses understand how teams use AI.',
+  'devpost': 'https://devpost.com/software/nexhacks',
+  'github': 'https://github.com/spitfiresb/steward-ai'},
+ {'slug': 'floorsense',
+  'title': 'FloorSense',
+  'desc': 'A computer vision tool for analyzing architectural floorplans.',
+  'github': 'https://github.com/spitfiresb/FloorSense'},
+ {'slug': 'ai-sales-agent',
+  'title': 'AI Sales Agent',
+  'desc': 'A deployed chat agent for querying a distribution company’s ERP.',
+  'github': 'https://github.com/spitfiresb/olander-agents'},
+ {'slug': 'ag-analytics',
+  'title': 'Agricultural Analytics Platform',
+  'desc': 'Geospatial analytics used by 1,500+ employees across six states.',
+  'website': 'https://papeagnet.com/'},
+ {'slug': 'mimi',
+  'title': 'Mimi',
+  'desc': 'A private, on-device speech-to-text app for Mac.',
+  'github': 'https://github.com/spitfiresb/mimi'}]
 
 
-def head(p):
-    url = f"https://zsaeed.com/work/{p['slug']}"
-    title = f"{p['title']} - Zain Saeed"
-    return f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title}</title>
-<meta name="description" content="{p['desc']}">
-<meta property="og:title" content="{title}">
-<meta property="og:description" content="{p['desc']}">
-<meta property="og:type" content="article">
-<meta property="og:url" content="{url}">
-<meta property="og:site_name" content="Zain Saeed">
-<meta property="og:locale" content="en_US">
-<meta name="author" content="Zain Saeed">
-<link rel="canonical" href="{url}">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">
-{{
-  "@context": "https://schema.org",
-  "@type": "CreativeWork",
-  "@id": "{url}#webpage",
-  "url": "{url}",
-  "name": "{p['title']}",
-  "description": "{p['desc']}",
-  "datePublished": "{p['date']}",
-  "isPartOf": {{ "@id": "https://zsaeed.com/#website" }},
-  "author": {{ "@id": "https://zsaeed.com/#person" }}
-}}
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
-<link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="/assets/css/style.css?v=hanken">
-<link rel="stylesheet" href="/assets/css/live-demo.css">
-<link rel="stylesheet" href="/assets/css/project-navigation.css">
-<link rel="stylesheet" href="/assets/css/project-pages.css">
-<script src="/assets/js/transition.js"></script>
-<link rel="stylesheet" href="/assets/css/home-back.css">
-</head>'''
-
-
-UNPAK_SECTIONS = [('unpak-system', 'System'), ('unpak-dashboard', 'Dashboard'), ('unpak-website', 'Website')]
-
-
-def load_bands():
-    source = (Path(__file__).parent / 'project-bands.html').read_text()
-    matches = list(re.finditer(r'^      <li id="([^"]+)">', source, re.M))
-    bands = {}
-    for i, match in enumerate(matches):
-        slug = match.group(1)
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(source)
-        band = source[match.start():end].strip()
-        # Preserve the side each demo occupied in the original collection.
-        reverse = ' class="band-reversed"' if i % 2 else ''
-        band = band.replace(f'<li id="{slug}">',
-            f'<li id="{slug}"{reverse} tabindex="-1" aria-labelledby="{slug}-heading">', 1)
-        band = band.replace('class="band-title"', f'class="band-title" id="{slug}-heading"', 1)
-        bands[slug] = band
-    expected = {p['slug'] for p in PROJECTS if p['slug'] != 'unpak'} | {s for s, _ in UNPAK_SECTIONS}
-    assert set(bands) == expected, 'Project metadata and source bands must agree'
-    return bands
-
-
-def section_nav():
-    items = '\n'.join(f'        <li class="toc-item"><a class="toc-link" href="#{slug}">{title}</a></li>'
-                      for slug, title in UNPAK_SECTIONS)
-    return f'''  <nav class="toc" aria-label="Unpak sections">
-    <div class="toc-track">
-      <ul>
-{items}
-      </ul>
-      <span class="toc-dot" aria-hidden="true" hidden></span>
-    </div>
-  </nav>'''
-
-
-def project_page(project, bands):
-    unpak = project['slug'] == 'unpak'
-    slugs = [s for s, _ in UNPAK_SECTIONS] if unpak else [project['slug']]
-    content = '\n'.join(bands[s] for s in slugs)
-    scripts = ['/assets/js/live-demo.js']
-    if unpak:
-        scripts += ['/assets/js/toc.js', '/assets/js/diagram-expand.js']
-    scripts += ['/assets/js/pulse.js?v=visits-only']
-    script_tags = '\n'.join(f'  <script src="{src}" defer></script>' for src in scripts)
-    return f'''{head(project)}
-<body class="page work project-detail{' collection' if unpak else ''}">
-{BACK}
-{section_nav() if unpak else ''}
-  <main>
-    <h1 class="visually-hidden">{escape(project['title'])}</h1>
-    <ul class="bands">
-{content}
-    </ul>
-  </main>
-{script_tags}
-</body>
-</html>
-'''
-
-
-def redirect_page(slug, label):
-    destination = '/work/unpak#' + slug
-    return f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{label} - Zain Saeed</title>
-<link rel="canonical" href="https://zsaeed.com/work/unpak">
-<meta http-equiv="refresh" content="0;url={destination}">
-</head>
-<body><a href="{destination}">Continue to Unpak: {label}</a></body>
-</html>
-'''
+def project_item(project, order):
+    title = escape(project['title'])
+    link = ''
+    if project.get('private'):
+        link = ('<span class="project-repo" role="img" aria-label="Private repository">'
+                '<svg class="project-lock-icon" viewBox="0 0 16 16" fill="none" '
+                'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" '
+                'stroke-linejoin="round" aria-hidden="true">'
+                '<rect x="3" y="7" width="10" height="8" rx="1.5"/>'
+                '<path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg></span>')
+    elif project.get('github'):
+        link = (f'<a class="project-repo" href="{escape(project["github"], quote=True)}" '
+                f'target="_blank" rel="noopener" aria-label="{title} GitHub repository">'
+                '<span class="project-repo-icon" aria-hidden="true"></span></a>')
+    if project.get('website'):
+        link += ('\n            ' if link else '') + (
+            f'<a class="project-repo" href="{escape(project["website"], quote=True)}" '
+            f'target="_blank" rel="noopener" aria-label="{title} website">'
+            '<span class="project-external-arrow" aria-hidden="true">↗</span></a>')
+    if project.get('devpost'):
+        link += ('\n            ' if link else '') + (
+            f'<a class="project-repo" href="{escape(project["devpost"], quote=True)}" '
+            f'target="_blank" rel="noopener" aria-label="{title} on Devpost">'
+            '<span class="project-external-arrow" aria-hidden="true">↗</span></a>')
+    link_line = f'            {link}\n' if link else ''
+    return f'''      <li id="{escape(project['slug'])}" class="page-reveal" style="--reveal-order: {order}">
+        <div class="work-project">
+          <div class="project-heading">
+            <h2 class="work-title">{title}</h2>
+{link_line}          </div>
+          <p class="work-description">{escape(project['desc'])}</p>
+        </div>
+      </li>'''
 
 
 def index_page():
-    items = '\n'.join(f'      <li><a class="work-project" href="/work/{p["slug"]}"><span class="work-title">{escape(p["title"])}</span><span class="work-chevron" aria-hidden="true"></span></a></li>' for p in PROJECTS)
+    items = '\n'.join(project_item(project, order) for order, project in enumerate(PROJECTS, 1))
     return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Projects - Zain Saeed</title>
-<link rel="canonical" href="https://zsaeed.com/work/">
-<link rel="stylesheet" href="/assets/css/site.css?v=hanken">
-<link rel="stylesheet" href="/assets/css/home-back.css">
-<script src="/assets/js/work-redirect.js"></script>
-<script src="/assets/js/transition.js"></script>
+<meta name="description" content="Projects by Zain Saeed, with short descriptions, websites, and GitHub repositories.">
+<link rel="canonical" href="https://zsaeed.com/projects/">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
+<script src="/assets/js/theme.js?v=theme-crossfade"></script>
+<link rel="stylesheet" href="/assets/css/site.css?v=fluid-layout">
+<script src="/assets/js/prefetch.js"></script>
 </head>
 <body class="projects-index">
-{BACK}
   <main class="page">
-    <h1>Projects</h1>
+    <nav class="breadcrumbs page-reveal" style="--reveal-order: 0" aria-label="Breadcrumb">
+      <ol>
+        <li><a class="animated-link" href="/"><span class="link-label">Home</span></a></li>
+        <li class="breadcrumb-separator" aria-hidden="true">&gt;</li>
+        <li aria-current="page"><h1>Projects</h1></li>
+      </ol>
+    </nav>
     <ul class="project-grid">
 {items}
     </ul>
   </main>
-  <script src="/assets/js/pulse.js?v=visits-only" defer></script>
+  <script src="/assets/js/pulse.js?v=ink-trim" defer></script>
 </body>
 </html>
 '''
@@ -203,14 +115,9 @@ def index_page():
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    bands = load_bands()
-    pages = {p['slug']: project_page(p, bands) for p in PROJECTS}
-    pages.update({slug: redirect_page(slug, label) for slug, label in UNPAK_SECTIONS})
-    pages['index'] = index_page()
-    for slug, content in pages.items():
-        path = OUT / (slug + '.html')
-        path.write_text(content)
-        print('wrote', path)
+    path = OUT / 'index.html'
+    path.write_text(index_page())
+    print('wrote', path)
 
 
 if __name__ == '__main__':

@@ -66,10 +66,9 @@ const client = await readFile(new URL('../public/assets/js/pulse.js', import.met
 for (const homepage of [true, false]) {
   test(`client sends only a visit flag and polls only visible widgets (homepage=${homepage})`, async () => {
     const requests = [], timers = [];
-    const visits = { dataset: { pulse: 'visits' }, textContent: '' };
-    const strip = {
-      hidden: true, classList: { add() {} },
-      querySelectorAll() { return [visits]; }, querySelector() { return null; },
+    const listening = {
+      hidden: true, classList: { remove() {} },
+      querySelector() { return null; },
     };
     const window = { addEventListener() {} };
     window.top = window.self = window;
@@ -77,11 +76,10 @@ for (const homepage of [true, false]) {
       window,
       document: {
         visibilityState: 'visible', addEventListener() {},
-        querySelector(selector) { return selector === '.pulse' && homepage ? strip : null; },
+        querySelector(selector) { return selector === '.listening' && homepage ? listening : null; },
       },
       // Blocked storage should still allow normal visit counting.
       sessionStorage: { getItem() { throw new Error('blocked'); } },
-      matchMedia() { return { matches: true, addEventListener() {} }; },
       requestAnimationFrame(fn) { fn(); }, clearInterval() {},
       setInterval(fn, ms) { timers.push(ms); return timers.length; },
       async fetch(url, options) {
@@ -94,8 +92,81 @@ for (const homepage of [true, false]) {
     assert.deepEqual(requests, [{ url: '/api/pulse', body: { fresh: true } }]);
     assert.deepEqual(timers, homepage ? [30000] : []);
     if (homepage) {
-      assert.equal(visits.textContent, '000125');
-      assert.equal(strip.hidden, false);
+      assert.equal(listening.hidden, true);
     }
   });
 }
+
+function musicClient(cached) {
+  const values = new Map([['pulse-counted', '1'], ['pulse-status-v1', cached]]);
+  const classes = new Set();
+  const fields = Object.fromEntries(['hint', 'track', 'by', 'artist'].map(name =>
+    [`.listening-${name}`, { textContent: '', hidden: false }]));
+  const listening = {
+    hidden: true,
+    classList: { add: name => classes.add(name), remove: name => classes.delete(name) },
+    querySelector: selector => fields[selector],
+  };
+  let resolveResponse;
+  const pending = new Promise(resolve => { resolveResponse = resolve; });
+  const window = { addEventListener() {} };
+  window.top = window.self = window;
+  vm.runInNewContext(client, {
+    window,
+    document: {
+      visibilityState: 'visible', addEventListener() {},
+      querySelector: selector => selector === '.listening' ? listening : null,
+    },
+    sessionStorage: { getItem: key => values.get(key), setItem: (key, value) => values.set(key, value) },
+    requestAnimationFrame() { assert.fail('Music must be visible before the next animation frame'); },
+    clearInterval() {}, setInterval() { return 1; },
+    fetch: () => pending,
+  });
+  return {
+    listening, fields, classes, values,
+    async respond(data) {
+      resolveResponse({ ok: true, json: async () => data });
+      await new Promise(resolve => setImmediate(resolve));
+    },
+  };
+}
+
+const savedTrack = { title: 'Saved song', artist: 'Artist', playing: false, ago: 60 };
+
+test('return navigation paints recent music before the request resolves, then accepts updates', async () => {
+  const page = musicClient(JSON.stringify({ at: Date.now() - 60000, place: null, track: savedTrack }));
+  assert.equal(page.listening.hidden, false);
+  assert.ok(page.classes.has('is-live'));
+  assert.equal(page.fields['.listening-track'].textContent, 'Saved song');
+  assert.equal(page.fields['.listening-hint'].textContent, 'Last Played · 2 minutes ago');
+  await page.respond({ place: null, track: { title: 'New song', artist: 'New artist', playing: true } });
+  assert.equal(page.fields['.listening-track'].textContent, 'New song');
+  assert.equal(page.fields['.listening-hint'].textContent, 'Now Playing');
+  assert.equal(JSON.parse(page.values.get('pulse-status-v1')).track.title, 'New song');
+});
+
+test('fresh absent music clears a cached song', async () => {
+  const page = musicClient(JSON.stringify({ at: Date.now(), place: null, track: savedTrack }));
+  assert.equal(page.listening.hidden, false);
+  await page.respond({ place: null, track: null });
+  assert.equal(page.listening.hidden, true);
+  assert.equal(page.classes.has('is-live'), false);
+  assert.equal(JSON.parse(page.values.get('pulse-status-v1')).track, null);
+});
+
+for (const cached of ['invalid JSON', JSON.stringify({ at: Date.now() - 180000, track: savedTrack })]) {
+  test(`invalid or expired cache waits for live data (${cached === 'invalid JSON' ? 'corrupt' : 'expired'})`, async () => {
+    const page = musicClient(cached);
+    assert.equal(page.listening.hidden, true);
+    await page.respond({ place: null, track: savedTrack });
+    assert.equal(page.listening.hidden, false);
+  });
+}
+
+test('a cached playing flag expires before the cached song does', () => {
+  const page = musicClient(JSON.stringify({
+    at: Date.now() - 45000, place: null, track: { ...savedTrack, playing: true, ago: null },
+  }));
+  assert.equal(page.listening.hidden, false);
+  assert.equal(page.fields['.listening-hint'].textContent, 'Last Played');
+});

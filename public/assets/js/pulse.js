@@ -1,15 +1,15 @@
-/* Homepage status: 30-day visits, location, Spotify and the deployed commit.
+/* Homepage status: location, Spotify and the deployed commit.
    Every top-level page registers a visit; pages with status widgets refresh
-   them while visible. The strip stays hidden until a response arrives. */
+   them while visible. Recent session data fills the status before revalidation. */
 (() => {
   const ENDPOINT = '/api/pulse';
-  const BEAT_MS = 30000;      // refresh visible location, music and visit totals
+  const BEAT_MS = 30000;      // refresh visible location and music
   const SEEN_KEY = 'pulse-counted';
+  const CACHE_KEY = 'pulse-status-v1';
+  const CACHE_MS = 120000;
 
-  // Embedded demos should not register independent visits.
+  // Embedded copies should not register independent visits.
   if (window.top !== window.self) return;
-
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Only the first page load in this session requests a visit write. D1
   // still deduplicates by day and visitor if storage is unavailable.
@@ -24,24 +24,12 @@
   /* ---- Painting -------------------------------------------------------- */
 
   const strip = document.querySelector('.pulse');
-  const fields = {};
-  if (strip) {
-    for (const el of strip.querySelectorAll('[data-pulse]')) {
-      fields[el.dataset.pulse] = el;
-    }
-  }
-
-  /* The other corner. It comes down the same response, so it is drawn here
-     rather than in a file of its own — a second script would mean a second
-     request for one line of text. Independent of the strip above: either
-     corner can be present, absent, or down without the other noticing. */
+  // Location and music share one response but render independently.
   const whereat = document.querySelector('.whereat');
   const placeEl = whereat && whereat.querySelector('.whereat-place');
   const cityEl = whereat && whereat.querySelector('.whereat-city');
   const areaEl = whereat && whereat.querySelector('.whereat-hint');
 
-  /* And the third: what's on Spotify, bottom-left. Same response, same
-     rules — either corner can be present, absent, or down alone. */
   const listening = document.querySelector('.listening');
   const hintEl = listening && listening.querySelector('.listening-hint');
   const trackEl = listening && listening.querySelector('.listening-track');
@@ -56,31 +44,38 @@
      and the hint says just the neighbourhood, or nothing at all. */
   let placeShown = null;
 
-  /* The hint's indent is a tab past where the city (or, citiless, the
-     venue) begins. Measured, not styled: only layout knows where in the
-     sentence that is, and offsetLeft is relative to the fixed corner
-     itself, which is the box the hint's margin counts from.
-
-     It can only be read while the corner has a layout box, and on phones
-     it doesn't: below 40rem the stylesheet hides the corner outright, so
-     clearing the [hidden] attribute changes nothing and every offset is
-     zero. So the measurement isn't tied to the text. A zero leaves the
-     stylesheet's fallback indent standing and is retried on every beat,
-     and retried at once when the viewport crosses the breakpoint — a phone
-     turned to landscape is wider than 40rem, and the corner appears there
-     with whatever indent was last measured. Without the retry it would
-     appear with the fallback and keep it until the venue changed. */
-  let hintAnchor = null;   // the span the hint tabs in under; null when no hint
-  let hintIndented = false;
+  /* Align the detail with the actual city text. The status ancestor is
+     hidden until .is-live is set, so measurements must follow that update.
+     Re-measure after font/layout changes instead of caching the first result. */
+  let hintAnchor = null;
+  let hintFrame = 0;
   function indentHint() {
-    if (!areaEl || !hintAnchor || hintIndented) return;
-    const x = hintAnchor.offsetLeft;
-    if (!x) return;
-    areaEl.style.marginLeft = `${x + 15}px`;
-    hintIndented = true;
+    if (!areaEl || !hintAnchor || whereat.hidden) return;
+    const row = whereat.getBoundingClientRect();
+    const anchor = hintAnchor.getBoundingClientRect();
+    if (!row.width || !anchor.width) return;
+    const scale = row.width / whereat.offsetWidth;
+    const left = Math.max(0, (anchor.left - row.left) / scale);
+    areaEl.style.marginLeft = `${left}px`;
   }
-  const narrow = matchMedia('(max-width: 40rem)');
-  if (narrow.addEventListener) narrow.addEventListener('change', indentHint);
+  function scheduleHintIndent() {
+    if (hintFrame) return;
+    hintFrame = requestAnimationFrame(() => {
+      hintFrame = 0;
+      indentHint();
+    });
+  }
+  let hintObserver;
+  if (whereat && areaEl) {
+    hintObserver = new ResizeObserver(scheduleHintIndent);
+    hintObserver.observe(whereat);
+    window.addEventListener('resize', scheduleHintIndent);
+    window.addEventListener('pageshow', scheduleHintIndent);
+    if (document.fonts) {
+      document.fonts.ready.then(scheduleHintIndent);
+      document.fonts.addEventListener('loadingdone', scheduleHintIndent);
+    }
+  }
 
   /* The hover hint under the sentence: "South Beach · 2 days ago". The
      neighbourhood is one step finer than the sentence, the age one step
@@ -117,14 +112,14 @@
     const key = `${place.label}|${city}|${place.area || ''}`;
     if (key === placeShown) {
       paintPlaceHint(place);   // the age moves even when the place doesn't
-      indentHint();            // a no-op once it has succeeded
+      scheduleHintIndent();
       return;
     }
     placeShown = key;
 
     placeEl.textContent = place.label;
-    // The city name gets a span of its own so the hint below can find it:
-    // the hint sits tabbed in under "San Francisco", not under the "in".
+    // Give the city its own anchor so the detail aligns under
+    // "San Francisco", excluding the preceding "in".
     let cityName = null;
     if (cityEl) {
       cityEl.textContent = place.city ? ' in ' : '';
@@ -138,15 +133,13 @@
 
     if (whereat.hidden) whereat.hidden = false;
 
-    // New text, new measurement: the anchor is the city span when there is
-    // one, else the venue. Read after the corner is unhidden, since inside
-    // display:none every offset is zero (see indentHint).
-    hintAnchor = placeHint(place) ? (cityName || placeEl) : null;
-    hintIndented = false;
+    if (hintObserver && hintAnchor) hintObserver.unobserve(hintAnchor);
+    hintAnchor = cityName || placeEl;
+    if (hintObserver && hintAnchor) hintObserver.observe(hintAnchor);
     if (areaEl) areaEl.style.marginLeft = '';
-    indentHint();
 
-    requestAnimationFrame(() => whereat.classList.add('is-live'));
+    whereat.classList.add('is-live');
+    scheduleHintIndent();
   }
 
   /* "3 hours ago", at the coarsest unit that isn't zero. The server sends an
@@ -199,44 +192,35 @@
 
     if (listening.hidden) {
       listening.hidden = false;
-      requestAnimationFrame(() => listening.classList.add('is-live'));
+      listening.classList.add('is-live');
     }
   }
 
-  // Digits are held at a fixed width so the strip never re-lays out under a
-  // number that grows — the padding is the layout, not decoration.
-  const PAD = { visits: 6 };
-  const shown = {};
-
-  function write(key, value) {
-    const el = fields[key];
-    if (!el) return;
-    el.textContent = String(Math.round(value)).padStart(PAD[key] || 1, '0');
+  // Paint both rows together before the intro animates. Never wait on the
+  // network again just to revisit Home; still honor nulls in fresh responses.
+  function restoreStatus() {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY));
+      if (!cached || !Number.isFinite(cached.at)) return;
+      const elapsed = Date.now() - cached.at;
+      if (elapsed < 0 || elapsed > CACHE_MS) return;
+      const age = value => value && ({
+        ...value,
+        ago: value.ago == null ? null : value.ago + elapsed / 1000,
+      });
+      paintPlace(age(cached.place));
+      const track = age(cached.track);
+      // An old snapshot is a last-known song, not proof it is still playing.
+      if (track && elapsed > BEAT_MS) track.playing = false;
+      paintTrack(track);
+    } catch (_) {
+      // Corrupt or blocked storage falls back to the normal live request.
+    }
   }
-
-  /* Numbers arrive by counting up to themselves rather than appearing. It
-     costs nothing, and it's the difference between a number that was fetched
-     and a number that's alive. Later changes (someone else opening the page)
-     run the same way from wherever the display currently sits. */
-  function tick(key, target) {
-    if (!(key in fields)) return;
-    const from = shown[key] ?? 0;
-    shown[key] = target;
-    if (reduced || from === target) return write(key, target);
-
-    const ms = from === 0 ? 750 : 320;
-    const start = performance.now();
-    (function frame(now) {
-      const t = Math.min((now - start) / ms, 1);
-      // ease-out cubic: fast off the mark, settling onto the final digit
-      write(key, from + (target - from) * (1 - Math.pow(1 - t, 3)));
-      if (t < 1) requestAnimationFrame(frame);
-    })(start);
-  }
+  restoreStatus();
 
   /* ---- The beat -------------------------------------------------------- */
 
-  let live = false;
   let timer = 0;
 
   async function beat(fresh) {
@@ -248,28 +232,23 @@
       });
       if (!res.ok) throw new Error(`pulse: ${res.status}`);
       const data = await res.json();
+      try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+          at: Date.now(), place: data.place, track: data.track,
+        }));
+      } catch (_) {}
 
-      // Before the early return below: the corners are independent, and
-      // a page carrying one but not the others still gets what it has.
+      // Each status row is independent; pages without them still count visits.
       paintPlace(data.place);
       paintTrack(data.track);
 
-      if (!strip) return;
-      tick('visits', data.visits);
-      if (!live) {
-        live = true;
-        strip.hidden = false;
-        // on the next frame, so the fade has an initial state to leave from
-        requestAnimationFrame(() => strip.classList.add('is-live'));
-      }
     } catch (e) {
-      /* Offline, rate-limited, or the endpoint is down. The strip simply
-         doesn't appear, and the next beat will try again. */
+      // Keep any cached status; the next beat will try again.
     }
   }
 
   // Keep personal status current only on pages that display it.
-  const hasStatus = !!(strip || whereat || listening);
+  const hasStatus = !!(whereat || listening);
   function schedule() {
     clearInterval(timer);
     if (!hasStatus || document.visibilityState !== 'visible') return;
@@ -278,6 +257,12 @@
 
   document.addEventListener('visibilitychange', () => {
     if (hasStatus && document.visibilityState === 'visible') beat(false);
+    schedule();
+  });
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    restoreStatus();
+    if (hasStatus) beat(false);
     schedule();
   });
 
@@ -305,4 +290,24 @@
   }
   paintAge();
   if (ageEl) setInterval(paintAge, BEAT_MS);
+
+  /* The footer rule overhangs the LinkedIn mark and the diff stat by the
+     same padding, but a digit's box is wider than its ink: Hanken's figures
+     are tabular, so a closing "1" sits 2px inside its box and a "6" half a
+     pixel. Let the stat overhang by the last glyph's right side bearing so
+     the red ink, not its box, matches the gap on the left. Canvas measures
+     the same tabular glyph; letter-spacing trails the last glyph in the DOM,
+     so it counts toward the advance. */
+  const lastNum = commitEl && [...commitEl.querySelectorAll('.pulse-num')].pop();
+  function trimInk() {
+    const text = lastNum && lastNum.lastChild;
+    if (!text || text.nodeType !== Node.TEXT_NODE || !text.length) return;
+    const cs = getComputedStyle(lastNum);
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = ctx.measureText(text.data.slice(-1));
+    const trim = m.width + (parseFloat(cs.letterSpacing) || 0) - m.actualBoundingBoxRight;
+    if (trim > 0 && trim < m.width / 2) strip.style.setProperty('--ink-trim', `${trim}px`);
+  }
+  if (lastNum && document.fonts) document.fonts.ready.then(trimInk);
 })();

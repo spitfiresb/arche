@@ -36,12 +36,7 @@
       } else {
         // room between the viewport edge and the mark's right edge,
         // exactly the span a leftward-opening card has to live in.
-        // The rect is zoomed px under the desktop zoom: 0.9; --liw and
-        // the minimum are layout px, so convert (see about.js).
-        var zf = document.body.offsetWidth
-          ? document.body.getBoundingClientRect().width
-            / document.body.offsetWidth : 1;
-        var room = host.getBoundingClientRect().right / zf - EDGE_GUTTER;
+        var room = host.getBoundingClientRect().right - EDGE_GUTTER;
         var opensLeft = room >= Math.min(OPEN_LEFT_MIN, width);
         host.classList.toggle("opens-left", opensLeft);
         if (opensLeft) width = Math.min(width, room);
@@ -52,25 +47,60 @@
       }
 
       host.style.setProperty("--liw", width + "px");
+      var inner = cards[i].querySelector(".li-card-inner");
+      if (inner) {
+        host.style.setProperty("--social-card-height",
+          Math.min(inner.offsetHeight + 2, window.innerHeight - 2 * EDGE_GUTTER,
+            Math.max(44, host.getBoundingClientRect().bottom - EDGE_GUTTER)) + "px");
+      }
     }
   }
 
+  var resizeFrame = 0;
+  function scheduleCardSize() {
+    if (resizeFrame) return;
+    resizeFrame = requestAnimationFrame(function () {
+      resizeFrame = 0;
+      sizeHoverCards();
+    });
+  }
   sizeHoverCards();
-  window.addEventListener("resize", sizeHoverCards);
+  window.addEventListener("resize", scheduleCardSize);
+  window.addEventListener("scroll", scheduleCardSize, { passive: true });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(sizeHoverCards);
   }
 
   // Keep the traveling icon aligned with upward-opening footer previews,
   // including after the contribution calendar and profile images arrive.
-  var footerCardObserver = new ResizeObserver(function (entries) {
-    entries.forEach(function (entry) {
-      entry.target.closest("li.li-hover").style.setProperty(
-        "--social-card-height", (entry.target.getBoundingClientRect().height + 2) + "px");
-    });
-  });
+  var footerCardObserver = new ResizeObserver(scheduleCardSize);
   document.querySelectorAll(".home-footer .li-card-inner").forEach(function (inner) {
     footerCardObserver.observe(inner);
+  });
+
+  // Warm photos after page load so the first expansion does not wait for
+  // image requests. Touch-only devices never display these previews.
+  var hoverAvailable = matchMedia("(hover: hover)");
+  document.querySelectorAll("li.li-hover").forEach(function (host) {
+    function loadPhotos() {
+      if (!hoverAvailable.matches) return;
+      host.querySelectorAll("img[data-src]").forEach(function (img) {
+        img.addEventListener("load", scheduleCardSize, { once: true });
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      });
+    }
+    host.addEventListener("pointerenter", loadPhotos);
+    host.addEventListener("focusin", loadPhotos);
+    function warmPhotos() {
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(loadPhotos, { timeout: 1000 });
+      } else {
+        setTimeout(loadPhotos, 200);
+      }
+    }
+    if (document.readyState === "complete") warmPhotos();
+    else window.addEventListener("load", warmPhotos, { once: true });
   });
 
   /* --- GitHub contribution calendar: live data via a public proxy of
@@ -128,7 +158,7 @@
           rect.setAttribute("width", CELL);
           rect.setAttribute("height", CELL);
           rect.setAttribute("rx", 2);
-          rect.setAttribute("fill", colors[d.level]);
+          rect.setAttribute("fill", "var(--gh-level-" + d.level + ", " + colors[d.level] + ")");
           // GitHub's faint outline keeps even the empty cells defined
           rect.setAttribute("stroke", "rgba(255, 255, 255, 0.05)");
           var nice = new Date(d.date + "T00:00:00");

@@ -10,17 +10,16 @@ two Pages behaviours the site depends on:
                 up, and a page you haven't hard-reloaded keeps rendering an old
                 copy. no-store makes every request go to disk.
 
-  clean URLs    Pages serves /work/personal out of work/personal.html, and the
-                pages link that way throughout. Without this, every internal
-                link would 404 locally while working in production, the worst
-                kind of split between the two.
+  routing       Honor public/_redirects for retired pages and support clean
+                URLs alongside directory indexes.
 
 Add ?edit to any page to make its text editable in place; see edit-mode.js.
 
 The status widgets preview public production data through a read-only bridge:
-visitor-counting flags are never sent upstream. FloorSense
-detection and testing the Pages Functions themselves still need Wrangler.
+visitor-counting flags are never sent upstream. Testing the Pages Functions
+themselves still needs Wrangler.
 """
+import fnmatch
 import http.server
 import json
 import os
@@ -70,10 +69,31 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
 
+    def _redirect(self):
+        parsed = urllib.parse.urlsplit(self.path)
+        with open(os.path.join(ROOT, '_redirects')) as rules:
+            for line in rules:
+                if not line.strip() or line.lstrip().startswith('#'):
+                    continue
+                source, destination, status = line.split()
+                if fnmatch.fnmatchcase(parsed.path, source):
+                    if parsed.query:
+                        destination += '?' + parsed.query
+                    self.send_response(int(status))
+                    self.send_header('Location', destination)
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return True
+        return False
+
+    def do_HEAD(self):
+        if not self._redirect():
+            return super().do_HEAD()
+
     def do_GET(self):
+        if self._redirect():
+            return
         parsed = urllib.parse.urlparse(self.path)
-        if parsed.path in ('/__scene', '/__scene/'):
-            return self._send_bytes(open(os.path.join(HERE, 'scene-layers', 'inspector.html'), 'rb').read(), 'text/html')
         if parsed.path == EDIT_URL:
             return self._send_bytes(open(EDIT_FILE, 'rb').read(),
                                     'text/javascript')
@@ -120,7 +140,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
         local = super().translate_path(path)
         # An extensionless path that doesn't exist is a clean URL:
-        # /work/personal -> work/personal.html. Everything else falls through
+        # /404 -> 404.html. Everything else falls through
         # untouched, so directories still resolve to their index.
         if not os.path.exists(local) and not os.path.splitext(local)[1]:
             if os.path.isfile(local + '.html'):

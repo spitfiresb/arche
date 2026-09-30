@@ -24,7 +24,7 @@ const PLACE_AGE_TTL = 432000; // 5 days; after that the corner keeps the venue b
 
 export async function onRequestPost({ request, env, waitUntil }) {
   try {
-    // Same-origin only, as with /api/detect: this writes to the database, and
+    // Same-origin only: this writes to the database, and
     // there's no reason for anything but this site's own pages to call it.
     const origin = request.headers.get("Origin");
     if (origin && new URL(origin).hostname !== new URL(request.url).hostname) {

@@ -9,7 +9,7 @@
 # longer takes arguments — `npx wrangler pages deploy` reads both the output
 # directory and the project name from here.
 #
-# Secrets are NOT declared here. ROBOFLOW_API_KEY and PULSE_SALT live in the
+# Secrets are NOT declared here. WHERE_TOKEN and PULSE_SALT live in the
 # Pages dashboard (Settings > Environment variables) and in .dev.vars locally.
 # Adding a [vars] block would shadow the dashboard values, so there isn't one.
 

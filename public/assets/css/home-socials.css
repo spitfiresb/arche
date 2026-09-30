@@ -1,27 +1,17 @@
-/* Original home intro and expanding social previews on the charcoal page. */
+/* One progress value keeps the reveal and its outline on the same frame. */
+@property --social-open {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Homepage introduction and expanding social profile previews. */
 .bio {
   position: relative;
   z-index: 1;
-  text-align: center;
-  font-size: 1.0625rem;
-  font-weight: 400;
-  line-height: 1.5;
 }
 .bio > header {
   padding-bottom: 0;
-}
-.bio > header h1 {
-  font-weight: 400;
-}
-.bio > p {
-  padding-top: 1.1rem;
-  color: var(--soft);
-}
-.bio .stress {
-  color: var(--fg);
-}
-.elsewhere {
-  padding-top: 2rem;
 }
 .elsewhere ul.links {
   max-width: 22rem;
@@ -29,19 +19,16 @@
   padding: 0;
   list-style: none;
 }
-.elsewhere ul.social-row {
-  justify-content: center;
-}
 .li-hover-card :where(p) {
   line-height: 1.6;
 }
 
 /* Home: LinkedIn and GitHub are icon-only marks sitting side by side
-   under the About link. Each one expands into a rounded profile preview
-   on hover, growing out of the icon to the right and down. */
+   in the footer. Each expands upward into a profile preview on hover. */
 ul.links ul.social-row {
-  --icon: 1.4em;
+  --icon: 1rem;
   display: flex;
+  align-items: center;
   gap: 0.6em;
   margin: 0;
   padding: 0;
@@ -50,13 +37,16 @@ ul.links ul.social-row {
 
 /* the marks are their own row, so the list's per-item gap doesn't
    reappear between them */
-ul.links ul.social-row li {
+ul.links ul.social-row > li {
+  flex: none;
   margin-bottom: 0;
 }
 
 /* The item is just the icon's footprint; the card is revealed as an
    overlay on top of the page, so nothing else shifts */
 ul.links li.li-hover {
+  --social-duration: 1500ms;
+  --social-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --liw: min(22rem, calc(100vw - 24px));
   position: relative;
   width: var(--icon);
@@ -78,6 +68,42 @@ ul.links li.li-hover:focus-within {
   height: 100%;
 }
 
+/* Email stays beside the profile icons without a hover card. */
+.email-item {
+  flex: none;
+  width: var(--icon);
+  height: var(--icon);
+}
+.email-link {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--muted);
+}
+.email-link:is(:hover, :focus-visible) {
+  color: #fff;
+}
+.light .email-link:is(:hover, :focus-visible) {
+  color: var(--fg);
+}
+.email-link svg {
+  width: var(--icon);
+  height: var(--icon);
+  transform-origin: center;
+}
+.email-link:is(:hover, :focus-visible) svg {
+  scale: 1.12;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .email-link {
+    transition: color 160ms ease;
+  }
+  .email-link svg {
+    transition: scale 180ms ease;
+  }
+}
+
 /* Positioned relative to the li so it can travel onto the card */
 .li-logo {
   position: absolute;
@@ -89,20 +115,21 @@ ul.links li.li-hover:focus-within {
   /* full strength: the marks carry their own white, so any dimming here
      reads as a gray logo against the dark page */
   opacity: 1;
-  transition: top 0.5s ease, left 0.5s ease, filter 0.5s ease;
+  transition:
+    transform var(--social-duration) var(--social-ease);
+  transform: translate(0, 0);
 }
 
 li.li-hover:hover .li-logo,
 li.li-hover:focus-within .li-logo {
-  top: 0.6em;
-  left: 0.55em;
+  --logo-x: 0.55em;
 }
 
 /* The LinkedIn card opens the other way: down and to the LEFT, into the
    empty page margin rather than over the work columns. Pinning the
    reveal's right edge to the mark makes the box grow leftward, and the
    mark lands inside the card's top-right corner, which sits right where
-   the mark already is. landing.js only adds .opens-left when there's
+   the mark already is. home-socials.js only adds .opens-left when there's
    actually room to the left; otherwise the card opens right as usual. */
 li.li-hover.opens-left .li-hover-reveal {
   left: auto;
@@ -111,7 +138,7 @@ li.li-hover.opens-left .li-hover-reveal {
 
 li.li-hover.opens-left:hover .li-logo,
 li.li-hover.opens-left:focus-within .li-logo {
-  left: -0.55em;
+  --logo-x: -0.55em;
 }
 
 /* The reveal is an absolute overlay pinned to the icon, so growing it
@@ -120,25 +147,20 @@ li.li-hover.opens-left:focus-within .li-logo {
    width (--liw / --ghw); the grid row animates its height 0 -> auto. */
 .li-hover-reveal {
   position: absolute;
-  top: 0;
   left: 0;
   width: var(--icon);
   z-index: 1;
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.6s ease, width 0.6s ease;
 }
 
 .li-hover-reveal > .li-hover-card {
-  overflow: hidden;
   min-height: 0;
-  opacity: 0;
-  /* fills the box, which grows from the top-left, right and down */
-  transition: opacity 0.5s ease 0.1s, transform 0.5s ease,
-    box-shadow 0.5s ease;
+  /* Keep the surface opaque throughout expansion and collapse. Hide it
+     only once the closing motion finishes, leaving the resting icon bare. */
+  visibility: hidden;
+  transition: visibility 0s linear var(--social-duration);
 }
 
-/* Content is laid out at the card's final width (set by landing.js as
+/* Content is laid out at the card's final width (set by home-socials.js as
    --liw) and pinned top-left, so the growing box uncovers it rather than
    squishing it */
 .li-card-inner {
@@ -148,20 +170,19 @@ li.li-hover.opens-left:focus-within .li-logo {
 
 li.li-hover:hover .li-hover-reveal,
 li.li-hover:focus-within .li-hover-reveal {
-  grid-template-rows: 1fr;
   width: var(--liw, 22rem);
 }
 
 li.li-hover:hover .li-hover-card,
 li.li-hover:focus-within .li-hover-card {
-  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .li-hover-card {
   margin-top: 0;
   /* the cards reproduce LinkedIn's and GitHub's own layouts, so they have
-     to opt out of whatever the surrounding list is doing; the centered
-     About block would otherwise centre the name, headline and location */
+     to opt out of whatever the surrounding list is doing. */
   text-align: left;
   border-radius: 0.6em;
   /* flat card: a soft drop shadow and a hairline border, no 3d tilt.
@@ -181,8 +202,9 @@ li.li-hover:focus-within .li-hover-card {
    theme, since the site around it is dark: #1d2226 surfaces, #38434f
    hairlines, and the lighter #70b5f9 for the blue accents */
 .li-card {
-  font-family: -apple-system, system-ui, "Segoe UI", Roboto,
-    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+    Arial, sans-serif;
   background: #1d2226;
   color: rgba(255, 255, 255, 0.9);
   border-color: #38434f;
@@ -192,7 +214,8 @@ li.li-hover:focus-within .li-hover-card {
 .li-banner {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 1; /* LinkedIn banners are 1584x396 */
+  height: auto;
+  aspect-ratio: 4 / 1; /* Reserve the banner space before its photo loads. */
   object-fit: cover;
 }
 
@@ -264,11 +287,12 @@ ul.links li.li-hover.gh:focus-within .li-hover-reveal {
 /* GitHub profile card, replicated like the LinkedIn one (GitHub's font
    stack, type scale, and colors), with a live contribution calendar */
 .gh-card {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "Noto Sans", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
+    Arial, sans-serif;
   /* GitHub's own dark theme, to match the page: #0d1117 canvas, #30363d
      hairlines, #e6edf3 ink; the green calendar still carries the color,
-     on the darker ramp landing.js draws */
+     on the darker ramp home-socials.js draws */
   background: #0d1117;
   color: #e6edf3;
   border-color: #30363d;
@@ -297,12 +321,6 @@ ul.links li.li-hover.gh:focus-within .li-hover-reveal {
    dark card too, parked vertically centered on the avatar */
 .li-logo[src*="gh-logo"] {
   filter: brightness(0) invert(1);
-}
-
-li.li-hover:hover .li-logo[src*="gh-logo"],
-li.li-hover:focus-within .li-logo[src*="gh-logo"] {
-  top: 0.9em;
-  left: 0.45em;
 }
 
 .gh-avatar {
@@ -358,7 +376,7 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
 .gh-tip::after {
   content: "";
   position: absolute;
-  /* landing.js sets --ax so the arrow tracks the hovered cell even
+  /* home-socials.js sets --ax so the arrow tracks the hovered cell even
      when the bubble itself is clamped at the graph's edge */
   left: var(--ax, 50%);
   bottom: -4px;
@@ -372,10 +390,23 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   opacity: 1;
 }
 
-.gh-graph svg {
+/* Reserve a full calendar before its response arrives so late data does
+   not change the card height or the traveling logo's destination. */
+.gh-graph::before {
+  content: "";
   display: block;
-  width: 100%;
-  height: auto;
+  aspect-ratio: 634 / 97;
+}
+.gh-graph svg {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: block;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+}
+.gh-graph-fallback::before {
+  content: none;
 }
 
 .gh-month {
@@ -397,7 +428,6 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   color: #8b949e;
 }
 
-
 li.li-hover.gh .li-hover-reveal {
   left: var(--gh-offset, 0px);
 }
@@ -406,7 +436,7 @@ li.li-hover:not(.opens-left):not(.gh) .li-hover-reveal {
 }
 li.li-hover:not(.opens-left):not(.gh):hover .li-logo,
 li.li-hover:not(.opens-left):not(.gh):focus-within .li-logo {
-  left: calc(var(--li-offset, 0px) + 0.55em);
+  --logo-x: calc(var(--li-offset, 0px) + 0.55em);
 }
 .gh-head > div {
   flex: none;
@@ -414,9 +444,10 @@ li.li-hover:not(.opens-left):not(.gh):focus-within .li-logo {
 li.li-hover:hover .li-logo[src*="gh-logo"],
 li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   filter: brightness(0) invert(1);
-  left: calc(var(--gh-offset, 0px) + 0.45em);
+  --logo-x: calc(var(--gh-offset, 0px) + 0.45em);
 }
-.li-link:focus-visible {
+.li-link:focus-visible,
+.email-link:focus-visible {
   outline: 2px solid var(--link);
   outline-offset: 4px;
   border-radius: 3px;
@@ -429,70 +460,186 @@ li.li-hover:focus-within .li-logo[src*="gh-logo"] {
   }
 }
 
-.about-more {
-  display: inline-block;
-  margin-top: 1.2rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-/* The brackets are drawn here rather than typed in the markup so the
-   language switcher can swap the words without eating them, and so a
-   screen reader gets "more about me" and not the punctuation.
-
-   The translateY is optical correction: a square bracket is drawn to
-   enclose full-height text — ascender to under the baseline — so against
-   a lowercase phrase it hangs visibly low. Lifting it half that overshoot
-   centers the bracket on the words as drawn, which is what the eye
-   expects even though the font doesn't do it. They also slide outward a
-   step when the link wakes up. */
-.about-more::before,
-.about-more::after {
-  display: inline-block;
-  color: var(--faint);
-  transform: translateY(-0.04em);
-  transition: color 0.3s ease, transform 0.3s ease;
-}
-
-.about-more::before { content: "[\00a0\00a0"; }
-.about-more::after  { content: "\00a0\00a0]"; }
-
-.about-more:hover,
-.about-more:focus-visible {
-  color: var(--fg);
-}
-
-.about-more:hover::before,
-.about-more:focus-visible::before {
-  color: var(--muted);
-  transform: translate(-0.2em, -0.04em);
-}
-
-.about-more:hover::after,
-.about-more:focus-visible::after {
-  color: var(--muted);
-  transform: translate(0.2em, -0.04em);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .about-more,
-  .about-more::before,
-  .about-more::after { transition: none; }
-}
-
-/* Footer previews expand upward so their contents stay above the page edge. */
+/* Lay out the content in its final position before revealing it. Only the
+   clipping boundary expands from the icon; text, photos and calendar cells
+   stay anchored instead of traveling beneath the moving reveal edge. */
 .home-footer .li-hover-reveal {
+  --social-open: 0;
+  transition: --social-open var(--social-duration) var(--social-ease);
+  --preview-border: #38434f;
+  --preview-width: var(--liw, 22rem);
+  --preview-height: var(--social-card-height, 260px);
+  --reveal-left: 0px;
+  --reveal-right: calc(100% - var(--icon));
   top: auto;
   bottom: 0;
+  display: block;
+  width: var(--preview-width);
+  height: var(--preview-height);
+  pointer-events: none;
+
+  filter: drop-shadow(0 10px 17px rgba(0, 0, 0, 0.6));
+}
+.home-footer li.li-hover.opens-left .li-hover-reveal {
+  --reveal-left: calc(100% - var(--icon));
+  --reveal-right: 0px;
+}
+.home-footer li.li-hover.gh .li-hover-reveal {
+  --preview-border: #30363d;
+  --preview-width: var(--ghw);
+  --preview-height: var(--social-card-height, 160px);
+}
+.home-footer .li-hover-reveal > .li-hover-card {
+  height: 100%;
+  pointer-events: auto;
+  border-color: transparent;
+  box-shadow: none;
+  clip-path: inset(
+    calc((100% - var(--icon)) * (1 - var(--social-open)))
+    calc(var(--reveal-right) * (1 - var(--social-open))) 0
+    calc(var(--reveal-left) * (1 - var(--social-open))) round 0.6em);
+  transition: visibility 0s linear var(--social-duration);
+}
+/* This empty outline follows the clip's edges. Its dimensions animate
+   independently of the fixed-size content, so no text or images reflow. */
+.home-footer .li-hover-reveal::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: calc(var(--icon) + (100% - var(--icon)) * var(--social-open));
+  height: calc(var(--icon) + (100% - var(--icon)) * var(--social-open));
+  box-sizing: border-box;
+  border: 1px solid var(--preview-border);
+  border-radius: 0.6em;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear var(--social-duration);
+}
+.home-footer li.li-hover.opens-left .li-hover-reveal::after {
+  left: auto;
+  right: 0;
+}
+.home-footer li.li-hover:is(:hover, :focus-within) .li-hover-reveal::after {
+  visibility: visible;
+  transition-delay: 0s;
+}
+.light .home-footer .li-hover-reveal {
+  --preview-border: #d6d6d6;
+}
+.light .home-footer li.li-hover.gh .li-hover-reveal {
+  --preview-border: #d1d9e0;
+}
+.home-footer li.li-hover:is(:hover, :focus-within) .li-hover-reveal {
+  --social-open: 1;
+  width: var(--preview-width);
+}
+.home-footer li.li-hover:is(:hover, :focus-within) .li-hover-card {
+  transition-delay: 0s;
+}
+.light .home-footer .li-hover-reveal {
+  filter: drop-shadow(0 10px 17px rgba(0, 0, 0, 0.14));
 }
 .home-footer li.li-hover:hover .li-logo,
 .home-footer li.li-hover:focus-within .li-logo {
-  top: calc(var(--icon) - var(--social-card-height, 260px) + 0.6em);
+  transform: translate(var(--logo-x, 0px),
+    calc(var(--icon) - var(--social-card-height, 260px) + 0.6em));
 }
 .home-footer li.li-hover.gh:hover .li-logo,
 .home-footer li.li-hover.gh:focus-within .li-logo {
-  top: calc(var(--icon) - var(--social-card-height, 160px) + 0.9em);
+  transform: translate(var(--logo-x, 0px),
+    calc(var(--icon) - var(--social-card-height, 160px) + 0.9em));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-footer .li-hover-reveal,
+  .home-footer .li-hover-reveal::after,
+  .home-footer .li-hover-reveal > .li-hover-card {
+    transition: none;
+  }
+}
+
+/* Opaque light counterparts for the expanding profile cards. */
+.light .li-hover-card {
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.14);
+}
+.light .li-card {
+  background: #fff;
+  color: #242424;
+  border-color: #d6d6d6;
+}
+.light .li-avatar {
+  background: #fff;
+  border-color: #fff;
+}
+.light .li-meta {
+  color: #626262;
+}
+.light .li-connections {
+  color: #0a66c2;
+}
+.light .li-logo[src*="gh-logo"],
+.light li.li-hover:is(:hover, :focus-within) .li-logo[src*="gh-logo"] {
+  filter: brightness(0);
+}
+.light .gh-card,
+.light .gh-graph {
+  background: #fff;
+  color: #1f2328;
+  border-color: #d1d9e0;
+}
+.light .gh-graph {
+  --gh-level-0: #eff2f5;
+  --gh-level-1: #aceebb;
+  --gh-level-2: #4ac26b;
+  --gh-level-3: #2da44e;
+  --gh-level-4: #116329;
+}
+.light .gh-avatar {
+  border-color: #d1d9e0;
+}
+.light :is(.gh-login, .gh-total, .gh-graph-fallback) {
+  color: #59636e;
+}
+.light .gh-month {
+  fill: #59636e;
+}
+.light .gh-graph rect {
+  stroke: rgba(31, 35, 40, 0.06);
+}
+.light .gh-graph rect:hover {
+  stroke: #59636e;
+}
+
+/* A tap opens the profile directly; hover cards are reserved for a pointer. */
+@media (hover: none) {
+  .home-footer .elsewhere ul.social-row {
+    gap: 4px;
+    margin-left: -14px;
+  }
+  ul.links li.li-hover,
+  .email-item {
+    width: 44px;
+    height: 44px;
+  }
+  .home-footer .li-hover-reveal {
+    display: none;
+  }
+  .home-footer li.li-hover .li-logo,
+  .home-footer li.li-hover:is(:hover, :focus-within) .li-logo,
+  .home-footer li.li-hover.gh:is(:hover, :focus-within) .li-logo {
+    top: 14px;
+    left: 14px;
+    transform: none;
+    transition: none;
+  }
+}
+/* Let a tall preview scroll inside a short landscape window. */
+.home-footer .li-hover-reveal {
+  max-width: calc(100vw - 24px);
+  max-height: var(--social-card-height);
+}
+.home-footer .li-hover-reveal > .li-hover-card {
+  overflow: auto;
+  scrollbar-width: thin;
 }

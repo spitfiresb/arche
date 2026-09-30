@@ -7,26 +7,14 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — a larger left-aligned name and live status, stacked Work and
-  Projects lists, and a footer with social previews and commit numbers
-- **About** — a timeline of how I got here
-- **Projects** — the homepage features the first two projects, with a View all projects
-  separate link below them leading to the complete list at `/work/`. Each project keeps its separate page,
-  original layout and demos.
-  Unpak groups System, Dashboard, and Website with a left-hand table of contents
+- **Home** — name and live status, Work and featured Projects lists, social links, and email contact.
+- **Projects** — “View All Projects” opens the complete list at `/projects/`, with
+  one sentence per project and a GitHub link when a repository is available.
 
-## Demos
-
-Each project on the work pages carries a live demo: a real app running in the
-page, not a screenshot.
-
-- **Notch** — a Dynamic Island for the Mac notch
-- **FloorSense** — turns a floor plan image into an interactive model
-- **Liquid Glass** — a WebGL refractive tab bar
-- **Steward AI** — the hackathon dashboard, ported to the browser
-- **Olander** — the AI sales agent
-- **Unpak** — the marketing site and the dashboard
-- **Papeagnet** — a contract build
+The site has no About page or demos. Old URLs redirect
+home or to the projects list. Edit `PROJECTS` in `tools/build-work.py` and run
+`python3 tools/build-work.py` to rebuild the list; omit `github` or set it to
+`None` for projects without a repository.
 
 ## Live numbers
 
@@ -46,7 +34,7 @@ day. A visitor is a salted hash of the day and IP, so repeat visits on the
 same day count once. The IP is never written down, and the identifier changes
 every midnight.
 
-Every page calls `/api/pulse` on load. The homepage refreshes its
+Home and Projects call `/api/pulse` on load. The homepage refreshes its
 location and Spotify status every 30 seconds while visible.
 
 ## Project Structure
@@ -54,37 +42,32 @@ location and Spotify status every 30 seconds while visible.
 ```
 ├── public/           # the deployed site, served as-is
 │   ├── index.html    # bio, Work and Projects lists, live status
-│   ├── about.html    # the story, as a timeline
-│   ├── work/         # one page per project (tools/build-work.py), and
-│   │                 # the Liquid Glass source
-│   ├── assets/       # css, js, images
-│   └── demos/        # one self-contained app per folder
+│   ├── projects/         # the complete projects list (tools/build-work.py)
+│   └── assets/       # css, js, images
 ├── functions/api/    # the Cloudflare Pages Functions
 ├── wrangler.toml     # project name, output dir, D1 binding
-├── schema.sql        # the three tables behind the two live corners
+├── schema.sql        # visitor counts and personal status caches
 └── tools/            # deploy script, dev server, in-place text editing,
-                      # vendor rebase, and where/ — the macOS location reporter
+                      # and where/ — the macOS location reporter
 ```
 
 ## Running it
 
-For the combined design on `reformatting`, use one static preview server:
+Use the static preview server:
 
 ```sh
 python3 tools/serve.py    # http://localhost:8712
 ```
 
-The illustration layer inspector is at `/__scene`; `?edit` enables local
-text editing. The `bottom-artwork` branch preserves the homepage with its visible landscape.
-On `reformatting`, the artwork markup is hidden and retained for reuse.
-The panorama lives inside an SVG, with a separate
-amber cabin-light layer and subtle CSS firelight animation (steady with reduced
-motion). The original layered artwork and tools remain available for further
-illustration work.
+`?edit` enables local text editing. The earlier illustration, About page, and
+interactive project demos are recoverable from git history; `bottom-artwork`
+also preserves the visible landscape layout. The current site has no scene
+editor or illustration dependencies.
+
 The location, music, and analytics widgets also work on this preview server:
 it reads the public live site's status without registering local visitors
 or forwarding browser cookies.
-To test the Pages Functions themselves or FloorSense detection, use Wrangler:
+To test the Pages Functions themselves, use Wrangler:
 
 ```sh
 cp .dev.vars.example .dev.vars     # then fill both values in
@@ -93,8 +76,8 @@ npx wrangler pages dev
 ```
 
 `.dev.vars` holds the secrets, none of which are ever committed:
-`ROBOFLOW_API_KEY` for the FloorSense demo, `PULSE_SALT` for the visitor
-hashes, and `WHERE_TOKEN` for the location reporter — the last two are any
+`PULSE_SALT` for the visitor hashes and `WHERE_TOKEN` for the location
+reporter — both are any
 long random string, and `openssl rand -hex 32` produces a good one. All of
 them also have to exist in the Pages dashboard under Settings → Environment
 variables for the live site to work.
@@ -112,8 +95,7 @@ tools/deploy.sh --dry-run    # show what would be stamped, deploy nothing
 It refuses a dirty tree, so what's live is always a commit. `gh` has to be
 signed in, for the one call that checks whether the repo is public.
 
-The homepage no longer displays a Last update line. Deployment still stamps
-the commit numbers and link in the footer.
+Deployment stamps the commit numbers, timestamp, and link in the footer.
 
 After deploying the removal of the online indicator, clean up the unused table
 in existing databases once (the current `schema.sql` does not create it):

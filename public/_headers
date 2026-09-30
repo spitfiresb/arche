@@ -4,16 +4,6 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
-# The demos are showpieces embedded in the work pages, not destinations of
-# their own, and three of them are vendored copies of sites that exist
-# elsewhere (unpak-site above all). Indexing them would put ~38 near-duplicate
-# pages in front of the five that are actually meant to rank, and would put
-# this copy of the Unpak marketing site in competition with the real one.
-# Crawling stays allowed so this header is actually seen; see robots.txt.
-/demos/*
-  X-Robots-Tag: noindex
-
-# The flag font never changes under this URL, and only visitors whose OS ships
-# no flag glyphs ever fetch it — so when it is paid for, it is paid for once.
+# Self-hosted font files are cached for repeat visits.
 /assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable

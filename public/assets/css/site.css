@@ -1,9 +1,5 @@
-/* The site, second edition: one narrow column of prose on a charcoal
-   page. The home page is a name, stacked Work and Projects lists and a separate
-   live status group (home-status.css); each project is an article in the same
-   column with its demo up top; About is a timeline. Everything is 14px
-   Hanken Grotesk at weight 460 in off-white, with the grey palette from main.
-   style.css supplies the original bands on the combined project page. */
+/* Home and projects share a narrow charcoal layout with Hanken Grotesk
+   typography, short descriptions, and direct repository links. */
 
 @font-face {
   font-family: "Hanken Grotesk";
@@ -12,34 +8,23 @@
   font-style: normal;
   font-display: swap;
 }
-@font-face {
-  font-family: "Hanken Grotesk";
-  src: url("/assets/fonts/HankenGrotesk-VariableItalic.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: italic;
-  font-display: swap;
-}
 
 :root {
   color-scheme: dark;
-  --bg: #1a1a1a;
-  --bg-rgb: 26, 26, 26;
+  --bg: #161616;
+  --bg-rgb: 22, 22, 22;
   --fg: #f2f2f2;
   --muted: #a0a0a0;
   --soft: #a0a0a0;
-  --line: rgba(242, 242, 242, 0.1);
   --rule: rgba(242, 242, 242, 0.1);
   --underline: #555;
   --underline-hover: #a0a0a0;
   --link: #74b1fd;
-  --link-hover: #a3ccff;
   --faint: #7e7e7e;
   --column: 36.375rem;
-  --ld-corner: 12px;      /* the demo previews' corner; live-demo.js reads it */
-  --font-sans: "Hanken Grotesk", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Newsreader", "Times New Roman", Times, serif;
-  --font-mono: "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-sans:
+    "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -79,7 +64,9 @@ a {
   text-decoration: none;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-size: inherit;
   font-weight: inherit;
   line-height: inherit;
@@ -151,34 +138,6 @@ h1, h2, h3 {
   color: var(--muted);
 }
 
-.site-updated {
-  align-self: flex-start;
-  text-align: left;
-  color: var(--muted);
-  font-size: 0.875rem;
-  font-weight: 460;
-  line-height: 1.25rem;
-}
-.site-updated:hover time,
-.site-updated:focus-visible time {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.bio > p {
-  padding-top: 1rem;
-}
-
-.bio em {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 430;
-  font-size: 0.9375rem;
-  letter-spacing: 0.01rem;
-  font-variation-settings: "opsz" 10;
-  color: var(--fg);
-}
-
 /* An inline link is a word with a hairline under it, darkening on hover. */
 .link {
   position: relative;
@@ -230,9 +189,6 @@ body.home > .page {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 638px;
-  padding: 76px 30px 40px;
-  flex: none;
 }
 
 body.home > .page::before {
@@ -262,40 +218,15 @@ body.home .bio > header h1 {
   font-weight: 700;
 }
 
-/* Keep the icon row and About link on the same horizontal center without
-   the extra baseline space that an inline link leaves underneath itself. */
+/* Keep the social icon row aligned with the content. */
 body.home .elsewhere {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-/* Anchor the landscape inside the viewport rather than appending its height
-   below the copy. Give its blend group an opaque charcoal backdrop so the
-   image's black sky blends into the same grey as the rest of the page. */
-.home-landscape {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: var(--bg);
-  overflow: clip;
-  pointer-events: none;
-}
-.home-landscape .home-panorama {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: auto;
-  display: block;
-  mix-blend-mode: screen;
-}
-
 .home-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2rem;
-  padding-top: 2.0625rem;
 }
 
 .home-columns > .work {
@@ -305,26 +236,76 @@ body.home .elsewhere {
 .experience-list {
   list-style: none;
 }
-.experience-list > li {
-  padding-block: 0.8125rem;
-}
 .work-organization {
   color: var(--muted);
+}
+
+.experience-link {
+  display: block;
+}
+.organization-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+}
+.link-label {
+  position: relative;
+  display: inline-block;
+}
+.link-label::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-arrow {
+  display: inline-block;
+  flex: none;
+  color: var(--soft);
+  opacity: 0;
+  transform: translate(-3px, 3px) scale(0.8);
+  transition:
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.animated-link:is(:hover, :focus-visible) .link-label::after {
+  transform: scaleX(1);
+}
+.animated-link:is(:hover, :focus-visible) .link-arrow {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+.animated-link:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+@media (hover: none) {
+  .animated-link .link-arrow {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .link-label::after,
+  .link-arrow {
+    transition: none;
+  }
 }
 
 .view-all-projects {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.625rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  background: rgba(242, 242, 242, 0.06);
+
   color: var(--soft);
 }
 .view-all-projects:hover,
 .view-all-projects:focus-visible {
-  background: rgba(242, 242, 242, 0.1);
   color: var(--fg);
 }
 .view-all-projects:focus-visible {
@@ -335,13 +316,31 @@ body.home .elsewhere {
 html:has(body.projects-index) {
   font-size: 100%;
 }
-.projects-index > .page {
-  max-width: 638px;
-  padding: 80px 30px 40px;
+.projects-index > .page::before {
+  content: none;
 }
-.projects-index h1 {
-  margin-bottom: 0.625rem;
+.breadcrumbs {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  list-style: none;
+}
+.breadcrumbs a,
+.breadcrumb-separator {
   color: var(--soft);
+}
+.breadcrumbs a:hover {
+  color: var(--fg);
+}
+.breadcrumbs a:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 .work > h2 {
@@ -361,110 +360,95 @@ html:has(body.projects-index) {
 }
 
 .work-project {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  min-height: 2.75rem;
+  display: block;
   height: 100%;
-  padding: 0.8125rem 0;
   list-style: none;
-  cursor: pointer;
-}
-.work-project > span:first-child {
-  min-width: 0;
-}
-.work-project:focus-visible {
-  outline: 2px solid var(--link);
-  outline-offset: 4px;
-  border-radius: 3px;
+  cursor: default;
 }
 .work-title {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 460;
+
   transition: color 0.15s ease;
 }
 .work-description {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   margin-top: 0.1875rem;
   color: var(--soft);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 460;
   line-height: 1.0625rem;
   transition: color 0.15s ease;
 }
-.work-chevron {
+.project-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.project-heading .work-title {
+  min-width: 0;
+}
+.project-repo {
   flex: none;
-  align-self: center;
-  width: 0.375rem;
-  height: 0.375rem;
-  margin-right: 0.25rem;
-  border-top: 1px solid currentColor;
-  border-right: 1px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
   color: var(--soft);
-  transform: rotate(45deg);
-  transition: transform 0.2s ease, color 0.15s ease;
+  transition: color 180ms ease;
 }
-.work-project:hover .work-chevron {
-  transform: translateX(0.125rem) rotate(45deg);
+.project-repo + .project-repo {
+  margin-inline-start: -0.375rem;
+  justify-content: flex-start;
 }
-@media (hover: hover) {
-  .project-grid:has(.work-project:hover) .work-project:not(:hover) :is(.work-title, .work-description, .work-chevron) {
-    color: var(--faint);
-  }
-  .work-project:hover :is(.work-title, .work-description, .work-chevron) {
-    color: var(--fg);
-  }
-}
-.project-grid:has(.work-project:focus-visible) .work-project:not(:focus-visible) :is(.work-title, .work-description, .work-chevron) {
-  color: var(--faint);
-}
-.work-project:focus-visible :is(.work-title, .work-description, .work-chevron) {
+.work-project:is(:hover, :focus-within) .project-repo {
   color: var(--fg);
 }
-@media (max-width: 460px) {
-  body.home > .page {
-    padding: 48px 22px 160px;
-  }
-  .home-columns {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-  .work-project {
-    padding: 0.6875rem 0;
-  }
-  .home-landscape .home-panorama {
-    width: 145%;
-    max-width: none;
-    left: -30%;
-  }
+.project-lock-icon {
+  width: 0.875rem;
+  height: 0.875rem;
 }
-/* Short windows use less spacing, leaving the bottom of the viewport for
-   the drawing while keeping the intro and project text at their normal size. */
-@media (max-height: 780px) {
-  body.home > .page {
-    padding-top: 40px;
-  }
-  body.home .elsewhere {
-    padding-top: 1.25rem;
-  }
-  body.home .about-more {
-    margin-top: 0.75rem;
-  }
-  body.home .home-columns {
-    padding-top: 1.5rem;
-  }
-  body.home .work-project,
-  body.home .experience-list > li {
-    padding-block: 0.5625rem;
-  }
+.project-repo-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  background: currentColor;
+  -webkit-mask: url("/assets/img/gh-logo.svg") center / contain no-repeat;
+  mask: url("/assets/img/gh-logo.svg") center / contain no-repeat;
 }
-/* Let short landscape windows scroll instead of putting the drawing behind links. */
-@media (min-width: 461px) and (max-height: 650px) {
-  body.home > .page {
-    padding-bottom: clamp(160px, 20vw, 280px);
-  }
+a.project-repo:hover {
+  color: var(--fg);
+}
+.project-external-arrow {
+  display: inline-block;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.work-title + .project-repo .project-external-arrow {
+  width: 0.875rem;
+  text-align: start;
+}
+.project-repo:is(:hover, :focus-visible) .project-external-arrow {
+  transform: translate(2px, -2px);
+}
+.project-repo:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.projects-index .work-project {
+  padding-block: 0.75rem;
+}
+.projects-index .work-title {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.projects-index .work-description {
+  margin-top: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
 }
 /* Match the reference's typography while retaining the compact list spacing. */
 body.home .work > h2 {
@@ -485,7 +469,7 @@ body.home .work-title {
 }
 body.home .work-description {
   font-size: 0.875rem;
-  line-height: 1.25rem;
+  line-height: 1.5;
   font-weight: 400;
 }
 
@@ -512,9 +496,6 @@ body.home .project-grid {
 body.home .work-description {
   margin-top: 0;
 }
-body.home .about-more {
-  margin-top: 2rem;
-}
 .project-actions {
   margin-top: 0.5rem;
 }
@@ -527,101 +508,207 @@ body.home .about-more {
   font-weight: 400;
 }
 
-/* Match the reference's column and page insets without fitting to viewport height. */
-body.home:has(> .home-landscape[hidden]) > .page {
-  max-width: 576px;
-  padding: 64px 16px 32px;
+/* Both pages share the same content bounds and responsive insets. */
+:root {
+  --page-top: min(
+    clamp(3.5rem, calc(7.142857vw + 0.928571rem), 5.5rem),
+    max(2rem, 10svh)
+  );
+  --page-left: max(1rem, env(safe-area-inset-left));
+  --page-right: max(1rem, env(safe-area-inset-right));
 }
-@media (max-width: 767px) {
-  body.home:has(> .home-landscape[hidden]) > .page {
-    padding-top: 32px;
+html:has(body:is(.home, .projects-index)) {
+  scrollbar-gutter: stable;
+}
+body.home > .page,
+body.projects-index > .page {
+  max-width: 576px;
+  padding: calc(var(--page-top) + env(safe-area-inset-top)) var(--page-right)
+    max(2rem, env(safe-area-inset-bottom)) var(--page-left);
+}
+.project-heading .work-title,
+.organization-link {
+  overflow-wrap: anywhere;
+}
+.organization-link {
+  max-width: 100%;
+}
+.organization-link .link-label {
+  min-width: 0;
+}
+@media (hover: none), (pointer: coarse) {
+  a.project-repo {
+    width: 44px;
+    height: 44px;
+    margin-block: -10px;
+  }
+  .experience-link {
+    min-height: 44px;
+    align-content: center;
+  }
+  .project-actions .view-all-projects,
+  .breadcrumbs a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .breadcrumbs a {
+    min-width: 44px;
+    margin-block: -12px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .work-title,
   .work-description,
-  .work-chevron {
+  .project-repo {
     transition: none;
+  }
+  .project-external-arrow {
+    transition: none;
+  }
+  .project-repo:is(:hover, :focus-visible) .project-external-arrow {
+    transform: none;
+  }
+}
+
+/* Shared theme control stays inside the same bounds as the content. */
+:root.light {
+  color-scheme: light;
+  --bg: #f7f7f5;
+  --bg-rgb: 247, 247, 245;
+  --fg: #242424;
+  --muted: #626262;
+  --soft: #626262;
+  --faint: #707070;
+  --rule: rgba(36, 36, 36, 0.12);
+  --underline: #aaa;
+  --underline-hover: #626262;
+  --link: #1765b7;
+}
+body.home > .page,
+body.projects-index > .page {
+  position: relative;
+  --theme-top: calc(var(--page-top) + env(safe-area-inset-top) - 8px);
+}
+.theme-toggle {
+  view-transition-name: theme-toggle;
+  position: absolute;
+  top: var(--theme-top);
+  right: calc(var(--page-right) - 4px);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:hover {
+  color: var(--fg);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+.theme-toggle svg {
+  grid-area: 1 / 1;
+  width: 21px;
+  height: 21px;
+  transform-origin: center;
+}
+.theme-sun {
+  visibility: hidden;
+}
+.light .theme-moon {
+  visibility: hidden;
+}
+.light .theme-sun {
+  visibility: visible;
+}
+/* Fade the complete palette together, keeping the live icon animation clear. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-in-out;
+}
+::view-transition-group(theme-toggle),
+::view-transition-new(theme-toggle) {
+  animation: none;
+}
+::view-transition-old(theme-toggle) {
+  display: none;
+}
+::view-transition {
+  pointer-events: none;
+}
+@supports not (view-transition-name: root) {
+  html,
+  body {
+    transition:
+      background-color 200ms ease-in-out,
+      color 200ms ease-in-out;
+  }
+}
+body.home .bio > header {
+  max-width: calc(100% - 48px);
+}
+.breadcrumbs {
+  padding-right: 48px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
 
 /* ---- Entrance -------------------------------------------------------- */
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* The same small lift and stagger introduce each section on either page.
+   Backwards fill keeps delayed sections hidden without retaining a transform
+   after the animation, so links and hover cards keep their normal stacking. */
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .bio > * {
-    animation: rise 0.5s ease both;
+  .page-reveal {
+    animation: section-enter 550ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: calc(var(--reveal-order, 0) * 60ms);
   }
-  .bio > :nth-child(1) { animation-delay: 0s; }
-  .bio > :nth-child(2) { animation-delay: 0.05s; }
-  .bio > :nth-child(3) { animation-delay: 0.1s; }
-  .bio > :nth-child(4) { animation-delay: 0.15s; }
-  .bio > :nth-child(5) { animation-delay: 0.2s; }
-  .bio > :nth-child(6) { animation-delay: 0.25s; }
-  .bio > :nth-child(n + 7) { animation-delay: 0.3s; }
-  .work { animation: rise 0.5s ease 0.4s both; }
 }
 
-/* ---- Project pages --------------------------------------------------- */
+/* ---- Custom 404 page ------------------------------------------------- */
 
-/* The back control: the site's ring-and-chevron mark on a small dark
-   disc pinned to the top-left corner. The live-demo overlay rebuilds the
-   same mark inside its own .ld-back, so the mark's classes are shared. */
 .back {
   position: fixed;
-  top: 1.25rem;
-  left: 1.25rem;
+
   z-index: 15;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  color: var(--muted);
-  background: var(--bg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24), 0 4px 16px rgba(0, 0, 0, 0.12),
-    inset 0 0 0 1px var(--rule);
-  transition: color 0.15s ease, transform 0.15s ease;
-}
-.back:hover,
-.back:focus-visible {
-  color: var(--soft);
-  transform: scale(1.05);
-}
-.back:active {
-  transform: scale(0.95);
-}
-.back-mark {
-  width: 1.75rem;
-  height: 1.75rem;
-}
-.back-chevron {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-/* The ring draws itself closed on hover: one dash the length of the
-   circle, parked out of sight at rest. */
-.back-ring {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.1;
-  stroke-linecap: round;
-  stroke-dasharray: 98 200;
-  stroke-dashoffset: 98;
-  transition: stroke-dashoffset 0.32s cubic-bezier(0.55, 0, 0.85, 0.2);
-}
-.back:hover .back-ring,
-.back:focus-visible .back-ring {
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 0.62s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .article > header {
@@ -634,285 +721,14 @@ body.home:has(> .home-landscape[hidden]) > .page {
   font-weight: 500;
   text-wrap: balance;
 }
-.article > header time,
-.article > header .note {
-  color: var(--muted);
-}
-.article > header .note::before {
-  content: "· ";
-}
 .article > header .meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
 }
 
-/* The row of outbound links under the title: "View repo ↗", in blue. */
-.article .links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  padding-top: 0.75rem;
-}
-.styled-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: var(--link);
-  transition: color 0.2s ease;
-}
-.styled-link svg {
-  width: 14px;
-  height: 14px;
-  color: var(--muted);
-  transform: translateY(-1px);
-  transition: transform 0.2s ease;
-}
-.styled-link:hover {
-  color: var(--link-hover);
-}
-.styled-link:hover svg {
-  transform: translate(1px, -2px);
-}
-.styled-link.is-internal:hover svg {
-  transform: translate(2px, -1px);
-}
-
 .article > p {
   padding-top: 1rem;
-}
-.article > h2 {
-  font-weight: 560;
-  padding-top: 2.25rem;
-}
-.article > h2 + p {
-  padding-top: 0.5rem;
-}
-.article em {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 430;
-  font-size: 0.9375rem;
-  letter-spacing: 0.01rem;
-  font-variation-settings: "opsz" 10;
-  color: var(--fg);
-}
-.article strong {
-  font-weight: 600;
-}
-.article p.soft {
-  color: var(--muted);
-}
-
-/* The demo. A hairline frame with a rounded corner; the thumbnail inside
-   is the screenshot until the app parks its live miniature over it. */
-.article .artifact {
-  padding-top: 1.5rem;
-}
-.article .ld-thumb {
-  margin: 0;
-  border: 1px solid var(--rule);
-  border-radius: var(--ld-corner);
-  background: var(--line);
-}
-.article .ld-thumb.plain {
-  border: none;
-  border-radius: 0;
-  background: transparent;
-}
-.article .ld-thumb.plain img {
-  aspect-ratio: auto;
-  height: auto;
-}
-.article .ld-inline {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border: 1px solid var(--rule);
-  border-radius: var(--ld-corner);
-  background: #fcfcfb;
-}
-.article .ld-inline-box {
-  overflow: clip;
-  position: relative;
-  aspect-ratio: 16 / 10;
-  border: 1px solid var(--rule);
-  border-radius: var(--ld-corner);
-  background: #fcfcfb;
-}
-.article .ld-inline-box .ld-inline {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
-  border: none;
-  border-radius: 0;
-}
-/* Notch is a lit screen on a dark desk; a pale boot colour would flash. */
-.article .ld-inline.dark,
-.article .ld-inline-box:has(.ld-inline.dark) {
-  background: #1b1c2b;
-}
-.article figcaption {
-  padding-top: 0.625rem;
-  color: var(--muted);
-  font-size: 0.75rem;
-  line-height: 1rem;
-  text-align: center;
-}
-/* live-demo.css sizes its overlay for the old stylesheet's 0.9 zoom;
-   this edition isn't zoomed. */
-@media (min-width: 40.0625rem) {
-  .ld-overlay {
-    height: 100vh;
-    height: 100dvh;
-  }
-}
-
-/* Specifications: label on the left, value on the right, one pair a row. */
-.article .spec {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.75rem 1.5rem;
-  padding-top: 2.25rem;
-}
-.article .spec dt {
-  color: var(--muted);
-}
-.article .spec dd {
-  margin: 0;
-}
-@media (max-width: 32.5rem) {
-  .article .spec {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
-  }
-  .article .spec dd {
-    padding-bottom: 0.75rem;
-  }
-}
-
-/* Previous / next project, under a short rule. */
-.neighbours {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  position: relative;
-}
-.neighbours::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 3.125rem;
-  background: var(--rule);
-}
-.neighbours a {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  color: var(--fg);
-  transition: opacity 0.15s ease;
-}
-.neighbours a:hover {
-  opacity: 0.6;
-}
-.neighbours a small {
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-.neighbours .next {
-  margin-left: auto;
-  text-align: right;
-}
-
-/* ---- The story (About) ---------------------------------------------- */
-
-.timeline {
-  --left: -1.75rem;
-  --dot: 9px;
-  --gap: 2.25rem;
-  position: relative;
-  list-style: none;
-  margin-top: 2rem;
-  margin-left: 1.75rem;
-}
-.timeline li {
-  position: relative;
-}
-.timeline li + li {
-  margin-top: var(--gap);
-}
-.timeline li h2 {
-  position: relative;
-  font-weight: 500;
-}
-.timeline li h2::before {
-  content: "";
-  position: absolute;
-  left: var(--left);
-  top: calc((1.25rem - var(--dot)) / 2);
-  width: var(--dot);
-  height: var(--dot);
-  border-radius: 50%;
-  background: var(--bg);
-  box-shadow: inset 0 0 0 1.5px var(--underline);
-  transform: translateX(-50%);
-  z-index: 1;
-}
-.timeline li:first-child h2::before {
-  width: calc(var(--dot) + 4px);
-  height: calc(var(--dot) + 4px);
-  top: calc((1.25rem - var(--dot) - 4px) / 2);
-}
-.timeline li:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  left: var(--left);
-  top: calc((1.25rem + var(--dot)) / 2 + 6px);
-  height: calc(100% + var(--gap) - var(--dot) - 12px);
-  width: 1px;
-  background: var(--rule);
-  transform: translateX(-50%);
-}
-.timeline li:first-child:not(:last-child)::after {
-  top: calc((1.25rem + var(--dot) + 4px) / 2 + 6px);
-}
-.timeline time {
-  display: block;
-  padding-top: 0.125rem;
-  font-size: 0.6875rem;
-  color: var(--muted);
-}
-.timeline p {
-  padding-top: 0.5rem;
-}
-@media (max-width: 32.5rem) {
-  .timeline {
-    margin-left: 1.25rem;
-    --left: -1.25rem;
-  }
-}
-
-/* ---- Source pages ---------------------------------------------------- */
-
-/* Keep code.css's original dark syntax palette. */
-.source {
-  --line: var(--rule);
-}
-.source .page {
-  max-width: 58rem;
-}
-.source .article > header {
-  max-width: var(--column);
-}
-.source .code-file:first-of-type {
-  margin-top: 2rem;
 }
 
 /* ---- Entrance, for the inner pages ---------------------------------- */
@@ -921,19 +737,10 @@ body.home:has(> .home-landscape[hidden]) > .page {
   .article > * {
     animation: rise 0.5s ease both;
   }
-  .article > :nth-child(1) { animation-delay: 0s; }
-  .article > :nth-child(2) { animation-delay: 0.05s; }
-  .article > :nth-child(3) { animation-delay: 0.1s; }
-  .article > :nth-child(4) { animation-delay: 0.15s; }
-  .article > :nth-child(5) { animation-delay: 0.2s; }
-  .article > :nth-child(6) { animation-delay: 0.25s; }
-  .article > :nth-child(n + 7) { animation-delay: 0.3s; }
-  .neighbours { animation: rise 0.5s ease 0.4s both; }
-  .timeline li { animation: rise 0.5s ease both; }
-  .timeline li:nth-child(2) { animation-delay: 0.05s; }
-  .timeline li:nth-child(3) { animation-delay: 0.1s; }
-  .timeline li:nth-child(4) { animation-delay: 0.15s; }
-  .timeline li:nth-child(5) { animation-delay: 0.2s; }
-  .timeline li:nth-child(6) { animation-delay: 0.25s; }
-  .timeline li:nth-child(n + 7) { animation-delay: 0.3s; }
+  .article > :nth-child(1) {
+    animation-delay: 0s;
+  }
+  .article > :nth-child(2) {
+    animation-delay: 0.05s;
+  }
 }

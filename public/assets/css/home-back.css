@@ -1,4 +1,4 @@
-/* Shared home navigation, independent of each page's original styling. */
+/* Return-home control on the custom 404 page. */
 .back.home-back {
   top: 80px;
   left: 80px;
@@ -33,31 +33,13 @@
   width: 18px;
   height: 18px;
 }
-/* Keep the home link and project navigation on the same inset rail. */
-body.collection:has(> .home-back) {
-  --toc-left: 80px;
-  --toc-gutter: calc(var(--toc-left) + var(--toc-width) + var(--toc-gap));
-}
-.home-back ~ .toc {
-  top: 168px;
-  transform: none;
-  max-height: calc(100dvh - 200px);
-}
 @media (max-width: 900px) {
   .back.home-back {
     top: 32px;
     left: 24px;
   }
-  body.collection:has(> .home-back) {
-    --toc-left: 24px;
-  }
-  .home-back ~ .toc {
-    top: 100px;
-    max-height: calc(100dvh - 124px);
-  }
   /* The link occupies a separate top row when side margins are narrow. */
-  body:has(> .home-back) > main,
-  body.page.work.collection:has(> .home-back) > main {
+  body:has(> .home-back) > main {
     padding-top: 92px;
   }
 }

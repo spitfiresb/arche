@@ -1,31 +1,29 @@
-/* Location and music at top left; analytics at top right. */
+/* Inline location/music status and the deployed commit footer. */
 .home-status {
-  position: fixed;
-  top: 20px;
-  left: 24px;
-  right: 24px;
+  position: relative;
+  width: 100%;
+  margin: 1rem 0 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 12px;
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.25rem;
+  text-align: left;
   pointer-events: none;
 }
 .home-presence {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
   min-width: 0;
-  /* Use the space up to the centered header, measured by home-status.js. */
-  max-width: var(--home-presence-width, calc(50vw - 140px));
+  max-width: 100%;
 }
 .home-status:not(:has(.is-live)) {
   display: none;
 }
-.home-status :is(.whereat, .listening, .pulse) {
+.home-status :is(.whereat, .listening) {
   position: relative;
   pointer-events: auto;
   max-width: 100%;
@@ -80,8 +78,14 @@
   letter-spacing: 0.12em;
   text-overflow: ellipsis;
 }
-.whereat-hint {
+.whereat-hint,
+.listening-hint {
+  text-transform: capitalize;
+}
+.listening-hint {
   margin-left: 2em;
+}
+.whereat-hint {
   max-width: 100%;
   overflow-wrap: anywhere;
 }
@@ -124,75 +128,96 @@
 .pulse-del {
   color: #f85149;
 }
-.pulse-commit:hover .pulse-num,
-.pulse-commit:focus-visible .pulse-num {
-  opacity: 0.8;
-}
 .pulse-commit:focus-visible {
   outline: 1px solid var(--muted);
   outline-offset: 3px;
 }
 @media (hover: hover) {
-  .pulse-label,
-  .whereat-hint,
-  .listening-hint {
+  .pulse-label {
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
+    transition:
+      max-height 0.3s ease,
+      opacity 0.3s ease;
+    white-space: nowrap;
   }
   .pulse-stat:hover .pulse-label,
-  .pulse-stat:focus-within .pulse-label,
-  .whereat:hover .whereat-hint,
-  .listening:hover .listening-hint {
-    /* Match main: oversized limits make the visible reveal finish early. */
+  .pulse-stat:focus-within .pulse-label {
     max-height: 1.2rem;
     opacity: 1;
   }
-  .pulse-label,
+
+  /* Reserve one detail line for the group, not one beneath each status.
+     Location can grow into that space while music shrinks by the same
+     amount, keeping the group's total height and the rest of the page fixed. */
+  .home-presence {
+    --status-detail-height: 0.9625rem; /* 11px text at 1.4 line height */
+    height: calc(1.25rem + var(--status-detail-height));
+  }
+  .home-presence:has(> .whereat:not([hidden])):has(> .listening:not([hidden])) {
+    height: calc(2.5rem + var(--status-detail-height) + 8px);
+  }
+  .home-presence > :is(.whereat, .listening):not([hidden]) {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .home-presence > .whereat:not([hidden]):has(+ .listening:not([hidden])) {
+    flex: none;
+    height: calc(1.25rem + 4px);
+    transition:
+      height 0.2s ease,
+      opacity 0.6s ease;
+  }
+  .home-presence
+    > .whereat:not([hidden]):has(+ .listening:not([hidden])):has(.whereat-hint:not(:empty)):hover {
+    height: calc(1.25rem + var(--status-detail-height));
+  }
+  /* Use the existing breathing room above Work for the reserved detail. */
+  body.home .bio:has(.home-status .is-live) + .home-columns {
+    padding-top: calc(2rem - 0.9625rem);
+  }
   .whereat-hint,
   .listening-hint {
+    position: absolute;
+    top: 1.25rem;
+    left: 0;
+    right: 0;
+    height: var(--status-detail-height);
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
     white-space: nowrap;
   }
-}
-/* Reserve space above the name on smaller screens, keeping both corners. */
-@media (max-width: 1160px) {
-  .home-status {
-    position: relative;
-    inset: auto;
-    width: calc(100% - 44px);
-    margin: 20px 22px 0;
-    gap: 8px;
+  .home-presence > .whereat:not([hidden]) + .listening .listening-hint {
+    top: calc(1.25rem + 4px);
   }
-  .home-presence {
-    max-width: 100%;
-    gap: 8px;
-  }
-  body.home:has(> .home-status .is-live) > .page {
-    padding-top: 28px;
+  .whereat:hover .whereat-hint,
+  .listening:hover .listening-hint {
+    opacity: 1;
+    visibility: visible;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .home-status :is(.whereat, .listening, .pulse),
+  .home-status :is(.whereat, .listening),
+  .home-presence > .whereat:not([hidden]):has(+ .listening:not([hidden])),
   .pulse-label,
   .whereat-hint,
   .listening-hint {
     transition: none;
   }
 }
-
-/* Keep live details in the same left-aligned column as the introduction. */
-body.home .bio .home-status {
-  position: relative;
-  inset: auto;
-  width: 100%;
-  margin: 0.25rem 0 0;
-  grid-template-columns: minmax(0, 1fr);
-  text-align: left;
+/* Put the visual spacing inside the rows so their hover areas touch.
+   Each row owns half of the space; a lone visible status needs no padding. */
+.home-presence > .whereat:not([hidden]):has(+ .listening:not([hidden])) {
+  padding-bottom: 4px;
 }
-body.home .bio .home-presence {
-  max-width: 100%;
-  gap: 8px;
+.home-presence > .whereat:not([hidden]) + .listening:not([hidden]) {
+  padding-top: 4px;
 }
 
 /* Social profiles and the deployed commit share the bottom row. */
@@ -202,12 +227,15 @@ body.home .bio .home-presence {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1.5rem;
   margin-top: 2rem;
   border-top: 1px solid var(--rule);
-  padding-top: 1rem;
+  padding: 0.5rem 0.75rem 0;
 }
 body.home .home-footer .elsewhere {
+  position: relative;
+  top: -4px;
   padding-top: 0;
 }
 .home-footer .elsewhere ul.links {
@@ -215,18 +243,92 @@ body.home .home-footer .elsewhere {
 }
 .home-footer .elsewhere ul.social-row {
   justify-content: flex-start;
+  gap: 1rem;
 }
 .home-footer .pulse {
+  position: relative;
+  top: -10px;
   margin-left: auto;
+  /* pulse.js sets the last digit's side bearing so its ink meets the inset */
+  margin-right: calc(-1 * var(--ink-trim, 0px));
+  min-width: 0;
+  max-width: 100%;
+}
+.home-footer .pulse-commit {
+  position: relative;
+}
+.home-footer .pulse-num {
+  font-size: 0.75rem;
+}
+.home-footer .pulse-sign {
+  font-size: 0.625rem;
 }
 .home-footer .pulse-label {
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  letter-spacing: normal;
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);
+  top: calc(100% + 2px);
 }
 
 .home-footer > .elsewhere,
 .home-footer > .pulse {
   min-height: 40px;
   justify-content: center;
+}
+
+/* Bay Area time stays independent of the visitor's own time zone. */
+.home-local-meta {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  font-weight: 400;
+}
+.home-local-time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.light .pulse-add {
+  color: #1a7f37;
+}
+.light .pulse-del {
+  color: #cf222e;
+}
+
+/* Touch screens show the details in flow, with room to read full status text. */
+@media (hover: none) {
+  .whereat-line,
+  .listening-line {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .whereat-city {
+    display: block;
+    padding-left: 1.375rem;
+  }
+  .whereat-hint,
+  .listening-hint {
+    letter-spacing: 0.04em;
+  }
+  .home-footer {
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
+  }
+  body.home .home-footer .elsewhere,
+  .home-footer .pulse {
+    top: 0;
+  }
+  .home-footer .pulse-commit {
+    min-height: 44px;
+    width: max-content;
+    max-width: 100%;
+  }
+  .home-footer .pulse-label {
+    position: static;
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+  }
 }

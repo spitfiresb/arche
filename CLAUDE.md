@@ -1,169 +1,75 @@
 # arche (zsaeed.com)
 
-Flat-file site served from `public/` on Cloudflare Pages (project name
-`zainsaeed`). `functions/` at the repo root holds the three Pages Functions
-(`POST /api/detect`, `POST /api/pulse`, `POST /api/where`). `wrangler.toml`
-carries the project name, the output directory, and the D1 binding.
+Flat-file personal site served from `public/` on Cloudflare Pages (project
+`zainsaeed`). Current pages are Home, `/projects/`, and the custom 404.
+`functions/api/` contains the pulse, where, and spotify-poll Pages Functions.
+`wrangler.toml` declares the output directory and D1 binding.
 
-## Deployment
+## Development and deployment
 
-**The site does NOT auto-deploy.** The Pages project has no git integration —
-pushing to `main` changes nothing on the live site. After pushing, deploy
-manually:
+Run `python3 tools/serve.py` for http://localhost:8712. An optional positional
+port or `PORT` overrides it. The server honors `public/_redirects`, supports
+clean HTML URLs, and disables caching. `?edit` injects the local text editor.
+`tools/agentation/` provides a separate optional annotation preview.
 
-```sh
-tools/deploy.sh            # stamp the commit row, then wrangler pages deploy
-tools/deploy.sh --dry-run  # show what would be stamped, deploy nothing
-```
+The preview bridges `POST /api/pulse` to public production status, cached for
+20 seconds. It sends an empty body upstream and never forwards visitor-counting
+flags, cookies, or headers. Other Pages Functions need Wrangler and `.dev.vars`.
 
-The script refuses a dirty tree, works out the last commit's diff stat,
-timestamp and URL from git, writes them into the commit row in
-`public/index.html`, runs `npx wrangler pages deploy`, and restores the file
-on exit whatever happens. Running `npx wrangler pages deploy` by hand still
-works (`wrangler.toml` declares the output directory and project name) but
-ships the placeholder commit row.
+The site does not auto-deploy. `tools/deploy.sh` stamps the footer commit link,
+timestamp, and diff numbers from HEAD, deploys with Wrangler, and restores the
+HTML on exit. `--dry-run` shows the stamped diff without deploying. It refuses
+a dirty tree. The commit links to GitHub only when the repository is public
+and HEAD is pushed; otherwise it links to the owner's profile.
 
-The homepage no longer displays a Last update line. The deploy script accepts
-its absence and continues stamping the commit numbers and link in the footer.
+## Current frontend
 
-Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
-`/work/contract` redirect).
+- `public/index.html` is hand-written: name, Bay Area clock, location/music,
+  four work entries, two featured projects, social previews, and commit footer.
+- Edit `PROJECTS` in `tools/build-work.py`, then run it to regenerate
+  `public/projects/index.html`. Commit source and output together.
+- `site.css` contains the shared layout, typography, theme, links, entrance
+  animations, and 404 content styles. Home and Projects use a 576px outer column
+  with fluid insets and self-hosted Hanken Grotesk.
+- `home-socials.css` / `home-socials.js` implement LinkedIn/GitHub hover previews.
+  Footer cards expand upward; on touch, the icons open profiles directly.
+  Profile images use `data-src` and load on hover or keyboard focus. Keep their
+  dimensions to reserve space. The email link sits immediately after GitHub.
+- `home-status.css` styles inline location/music, the clock, and commit footer.
+  `pulse.js` renders status and commit age; `home-clock.js` keeps Pacific time.
+- `theme.js` restores and switches light/dark mode. `prefetch.js` warms internal
+  destinations on pointer hover; navigation uses ordinary browser links.
+- `home-back.css` styles the 404's return-home control.
 
-## Local preview
+The retired About page, project demos/detail pages, translations, and landscape
+implementation are removed from this working tree. Git history preserves them;
+`bottom-artwork` also preserves the earlier visible illustration. Do not restore
+those features as dependencies of the current pages. Keep old-URL redirects:
+they remain useful to bookmarks and inbound links.
 
-`reformatting` is the combined development branch: the illustration branch's
-history, source artwork and scene tools are merged here. `main` remains the
-production baseline. Use one preview server: `python3 tools/serve.py` on
-`http://localhost:8712`; an optional positional port or `PORT` overrides it.
+## Visitor counting and status
 
-`tools/serve.py` serves `public/` with Cloudflare's clean-URL rule, so
-`/work/notch` resolves the way it does live. Any other static server works
-but needs the `.html`. The preview server bridges `POST /api/pulse` to the
-public production response, caching it for 20 seconds. It always sends an
-empty body upstream and never forwards visitor-counting flags, cookies
-or headers, so local previews do not register visits. Other Pages
-Functions still need `npx wrangler pages dev` (needs `.dev.vars`, see README).
+Home and Projects register a visit through `POST /api/pulse`. Pages showing
+location/music refresh every 30 seconds while visible. The API returns
+`{ visits, place, track }`; visitor totals are no longer displayed, but counting
+and storage remain active. `schema.sql` defines hits, place, and spotify.
 
-The same server exposes `/__scene` for the preserved illustration layer
-inspector and `?edit` for in-place text previews, with no-store responses.
-The `bottom-artwork` branch preserves the visible landscape layout. On `reformatting`,
-the homepage hides the retained panorama markup with the `hidden` attribute.
-The panorama uses an inline SVG with a separate cabin-light
-layer. `home-cabin.css` adds amber window tint, bloom and gentle flickering;
-reduced motion keeps the glow steady. Panorama and light share the same viewBox
-and responsive crop in `site.css`. The layer sources and older
-scene/theme scripts are retained for future illustration work, but are not
-loaded by the homepage; editing the layer manifest only updates the inspector.
-Do not re-enable the old viewport-fitting script or three-column stylesheet
-when changing the illustration: the current layout lives in `site.css`.
+- Keep `.whereat-line`, `.listening-line`, and hint spans. The location hint is
+  measured against the city text after fonts, status, or layout change.
+- Location/music hints expand on hover; touch shows details in normal flow.
+- `PULSE_SALT` must exist in the Pages dashboard and `.dev.vars`. Without it,
+  visitor hashes fall back to guessable unsalted hashes.
+- Keep the top-level-window guard: embedded copies must not register visits.
+- Recent status is restored from session storage, then revalidated. Null data
+  hides its row; an unavailable endpoint leaves cached status intact.
+- The footer commit is static HTML stamped by deployment; only its age changes
+  in the browser. It does not depend on the status request succeeding.
 
-## The pages
-
-The homepage stylesheet is `site.css`: a 576px outer column with 16px
-side padding and Hanken Grotesk on charcoal (#1a1a1a). The name uses 30px / 36px at weight 700. Homepage list typography matches
-samuelzhang.ca: uppercase section headings at 12px / 16px, weight 500;
-work titles at 15px / 24.375px, weight 400; project titles at 15px / 22.5px,
-weight 500; descriptions at 14px / 20px, weight 400. The About link stays 14px / 20px;
-hovering or keyboard-focusing a project keeps it white and dims the others.
-Live status readouts
-use 13–14px text and smaller hover labels.
-Regular text uses weight 460. Profile-preview cards retain
-their own LinkedIn/GitHub typography.
-The home page has a left-aligned header with Zain Saeed
-followed by location, music, and the bracketed About link. There is no interests
-paragraph. The LinkedIn/GitHub icons sit at the bottom left, with the commit
-numbers at the bottom right. The original expanding social cards remain in
-`home-socials.css` and `home-socials.js`; footer cards open upward and retain
-their traveling-icon animation. Visitor totals are no longer displayed.
-Work sits above Projects in one column, with plain lists and no row rules.
-Work lists four role titles. Projects shows the first two entries (Steward AI and Unpak), with short descriptions and a separate View all projects
-row below the list linking to the complete single-column list at `/work/`. The same top-down
-section order applies at every width. Spacing matches the reference: 64px top
-inset on desktop, 32px below 768px, 32px between sections, 8px below headings,
-6px between work entries and 12px between projects.
-Each entry links directly to its project at `/work/<slug>`. Unpak links to
-`/work/unpak`, containing only its System, Dashboard and Website sections. The landscape uses the static
-`lookout-panorama-v2.png` from the former `home-illustration` branch,
-anchored at the bottom of the viewport behind the copy. Both the body and
-landscape blend container have an opaque charcoal background, so the image's
-black sky blends into the page grey. The homepage fills at least one viewport;
-narrow or short screens can scroll, with normal bottom padding while artwork is hidden. Location and music share `.home-status`, styled by `home-status.css`,
-inside the introduction's content column. Each widget appears when its data
-arrives; hover details expand beneath the readouts. The footer `.pulse` keeps
-the deployed commit link and age hint. No language UI or translation script is
-loaded. `home-status.js` retains the earlier width measurement for artwork layouts;
-the current inline status explicitly uses the full content width.
-The site uses self-hosted Hanken Grotesk variable fonts, with existing sizes and weights.
-Project pages load main's original `style.css`, preserving their copy,
-technical specifications, demo sizes and alternating side-by-side layouts.
-`project-pages.css` preserves each band's original left/right orientation after
-splitting the collection. The six single-section projects have no sidebar gutter.
-Unpak alone keeps a fixed left table of contents (System, Dashboard, Website),
-with `toc.js` moving the active dot on scroll or anchor navigation.
-`project-navigation.css` reserves its sidebar gutter at every width.
-All nine content bands live in `tools/project-bands.html`, originally copied
-from main at 07c5768. There is no footer clock or cross-project navigation.
-`/about` preserves main's original timeline,
-stickman/rope animation, car artwork and language behavior. It uses `style.css`,
-`about.js`, `car-art.js`, and `i18n.js` with the dictionaries in `assets/i18n/`;
-keep this page independent of the homepage redesign. All page-level back links
-use the shared `home-back.css` return-arrow + “home” control: gray at rest,
-white on hover or keyboard focus. The
-home link sits 80px from the top and left on desktop, with the project rail
-aligned below it at 168px. At widths up to 900px, the link uses 24px left /
-32px top insets and the rail starts at 100px. The
-project pages are generated: `tools/build-work.py` holds page metadata and reads
-`tools/project-bands.html` as the single source for their content. Edit the source,
-run the script, and commit both source and output. The homepage list is hand-written
-and features two projects; the generated index links to all seven project pages. `/work/` is a compact index with no demos;
-`work-redirect.js` preserves old collection fragment links. Former Unpak page URLs
-redirect to the matching section of `/work/unpak`. `_redirects` retains the older
-category redirects (`/work/personal`, `/work/contract`, `/work/cool`).
-
-All project pages use the original demo framing (`live-demo.js`, `live-demo.css`,
-and `diagram-expand.js`), with main's 40px corners and desktop zoom. Unpak uses the
-original dark system map. The About page and homepage keep their own layouts.
-
-## The stats strip
-
-The home page’s footer shows the last commit’s diff stat at the bottom right.
-The 30-day visitor count is absent from the UI; its API and storage remain intact.
-`pulse.js` calls `POST /api/pulse` once per page load; pages with status
-widgets refresh every 30s while visible. Only `index.html` draws the result. Counts are stored in the `zainsaeed-pulse` D1
-database (`schema.sql`).
-
-The commit row is static: "+142 −16" in GitHub's green and red, the whole
-row a link, and its timestamp in `data-committed`. `tools/deploy.sh` stamps
-all three from HEAD at deploy time; the values in git are placeholders. Only
-the age is computed, in the browser, for the hover label. The link is the
-commit when the repo is public and the commit is pushed, and the GitHub
-profile otherwise — a private repo's commit page is a 404 to everyone but
-its owner, so the row links to the one page guaranteed to open. The check
-is one `gh repo view` call on the deploying machine, never at request time.
-
-Hovering a number opens its label. Requests only carry a `fresh` flag to
-register a visit, and the API returns `{ visits, place, track }`.
-`schema.sql` defines hits, place and spotify. After deploying this version,
-apply `tools/migrations/remove-online-presence.sql` once to existing databases
-with `wrangler d1 execute ... --file=...`; it removes only the retired table.
-
-Things to remember when touching it:
-
-- **Location/music sit under the name; commit numbers sit in the footer.** Keep
-  `.whereat-line`, `.listening-line` and the hint spans: `pulse.js` uses
-  these for the location indent and metadata. Hover reveals location/music
-  ages and commit age; touch displays the details directly.
-  The status group remains available at narrow widths.
-- **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
-  Without it, the visitor hashes are a plain hash of an IP, which is
-  enumerable over the whole IPv4 space and therefore not anonymous at all.
-- **The beacon has to stay out of iframes.** Nothing on the site frames its
-  own pages today (the old folded-corner About preview did), but the
-  `window.top` guard in `pulse.js` stays: any future embed is a real page
-  load, and every framed copy silently double-counts its visit.
-
-Run `node --test tools/test-pulse.mjs` when changing the API or browser status
-client; it checks the response contract, visit writes and polling behavior.
+Run `node --test tools/test-pulse.mjs` when changing the status client or API.
+It checks the response contract, visit writes, caching, and polling behavior.
+The one-time `tools/migrations/remove-online-presence.sql` removes the retired
+online-presence table from existing databases; preserve it until migration is
+confirmed for each environment.
 
 ## The music corner
 
@@ -235,36 +141,6 @@ Things to remember when touching it:
   same convention as `place.ago`, feeding the hover hint. The absolute
   `played_at` stays behind; the browser gets a distance from now, never a
   clock time.
-
-## The Notch demo
-
-The Notch band on `/work/cool` embeds `public/demos/notch-v2/` — one
-self-contained file that recreates the app in the browser and then *runs
-itself*: a 25-second loop walks a drawn cursor through Now Playing, the
-"Saved in" playlist panel, a live Claude Code session (already under way
-when the loop opens, so the spinner is in the pill from the first frame),
-Clawd's completion sprint, and then a ⇧⌘4 drag over a Claude window on the
-desktop that ends in the screenshot toast. Nothing in it responds to the
-visitor — no buttons, no hover, no keys — so it reads as a video without
-being one.
-
-- **It's an `.ld-inline` iframe, not an `.ld-thumb`.** A thumb only runs the
-  demo once you click through to fullscreen, which is no good for something
-  whose whole point is that it plays on its own.
-- **Every size is the app's own point value**, scaled once with `--u`; the
-  header comment lists the timings it mirrors. Changing `PANEL_W_FRAC` is
-  how far the camera is pushed in, and 0.52 is the ceiling: past that the
-  menu bar (which scales too) overflows the frame.
-- **It pauses when nobody's looking.** A loop that never ends would
-  otherwise animate in a background tab or below the fold; `onScreen()`
-  checks `document.hidden` and the iframe's own rect in the parent.
-- **The playlist slide is a FLIP, not a transition.** Toggling a playlist
-  rebuilds the list, and rebuilt nodes have no memory of where they were, so
-  `togglePlaylist` measures every row first and puts each one back before
-  releasing it. The app gets the same slide for free — one `ForEach` spans
-  both sections there, so a toggle is a pure reorder.
-- `public/demos/notch/` is the previous, interactive edition, kept for
-  comparison. Nothing links to it.
 
 ## The location corner
 

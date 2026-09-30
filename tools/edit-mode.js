@@ -10,7 +10,7 @@
  *
  * A block is any element holding text of its own. Where a paragraph contains
  * inline markup the paragraph is the unit, not the fragments around the tag, so
- * <span class="stress"> stays visible and editable as part of the sentence
+ * <span> stays visible and editable as part of the sentence
  * instead of being split off into its own box.
  */
 (function () {
@@ -291,15 +291,6 @@
     scan();
     build();
     refresh();
-    // A live demo would otherwise go fullscreen the moment you click a caption
-    // near it. In edit mode the thumbnails are just pictures.
-    var thumbs = document.querySelectorAll('.ld-thumb');
-    for (var i = 0; i < thumbs.length; i++) {
-      thumbs[i].addEventListener('click', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-      }, true);
-    }
     console.log('[edit mode] ' + blocks.length + ' editable blocks');
   }
 
