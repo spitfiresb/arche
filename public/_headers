@@ -4,6 +4,9 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
-# Self-hosted font files are cached for repeat visits.
+# Font filenames carry a content hash (HankenGrotesk-Variable.<hash>.woff2),
+# so a changed font gets a new URL and immutable is safe. Keep it that way:
+# replacing a font under its old name would strand returning visitors on the
+# old file for a year.
 /assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable

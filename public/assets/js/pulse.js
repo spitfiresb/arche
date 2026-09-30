@@ -11,12 +11,13 @@
   // Embedded copies should not register independent visits.
   if (window.top !== window.self) return;
 
-  // Only the first page load in this session requests a visit write. D1
+  // Only the first page load in this session requests a visit write. The
+  // flag is set once a beat carrying it succeeds, so a failed first request
+  // retries on the next beat or page load instead of dropping the visit. D1
   // still deduplicates by day and visitor if storage is unavailable.
-  let firstBeat = true;
+  let uncounted = true;
   try {
-    firstBeat = !sessionStorage.getItem(SEEN_KEY);
-    sessionStorage.setItem(SEEN_KEY, '1');
+    uncounted = !sessionStorage.getItem(SEEN_KEY);
   } catch (e) {
     // Status remains available when the browser blocks site storage.
   }
@@ -222,8 +223,17 @@
   /* ---- The beat -------------------------------------------------------- */
 
   let timer = 0;
+  // A bfcache restore fires pageshow and visibilitychange together; one
+  // request answers both.
+  let inflight = null;
 
-  async function beat(fresh) {
+  function beat() {
+    if (!inflight) inflight = send().finally(() => { inflight = null; });
+    return inflight;
+  }
+
+  async function send() {
+    const fresh = uncounted;
     try {
       const res = await fetch(ENDPOINT, {
         method: 'POST',
@@ -231,6 +241,10 @@
         body: JSON.stringify({ fresh }),
       });
       if (!res.ok) throw new Error(`pulse: ${res.status}`);
+      if (fresh) {
+        uncounted = false;
+        try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (_) {}
+      }
       const data = await res.json();
       try {
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({
@@ -252,21 +266,21 @@
   function schedule() {
     clearInterval(timer);
     if (!hasStatus || document.visibilityState !== 'visible') return;
-    timer = setInterval(() => beat(false), BEAT_MS);
+    timer = setInterval(beat, BEAT_MS);
   }
 
   document.addEventListener('visibilitychange', () => {
-    if (hasStatus && document.visibilityState === 'visible') beat(false);
+    if (hasStatus && document.visibilityState === 'visible') beat();
     schedule();
   });
   window.addEventListener('pageshow', (event) => {
     if (!event.persisted) return;
     restoreStatus();
-    if (hasStatus) beat(false);
+    if (hasStatus) beat();
     schedule();
   });
 
-  beat(firstBeat);
+  beat();
   schedule();
 
   /* ---- The commit row --------------------------------------------------

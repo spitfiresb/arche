@@ -170,3 +170,35 @@ test('a cached playing flag expires before the cached song does', () => {
   assert.equal(page.listening.hidden, false);
   assert.equal(page.fields['.listening-hint'].textContent, 'Last Played');
 });
+
+test('a failed first beat keeps the visit uncounted until one succeeds', async () => {
+  const requests = [], values = new Map(), beats = [];
+  const window = { addEventListener() {} };
+  window.top = window.self = window;
+  let status = 500;
+  vm.runInNewContext(client, {
+    window,
+    document: {
+      visibilityState: 'visible', addEventListener() {},
+      querySelector: selector => selector === '.listening'
+        ? { hidden: true, classList: { remove() {} }, querySelector() { return null; } }
+        : null,
+    },
+    sessionStorage: { getItem: key => values.get(key), setItem: (key, value) => values.set(key, value) },
+    requestAnimationFrame(fn) { fn(); }, clearInterval() {},
+    setInterval(fn) { beats.push(fn); return beats.length; },
+    async fetch(url, options) {
+      requests.push(JSON.parse(options.body));
+      return { ok: status === 200, status, async json() { return { place: null, track: null }; } };
+    },
+  });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(values.get('pulse-counted'), undefined);
+  status = 200;
+  beats[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(values.get('pulse-counted'), '1');
+  beats[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(requests, [{ fresh: true }, { fresh: true }, { fresh: false }]);
+});

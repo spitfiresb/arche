@@ -89,9 +89,9 @@ def index_page():
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-<link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.f1a70e8b.woff2" as="font" type="font/woff2" crossorigin>
 <script src="/assets/js/theme.js?v=theme-crossfade"></script>
-<link rel="stylesheet" href="/assets/css/site.css?v=fluid-layout">
+<link rel="stylesheet" href="/assets/css/site.css?v=woff2">
 <script src="/assets/js/prefetch.js"></script>
 </head>
 <body class="projects-index">
@@ -107,7 +107,7 @@ def index_page():
 {items}
     </ul>
   </main>
-  <script src="/assets/js/pulse.js?v=ink-trim" defer></script>
+  <script src="/assets/js/pulse.js?v=count-once" defer></script>
 </body>
 </html>
 '''

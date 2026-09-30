@@ -30,11 +30,15 @@ and HEAD is pushed; otherwise it links to the owner's profile.
   `public/projects/index.html`. Commit source and output together.
 - `site.css` contains the shared layout, typography, theme, links, entrance
   animations, and 404 content styles. Home and Projects use a 576px outer column
-  with fluid insets and self-hosted Hanken Grotesk.
+  with fluid insets and self-hosted Hanken Grotesk. The font file is WOFF2 with
+  a content hash in its name because `_headers` caches fonts as immutable; a
+  changed font needs a new filename, not an overwrite.
 - `home-socials.css` / `home-socials.js` implement LinkedIn/GitHub hover previews.
   Footer cards expand upward; on touch, the icons open profiles directly.
   Profile images use `data-src` and load on hover or keyboard focus. Keep their
-  dimensions to reserve space. The email link sits immediately after GitHub.
+  dimensions to reserve space. The GitHub contribution calendar is fetched on
+  first hover/focus of the social row, never on page load or on touch devices.
+  The email link sits immediately after GitHub.
 - `home-status.css` styles inline location/music, the clock, and commit footer.
   `pulse.js` renders status and commit age; `home-clock.js` keeps Pacific time.
 - `theme.js` restores and switches light/dark mode. `prefetch.js` warms internal

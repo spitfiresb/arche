@@ -66,7 +66,13 @@
   }
   sizeHoverCards();
   window.addEventListener("resize", scheduleCardSize);
-  window.addEventListener("scroll", scheduleCardSize, { passive: true });
+  // Scrolling only moves an open card's bottom edge, so a closed row skips
+  // the layout reads entirely. Opening a card measures it fresh (below).
+  window.addEventListener("scroll", function () {
+    if (document.querySelector("li.li-hover:hover, li.li-hover:focus-within")) {
+      scheduleCardSize();
+    }
+  }, { passive: true });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(sizeHoverCards);
   }
@@ -78,11 +84,13 @@
     footerCardObserver.observe(inner);
   });
 
-  // Warm photos after page load so the first expansion does not wait for
-  // image requests. Touch-only devices never display these previews.
+  // Photos load when a card is about to open, never on page load: most
+  // visitors don't touch the footer, and GitHub shouldn't hear about every
+  // view. Touch-only devices never display these previews.
   var hoverAvailable = matchMedia("(hover: hover)");
   document.querySelectorAll("li.li-hover").forEach(function (host) {
-    function loadPhotos() {
+    function open() {
+      sizeHoverCards();
       if (!hoverAvailable.matches) return;
       host.querySelectorAll("img[data-src]").forEach(function (img) {
         img.addEventListener("load", scheduleCardSize, { once: true });
@@ -90,17 +98,8 @@
         delete img.dataset.src;
       });
     }
-    host.addEventListener("pointerenter", loadPhotos);
-    host.addEventListener("focusin", loadPhotos);
-    function warmPhotos() {
-      if ("requestIdleCallback" in window) {
-        requestIdleCallback(loadPhotos, { timeout: 1000 });
-      } else {
-        setTimeout(loadPhotos, 200);
-      }
-    }
-    if (document.readyState === "complete") warmPhotos();
-    else window.addEventListener("load", warmPhotos, { once: true });
+    host.addEventListener("pointerenter", open);
+    host.addEventListener("focusin", open);
   });
 
   /* --- GitHub contribution calendar: live data via a public proxy of
@@ -112,9 +111,13 @@
     if (!wrap) return;
 
     fetch("https://github-contributions-api.jogruber.de/v4/spitfiresb?y=last")
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error("contributions: " + r.status);
+        return r.json();
+      })
       .then(function (data) {
         var days = data.contributions;
+        if (!Array.isArray(days) || !days.length) throw new Error("contributions: empty");
         // GitHub's dark-theme green intensity ramp (empty -> brightest)
         var colors = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"];
         var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -219,6 +222,20 @@
       });
   }
 
-  buildGhGraph();
+  // Fetched on the first sign of interest in the footer row rather than on
+  // every view. Entering the row, not just the GitHub mark, gives the request
+  // a head start; the calendar's space is reserved, so arriving late is fine.
+  var ghHost = document.querySelector("li.li-hover.gh");
+  var ghRow = ghHost && ghHost.closest("ul.links");
+  if (ghRow) {
+    var ghRequested = false;
+    var requestGhGraph = function () {
+      if (ghRequested || !hoverAvailable.matches) return;
+      ghRequested = true;
+      buildGhGraph();
+    };
+    ghRow.addEventListener("pointerenter", requestGhGraph);
+    ghRow.addEventListener("focusin", requestGhGraph);
+  }
 
 })();

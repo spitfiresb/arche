@@ -149,7 +149,9 @@ const VETO = {
 // named for a café at a different address sat closer to every Wi-Fi fix
 // than the real storefront, and closer-wins kept publishing it. Two of my
 // venues inside one 50m circle is finer than the positioning can resolve
-// anyway, so the hand-placed name owns the circle. Pins also resolve
+// anyway, so the hand-placed name owns the circle — unless a real café
+// shares it, in which case the pin sets a smaller `r` (see Corgi Cafe) and
+// gives the neighbour back its side. Pins also resolve
 // without Overpass (so they survive the outages that blank real lookups)
 // and skip the veto list — a deliberate entry beats a categorical rule.
 //
@@ -171,7 +173,13 @@ const PINS = [
   // Coordinate is from the locations page on corgicafe.com. OSM has no real
   // address point for 9 Claude Ln (Nominatim interpolates one near Sutter),
   // but 7 Claude Ln next door sits at the Bush end, which agrees with it.
-  { name: "Corgi Cafe", city: "San Francisco", lat: 37.79055, lon: -122.4047 },
+  //
+  // Unlike Qamaria's rival, Working Girls' is a real café that I might sit
+  // in, and at the full 50m this pin would swallow it (and Yokee Milk Tea
+  // at 49m): every visit there would publish as Corgi. So this pin claims
+  // only half the gap to its nearest allowed neighbour, and past that the
+  // ordinary OSM contest decides.
+  { name: "Corgi Cafe", city: "San Francisco", lat: 37.79055, lon: -122.4047, r: 22 },
 ];
 
 export async function onRequestPost({ request, env }) {
@@ -530,9 +538,11 @@ function metres(aLat, aLon, bLat, bLon) {
   return Math.sqrt(x * x + y * y) * 111320;
 }
 
-// The closest pin within NEARBY_M, or null. The same radius as the Overpass
-// around: clauses on purpose — a pin is a candidate, not a zone, and it
-// should be reachable from exactly as far away as any mapped venue is.
+// The closest pin within its radius, or null. That's NEARBY_M — the same
+// radius as the Overpass around: clauses on purpose — a pin is a candidate,
+// not a zone, and it should be reachable from exactly as far away as any
+// mapped venue is. A pin whose circle would take in a genuine neighbouring
+// venue sets its own smaller `r` instead, since a pin in range wins outright.
 // Centre-distance is fine here where it wouldn't be for OSM features: a pin
 // is a point I placed on a storefront, so it has no geometry to be wrong
 // about.
@@ -540,7 +550,7 @@ function nearestPin(lat, lon) {
   let best = null;
   for (const p of PINS) {
     const m = metres(lat, lon, p.lat, p.lon);
-    if (m > NEARBY_M) continue;
+    if (m > (p.r ?? NEARBY_M)) continue;
     if (!best || m < best.m) best = { name: p.name, city: p.city || null, m };
   }
   return best;
