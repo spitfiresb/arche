@@ -45,6 +45,11 @@
 .listening-line {
   display: block;
   white-space: nowrap;
+}
+/* A long venue still ends in an ellipsis. The music line never does: every
+   credited artist stays on one line and runs past the column if it has to;
+   the page clips it at the window edge rather than scrolling sideways. */
+.whereat-line {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -163,6 +168,11 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
+  }
+  /* Clip only vertically, for the height trade above; clip, unlike hidden,
+     lets the other axis stay visible so the artists can run on. */
+  .home-presence > .listening:not([hidden]) {
+    overflow: visible clip;
   }
   .home-presence > .whereat:not([hidden]):has(+ .listening:not([hidden])) {
     flex: none;
@@ -297,7 +307,8 @@ body.home .home-footer .elsewhere {
   color: #cf222e;
 }
 
-/* Touch screens show the details in flow, with room to read full status text. */
+/* Touch screens have no hover to open the details, so they are left out;
+   the status sentences wrap instead, with room to read the full text. */
 @media (hover: none) {
   .whereat-line,
   .listening-line {
@@ -309,8 +320,9 @@ body.home .home-footer .elsewhere {
     padding-left: 1.375rem;
   }
   .whereat-hint,
-  .listening-hint {
-    letter-spacing: 0.04em;
+  .listening-hint,
+  .pulse-label {
+    display: none;
   }
   .home-footer {
     padding-top: 0.25rem;
@@ -321,14 +333,10 @@ body.home .home-footer .elsewhere {
     top: 0;
   }
   .home-footer .pulse-commit {
+    display: flex;
+    align-items: center;
     min-height: 44px;
     width: max-content;
     max-width: 100%;
-  }
-  .home-footer .pulse-label {
-    position: static;
-    width: max-content;
-    max-width: 100%;
-    white-space: normal;
   }
 }

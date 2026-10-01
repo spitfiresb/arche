@@ -60,7 +60,8 @@ and storage remain active. `schema.sql` defines hits, place, and spotify.
 
 - Keep `.whereat-line`, `.listening-line`, and hint spans. The location hint is
   measured against the city text after fonts, status, or layout change.
-- Location/music hints expand on hover; touch shows details in normal flow.
+- Location/music hints expand on hover; touch screens hide them, along with
+  the commit label, because they have no hover to reveal them.
 - `PULSE_SALT` must exist in the Pages dashboard and `.dev.vars`. Without it,
   visitor hashes fall back to guessable unsalted hashes.
 - Keep the top-level-window guard: embedded copies must not register visits.
