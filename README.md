@@ -7,30 +7,20 @@ My personal website, live at **[zsaeed.com](https://zsaeed.com)**.
 
 ## Pages
 
-- **Home** — the landing page
-- **About** — a timeline of how I got here
-- **Work / Personal** — what I built for myself
-- **Work / Contract** — what I built for other people
-- **Work / Cool** — a running collection of things I found interesting
+- **Home** — name and live status, Work and featured Projects lists, social links, and email contact.
+- **Projects** — “View All Projects” opens the complete list at `/projects/`, with
+  one sentence per project and a GitHub link when a repository is available.
 
-## Demos
-
-Each project on the work pages carries a live demo: a real app running in the
-page, not a screenshot.
-
-- **Notch** — a Dynamic Island for the Mac notch
-- **FloorSense** — turns a floor plan image into an interactive model
-- **Liquid Glass** — a WebGL refractive tab bar
-- **Steward AI** — the hackathon dashboard, ported to the browser
-- **Olander** — the AI sales agent
-- **Unpak** — the marketing site and the dashboard
-- **Papeagnet** — a contract build
+The site has no About page or demos. Old URLs redirect
+home or to the projects list. Edit `PROJECTS` in `tools/build-work.py` and run
+`python3 tools/build-work.py` to rebuild the list; omit `github` or set it to
+`None` for projects without a repository.
 
 ## Live numbers
 
-The home page carries three of them in its bottom-right corner: how many
-people have visited in the last 30 days, what the last commit to the site
-did, and how many are reading right now.
+The home page shows the last commit’s changes at the bottom right, opposite
+LinkedIn and GitHub at the bottom left. The visitor count is no longer displayed;
+the existing analytics API remains available.
 
 The commit row is "+115 −13" in GitHub's green and red, and clicking it opens
 the commit. The page can't know that about itself, so the deploy script
@@ -39,43 +29,45 @@ uploading, and puts the file back afterwards — the values in this repo are
 placeholders. Hovering says how long ago that was, worked out in the
 browser. If the repo is private, or the commit isn't pushed, the row links to
 my GitHub profile instead: the commit page would be a 404 for everyone but
-me. The other two numbers come from a Cloudflare D1 database, one row per person per day and one row per open
-tab. A visitor is a salted hash of the day and the IP, so the same person
-counts once however many times they reload, and the table can't be walked
-backwards to an address — the IP is never written down, and the identifier a
-person gets changes every midnight.
+me. The visitor total comes from Cloudflare D1, with one row per person per
+day. A visitor is a salted hash of the day and IP, so repeat visits on the
+same day count once. The IP is never written down, and the identifier changes
+every midnight.
 
-Hovering the live count opens a flag for each country currently reading, one
-per country however many people are in it. That country is the only thing
-either table records about anybody, and it rides on the row that expires with
-the open tab — so it says where people are, never where they were.
-
-Windows ships no flag glyphs — a Microsoft policy decision, not a missing
-font — so those two letters come out as two boxed capitals there. Apple
-platforms use their own flags and download nothing; everyone else is served a
-flags-only webfont, scoped by `unicode-range` so it is fetched only when a
-flag is actually on screen. The flags are
-[Twemoji](https://github.com/twitter/twemoji) by Twitter, CC-BY 4.0.
-
-Every page beats to `/api/pulse`; only the home page draws the answer.
+Home and Projects call `/api/pulse` on load. The homepage refreshes its
+location and Spotify status every 30 seconds while visible.
 
 ## Project Structure
 
 ```
 ├── public/           # the deployed site, served as-is
-│   ├── index.html    # landing
-│   ├── about.html    # timeline
-│   ├── work/         # personal, contract, cool, liquid-glass source
-│   ├── assets/       # css, js, images, and i18n strings
-│   └── demos/        # one self-contained app per folder
+│   ├── index.html    # bio, Work and Projects lists, live status
+│   ├── projects/         # the complete projects list (tools/build-work.py)
+│   └── assets/       # css, js, images
 ├── functions/api/    # the Cloudflare Pages Functions
 ├── wrangler.toml     # project name, output dir, D1 binding
-├── schema.sql        # the three tables behind the two live corners
+├── schema.sql        # visitor counts and personal status caches
 └── tools/            # deploy script, dev server, in-place text editing,
-                      # vendor rebase, and where/ — the macOS location reporter
+                      # and where/ — the macOS location reporter
 ```
 
 ## Running it
+
+Use the static preview server:
+
+```sh
+python3 tools/serve.py    # http://localhost:8712
+```
+
+`?edit` enables local text editing. The earlier illustration, About page, and
+interactive project demos are recoverable from git history; `bottom-artwork`
+also preserves the visible landscape layout. The current site has no scene
+editor or illustration dependencies.
+
+The location, music, and analytics widgets also work on this preview server:
+it reads the public live site's status without registering local visitors
+or forwarding browser cookies.
+To test the Pages Functions themselves, use Wrangler:
 
 ```sh
 cp .dev.vars.example .dev.vars     # then fill both values in
@@ -84,8 +76,8 @@ npx wrangler pages dev
 ```
 
 `.dev.vars` holds the secrets, none of which are ever committed:
-`ROBOFLOW_API_KEY` for the FloorSense demo, `PULSE_SALT` for the visitor
-hashes, and `WHERE_TOKEN` for the location reporter — the last two are any
+`PULSE_SALT` for the visitor hashes and `WHERE_TOKEN` for the location
+reporter — both are any
 long random string, and `openssl rand -hex 32` produces a good one. All of
 them also have to exist in the Pages dashboard under Settings → Environment
 variables for the live site to work.
@@ -103,9 +95,21 @@ tools/deploy.sh --dry-run    # show what would be stamped, deploy nothing
 It refuses a dirty tree, so what's live is always a commit. `gh` has to be
 signed in, for the one call that checks whether the repo is public.
 
+Deployment stamps the commit numbers, timestamp, and link in the footer.
+
+After deploying the removal of the online indicator, clean up the unused table
+in existing databases once (the current `schema.sql` does not create it):
+
+```sh
+npx wrangler d1 execute zainsaeed-pulse --remote --file=tools/migrations/remove-online-presence.sql
+```
+
+Use `--local` for a local database. This only drops the retired table; the visitor
+total, location and Spotify data remain intact.
+
 ## The location corner
 
-The bottom-left of the home page says where I was last seen, when that
+The top-left status group says where I was last seen, when that
 somewhere was public. A LaunchAgent on my Mac takes a coarse CoreLocation fix
 every three minutes and posts it to `/api/where`, which asks OpenStreetMap
 what's there and writes a venue name only if it passes an allowlist of public

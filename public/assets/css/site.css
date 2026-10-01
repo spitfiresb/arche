@@ -1,0 +1,746 @@
+/* Home and projects share a narrow charcoal layout with Hanken Grotesk
+   typography, short descriptions, and direct repository links. */
+
+@font-face {
+  font-family: "Hanken Grotesk";
+  src: url("/assets/fonts/HankenGrotesk-Variable.f1a70e8b.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #161616;
+  --bg-rgb: 22, 22, 22;
+  --fg: #f2f2f2;
+  --muted: #a0a0a0;
+  --soft: #a0a0a0;
+  --rule: rgba(242, 242, 242, 0.1);
+  --underline: #555;
+  --underline-hover: #a0a0a0;
+  --link: #74b1fd;
+  --faint: #7e7e7e;
+  --column: 36.375rem;
+  --font-sans:
+    "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Compact the typography, column, and spacing together. */
+  font-size: 80%;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 460;
+  line-height: 1.25rem;
+  letter-spacing: -0.00563rem;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  color: var(--fg);
+  background: var(--rule);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* ---- The column ------------------------------------------------------ */
+
+.page {
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: 5rem 1rem 2.5rem;
+}
+
+/* A page-colored fade pinned to the top of the window, so scrolled text dissolves
+   into the page edge rather than being cut by it. */
+.page::before {
+  content: "";
+  pointer-events: none;
+  z-index: 9;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8rem;
+  background: linear-gradient(
+    180deg,
+    var(--bg) 0,
+    rgba(var(--bg-rgb), 0.74) 19%,
+    rgba(var(--bg-rgb), 0.54) 34%,
+    rgba(var(--bg-rgb), 0.38) 47%,
+    rgba(var(--bg-rgb), 0.28) 56.5%,
+    rgba(var(--bg-rgb), 0.19) 65%,
+    rgba(var(--bg-rgb), 0.13) 73%,
+    rgba(var(--bg-rgb), 0.075) 80%,
+    rgba(var(--bg-rgb), 0.04) 86%,
+    rgba(var(--bg-rgb), 0.02) 91%,
+    rgba(var(--bg-rgb), 0.008) 95%,
+    rgba(var(--bg-rgb), 0)
+  );
+}
+
+@media (max-width: 48rem) {
+  .page {
+    padding: 2rem 1.5rem 2.5rem;
+  }
+  /* Pages with the back control keep clear of it. */
+  .back ~ .page {
+    padding-top: 5rem;
+  }
+  .page::before {
+    height: 2.5rem;
+  }
+}
+
+/* ---- The bio --------------------------------------------------------- */
+
+.bio > header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.bio > header h1 {
+  font-weight: 500;
+}
+
+.bio > header time {
+  color: var(--muted);
+}
+
+/* An inline link is a word with a hairline under it, darkening on hover. */
+.link {
+  position: relative;
+  display: inline;
+  transition: all 0.2s ease;
+}
+.link::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 2px;
+  background: var(--underline);
+  transition: inherit;
+}
+.link:hover::before {
+  background: var(--underline-hover);
+}
+.link:focus-visible {
+  border-radius: 2px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  transition: none;
+  outline: 2px solid rgba(0, 122, 255, 0.5);
+}
+
+/* ---- Homepage and project index -------------------------------------- */
+
+html:has(body.home) {
+  font-size: 100%;
+  min-height: 100%;
+  overflow-x: clip;
+}
+
+body.home {
+  min-height: 100dvh;
+  overflow-x: clip;
+  position: relative;
+  isolation: isolate;
+  background: var(--bg);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+body.home > .page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+body.home > .page::before {
+  content: none;
+}
+
+/* Match benji.org's 14px / 20px homepage text. The embedded profile cards
+   retain their own typography; the name has the reference's medium weight. */
+body.home .bio {
+  text-align: left;
+  font-size: inherit;
+  font-weight: 460;
+  line-height: inherit;
+}
+
+body.home .bio > header {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: 0;
+  align-items: flex-start;
+  text-align: left;
+}
+
+body.home .bio > header h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+}
+
+/* Keep the social icon row aligned with the content. */
+body.home .elsewhere {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.home-columns {
+  display: grid;
+}
+
+.home-columns > .work {
+  min-width: 0;
+}
+
+.experience-list {
+  list-style: none;
+}
+.work-organization {
+  color: var(--muted);
+}
+
+.experience-link {
+  display: block;
+}
+.organization-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+}
+.link-label {
+  position: relative;
+  display: inline-block;
+}
+.link-label::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-arrow {
+  display: inline-block;
+  flex: none;
+  color: var(--soft);
+  opacity: 0;
+  transform: translate(-3px, 3px) scale(0.8);
+  transition:
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.animated-link:is(:hover, :focus-visible) .link-label::after {
+  transform: scaleX(1);
+}
+.animated-link:is(:hover, :focus-visible) .link-arrow {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+.animated-link:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+@media (hover: none) {
+  .animated-link .link-arrow {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .link-label::after,
+  .link-arrow {
+    transition: none;
+  }
+}
+
+.view-all-projects {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  color: var(--soft);
+}
+.view-all-projects:hover,
+.view-all-projects:focus-visible {
+  color: var(--fg);
+}
+.view-all-projects:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+}
+
+html:has(body.projects-index) {
+  font-size: 100%;
+}
+.projects-index > .page::before {
+  content: none;
+}
+.breadcrumbs {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  list-style: none;
+}
+.breadcrumbs a,
+.breadcrumb-separator {
+  color: var(--soft);
+}
+.breadcrumbs a:hover {
+  color: var(--fg);
+}
+.breadcrumbs a:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.work > h2 {
+  margin-bottom: 0.625rem;
+  color: var(--soft);
+  font-size: 0.875rem;
+  font-weight: 460;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  list-style: none;
+}
+.project-grid > li {
+  min-width: 0;
+}
+
+.work-project {
+  display: block;
+  height: 100%;
+  list-style: none;
+  cursor: default;
+}
+.work-title {
+  display: block;
+
+  transition: color 0.15s ease;
+}
+.work-description {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 0.1875rem;
+  color: var(--soft);
+  font-size: 0.875rem;
+  font-weight: 460;
+  line-height: 1.0625rem;
+  transition: color 0.15s ease;
+}
+.project-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.project-heading .work-title {
+  min-width: 0;
+}
+.project-repo {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--soft);
+  transition: color 180ms ease;
+}
+.project-repo + .project-repo {
+  margin-inline-start: -0.375rem;
+  justify-content: flex-start;
+}
+.work-project:is(:hover, :focus-within) .project-repo {
+  color: var(--fg);
+}
+.project-lock-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.project-repo-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  background: currentColor;
+  -webkit-mask: url("/assets/img/gh-logo.svg") center / contain no-repeat;
+  mask: url("/assets/img/gh-logo.svg") center / contain no-repeat;
+}
+a.project-repo:hover {
+  color: var(--fg);
+}
+.project-external-arrow {
+  display: inline-block;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.work-title + .project-repo .project-external-arrow {
+  width: 0.875rem;
+  text-align: start;
+}
+.project-repo:is(:hover, :focus-visible) .project-external-arrow {
+  transform: translate(2px, -2px);
+}
+.project-repo:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.projects-index .work-project {
+  padding-block: 0.75rem;
+}
+.projects-index .work-title {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.projects-index .work-description {
+  margin-top: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+/* Match the reference's typography while retaining the compact list spacing. */
+body.home .work > h2 {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+body.home .experience-list > li {
+  font-size: 0.9375rem;
+  line-height: 1.625;
+  font-weight: 400;
+}
+body.home .work-title {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+body.home .work-description {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Reference spacing: 32px between sections, 8px below headings. */
+body.home .home-columns {
+  gap: 2rem;
+  padding-top: 2rem;
+}
+body.home .work > h2 {
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+body.home .work-project,
+body.home .experience-list > li {
+  padding: 0;
+  min-height: 0;
+}
+body.home .experience-list > li + li {
+  margin-top: 0.375rem;
+}
+body.home .project-grid {
+  row-gap: 0.75rem;
+}
+body.home .work-description {
+  margin-top: 0;
+}
+.project-actions {
+  margin-top: 0.5rem;
+}
+.project-actions .view-all-projects {
+  margin: 0;
+  padding: 0;
+  gap: 0.375rem;
+  border-radius: 0;
+  background: none;
+  font-weight: 400;
+}
+
+/* Both pages share the same content bounds and responsive insets. */
+:root {
+  --page-top: min(
+    clamp(3.5rem, calc(7.142857vw + 0.928571rem), 5.5rem),
+    max(2rem, 10svh)
+  );
+  --page-left: max(1rem, env(safe-area-inset-left));
+  --page-right: max(1rem, env(safe-area-inset-right));
+}
+html:has(body:is(.home, .projects-index)) {
+  scrollbar-gutter: stable;
+}
+body.home > .page,
+body.projects-index > .page {
+  max-width: 576px;
+  padding: calc(var(--page-top) + env(safe-area-inset-top)) var(--page-right)
+    max(2rem, env(safe-area-inset-bottom)) var(--page-left);
+}
+.project-heading .work-title,
+.organization-link {
+  overflow-wrap: anywhere;
+}
+.organization-link {
+  max-width: 100%;
+}
+.organization-link .link-label {
+  min-width: 0;
+}
+@media (hover: none), (pointer: coarse) {
+  a.project-repo {
+    width: 44px;
+    height: 44px;
+    margin-block: -10px;
+  }
+  .experience-link {
+    min-height: 44px;
+    align-content: center;
+  }
+  .project-actions .view-all-projects,
+  .breadcrumbs a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .breadcrumbs a {
+    min-width: 44px;
+    margin-block: -12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-title,
+  .work-description,
+  .project-repo {
+    transition: none;
+  }
+  .project-external-arrow {
+    transition: none;
+  }
+  .project-repo:is(:hover, :focus-visible) .project-external-arrow {
+    transform: none;
+  }
+}
+
+/* Shared theme control stays inside the same bounds as the content. */
+:root.light {
+  color-scheme: light;
+  --bg: #f7f7f5;
+  --bg-rgb: 247, 247, 245;
+  --fg: #242424;
+  --muted: #626262;
+  --soft: #626262;
+  --faint: #707070;
+  --rule: rgba(36, 36, 36, 0.12);
+  --underline: #aaa;
+  --underline-hover: #626262;
+  --link: #1765b7;
+}
+body.home > .page,
+body.projects-index > .page {
+  position: relative;
+  --theme-top: calc(var(--page-top) + env(safe-area-inset-top) - 8px);
+}
+.theme-toggle {
+  view-transition-name: theme-toggle;
+  position: absolute;
+  top: var(--theme-top);
+  right: calc(var(--page-right) - 4px);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:hover {
+  color: var(--fg);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+.theme-toggle svg {
+  grid-area: 1 / 1;
+  width: 21px;
+  height: 21px;
+  transform-origin: center;
+}
+.theme-sun {
+  visibility: hidden;
+}
+.light .theme-moon {
+  visibility: hidden;
+}
+.light .theme-sun {
+  visibility: visible;
+}
+/* Fade the complete palette together, keeping the live icon animation clear. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-in-out;
+}
+::view-transition-group(theme-toggle),
+::view-transition-new(theme-toggle) {
+  animation: none;
+}
+::view-transition-old(theme-toggle) {
+  display: none;
+}
+::view-transition {
+  pointer-events: none;
+}
+@supports not (view-transition-name: root) {
+  html,
+  body {
+    transition:
+      background-color 200ms ease-in-out,
+      color 200ms ease-in-out;
+  }
+}
+body.home .bio > header {
+  max-width: calc(100% - 48px);
+}
+.breadcrumbs {
+  padding-right: 48px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ---- Entrance -------------------------------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* The same small lift and stagger introduce each section on either page.
+   Backwards fill keeps delayed sections hidden without retaining a transform
+   after the animation, so links and hover cards keep their normal stacking. */
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page-reveal {
+    animation: section-enter 550ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: calc(var(--reveal-order, 0) * 60ms);
+  }
+}
+
+/* ---- Custom 404 page ------------------------------------------------- */
+
+.back {
+  position: fixed;
+
+  z-index: 15;
+}
+
+.article > header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+.article > header h1 {
+  font-weight: 500;
+  text-wrap: balance;
+}
+.article > header .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.article > p {
+  padding-top: 1rem;
+}
+
+/* ---- Entrance, for the inner pages ---------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .article > * {
+    animation: rise 0.5s ease both;
+  }
+  .article > :nth-child(1) {
+    animation-delay: 0s;
+  }
+  .article > :nth-child(2) {
+    animation-delay: 0.05s;
+  }
+}

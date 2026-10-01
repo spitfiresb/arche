@@ -1,17 +1,15 @@
 #!/bin/sh
-# Deploy zsaeed.com: stamp the commit row on the home page, then push public/
+# Deploy zsaeed.com: stamp the commit row, then push public/
 # to Cloudflare Pages.
 #
 #   tools/deploy.sh            stamp and deploy
 #   tools/deploy.sh --dry-run  stamp, show the diff, deploy nothing
 #
-# The stats strip's middle row says what the last commit did ("+142 −16"),
+# The footer says what the last commit did ("+142 −16"),
 # how long ago, and links to it. The page can't know any of that about
 # itself, so this script works it out from git right before deploying and
-# writes it into the one anchor in public/index.html. The write is
-# temporary: the file is put back the moment wrangler returns, whatever
-# happens, so the checked-in copy keeps its placeholder values and the tree
-# stays clean.
+# writes it into the commit anchor in public/index.html. The write is
+# temporary: the file is restored when deployment finishes or fails.
 #
 # Where the click goes depends on whether anyone can follow it. A private
 # repo answers 404 to everyone but its owner — GitHub hides that the repo
@@ -71,7 +69,7 @@ keep=$(mktemp)
 cp "$INDEX" "$keep"
 trap 'cp "$keep" "$INDEX"; rm -f "$keep"' EXIT INT TERM
 
-HREF=$href WHEN=$when ADD=$add DEL=$del perl -0pi -e '
+HREF=$href WHEN=$when ADD=$add DEL=$del LC_ALL=C perl -0pi -e '
   s{(<a class="pulse-stat pulse-commit"[^>]*?)href="[^"]*"}{$1href="$ENV{HREF}"};
   s{(<a class="pulse-stat pulse-commit"[^>]*?)data-committed="[^"]*"}{$1data-committed="$ENV{WHEN}"};
   s{(<span class="pulse-sign">\+</span>)\d+}{$1$ENV{ADD}};

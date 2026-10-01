@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Zain Saeed</title>
 <meta name="description" content="Zain Saeed: personal site.">
 <meta property="og:title" content="Zain Saeed">
@@ -20,7 +20,11 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="author" content="Zain Saeed">
 <link rel="canonical" href="https://zsaeed.com/">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -30,7 +34,7 @@
       "@id": "https://zsaeed.com/#person",
       "name": "Zain Saeed",
       "url": "https://zsaeed.com/",
-      "image": "https://zsaeed.com/assets/img/li-avatar.jpeg",
+      "image": "https://zsaeed.com/assets/img/li-avatar.webp",
       "homeLocation": {
         "@type": "Place",
         "name": "San Francisco Bay Area"
@@ -65,26 +69,92 @@
   ]
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
-<link rel="preload" href="/assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/style.css">
-<script src="/assets/js/transition.js"></script>
-<script src="/assets/js/i18n.js" defer></script>
+<link rel="preload" href="/assets/fonts/HankenGrotesk-Variable.f1a70e8b.woff2" as="font" type="font/woff2" crossorigin>
+<script src="/assets/js/theme.js?v=theme-crossfade"></script>
+<link rel="stylesheet" href="/assets/css/site.css?v=woff2">
+<link rel="stylesheet" href="/assets/css/home-socials.css?v=smooth-previews">
+<link rel="stylesheet" href="/assets/css/home-status.css?v=ink-trim">
+<script src="/assets/js/prefetch.js"></script>
 </head>
-<body class="home" data-i18n-page="home">
-  <main>
-    <h1 class="greeting" data-i18n="home.greeting">Hi, my name is Zain Saeed, welcome to my website!</h1>
+<body class="home">
+  <main class="page">
+    <article class="bio page-reveal" style="--reveal-order: 0">
+      <header>
+        <h1>Zain Saeed</h1>
+        <p class="home-local-meta">Bay Area, CA<span class="home-local-separator" aria-hidden="true" hidden> · </span><time class="home-local-time" aria-label="Current time in the San Francisco Bay Area" hidden></time></p>
+      </header>
 
-    <div class="intro">
-      <p data-i18n-html="home.intro">Some of the things I love: traveling somewhere new, meeting
-      interesting people, eating great food, working on my car, camping in remote locations, building amazing
-      things, and most importantly, <span class="stress">solving hard
-      problems.</span></p>
+      <aside class="home-status" aria-label="Live site status">
+        <div class="home-presence">
+          <aside class="whereat" hidden>
+            <span class="whereat-line">
+              <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="whereat-lede">Last seen</span>
+              <span class="whereat-lede">at</span>
+              <span class="whereat-place"></span><span class="whereat-city"></span>
+            </span>
+            <span class="whereat-hint"></span>
+          </aside>
+
+          <aside class="listening" hidden>
+            <span class="listening-line">
+              <svg class="listening-note" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span class="listening-track"></span>
+              <span class="listening-by">by</span>
+              <span class="listening-artist"></span>
+            </span>
+            <span class="listening-hint" aria-hidden="true"></span>
+          </aside>
+        </div>
+
+
+      </aside>
+
+    </article>
+
+    <div class="home-columns">
+      <section class="work page-reveal" style="--reveal-order: 1" aria-labelledby="work-heading">
+        <h2 id="work-heading">Work</h2>
+        <ul class="experience-list">
+          <li><a class="experience-link animated-link" href="https://unpak.ai/" target="_blank" rel="noopener">Founding Product Engineer @ <span class="organization-link"><span class="work-organization link-label">Unpak</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+          <li><a class="experience-link animated-link" href="https://www.trimble.com/" target="_blank" rel="noopener">Data/ML Engineer @ <span class="organization-link"><span class="work-organization link-label">Trimble</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+          <li><a class="experience-link animated-link" href="https://www.expertflow.com/" target="_blank" rel="noopener">Data Engineer @ <span class="organization-link"><span class="work-organization link-label">Expertflow</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+          <li><a class="experience-link animated-link" href="https://www.uoregon.edu/" target="_blank" rel="noopener">Undergraduate Research Assistant @ <span class="organization-link"><span class="work-organization link-label">University of Oregon</span><span class="link-arrow" aria-hidden="true">↗</span></span></a></li>
+        </ul>
+      </section>
+
+      <section class="work page-reveal" style="--reveal-order: 2" aria-labelledby="projects-heading">
+        <h2 id="projects-heading">Projects</h2>
+        <ul class="project-grid">
+          <li>
+            <div class="work-project">
+              <div class="project-heading">
+                <h3 class="work-title">Notch</h3>
+                <a class="project-repo" href="https://github.com/spitfiresb/notch" target="_blank" rel="noopener" aria-label="Notch GitHub repository"><span class="project-repo-icon" aria-hidden="true"></span></a>
+              </div>
+              <p class="work-description">A macOS utility that turns your display notch into a workspace.</p>
+            </div>
+          </li>
+          <li>
+            <div class="work-project">
+              <div class="project-heading">
+                <h3 class="work-title">Steward AI</h3>
+                <a class="project-repo" href="https://github.com/spitfiresb/steward-ai" target="_blank" rel="noopener" aria-label="Steward AI GitHub repository"><span class="project-repo-icon" aria-hidden="true"></span></a>
+                <a class="project-repo" href="https://devpost.com/software/nexhacks" target="_blank" rel="noopener" aria-label="Steward AI on Devpost"><span class="project-external-arrow" aria-hidden="true">↗</span></a>
+              </div>
+              <p class="work-description">A desktop app that helps businesses understand how teams use AI.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
     </div>
 
-    <section class="elsewhere">
+    <nav class="project-actions page-reveal" style="--reveal-order: 3" aria-label="More projects">
+        <a class="view-all-projects animated-link" href="/projects/"><span class="link-label">View All Projects</span><span class="link-arrow" aria-hidden="true">↗</span></a>
+    </nav>
+
+    <footer class="home-footer page-reveal" style="--reveal-order: 4">
+    <nav class="elsewhere" aria-label="Contact and social profiles">
       <ul class="links">
         <li class="socials">
           <ul class="social-row">
@@ -94,11 +164,11 @@
               <div class="li-hover-reveal">
                 <div class="li-hover-card li-card" aria-hidden="true">
                   <div class="li-card-inner">
-                    <img class="li-banner" src="/assets/img/li-banner.jpeg" alt="">
-                    <img class="li-avatar" src="/assets/img/li-avatar.jpeg" alt="">
+                    <img class="li-banner" data-src="/assets/img/li-banner.webp" width="704" height="176" decoding="async" alt="">
+                    <img class="li-avatar" data-src="/assets/img/li-avatar.webp" width="216" height="216" decoding="async" alt="">
                     <div class="li-info">
                       <p class="li-name">Zain Saeed</p>
-                      <p class="li-headline">CS &amp; Data Science | Prev @Trimble</p>
+                      <p class="li-headline">CS &amp; Data Science</p>
                       <p class="li-meta">San Francisco Bay Area</p>
                       <p class="li-connections">500+ connections</p>
                     </div>
@@ -114,7 +184,7 @@
                 <div class="li-hover-card gh-card" aria-hidden="true">
                   <div class="li-card-inner gh-inner">
                     <div class="gh-head">
-                      <img class="gh-avatar" src="https://github.com/spitfiresb.png?size=96" alt="">
+                      <img class="gh-avatar" data-src="https://github.com/spitfiresb.png?size=96" width="96" height="96" decoding="async" alt="">
                       <div>
                         <p class="gh-name">Zain Saeed</p>
                         <p class="gh-login">spitfiresb</p>
@@ -127,143 +197,28 @@
               </div>
               </a>
             </li>
+            <li class="email-item">
+              <a class="email-link" href="mailto:zainsaeed024@gmail.com" aria-label="Email Zain Saeed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2"/>
+                  <path d="m3 6 9 7 9-7"/>
+                </svg>
+              </a>
+            </li>
           </ul>
         </li>
       </ul>
-      <!-- The way into the About page. The brackets are CSS (see
-           .about-more), so translations swap the words without eating
-           them. A real navigation — the fixed corners on this page must
-           die with it (see the .pulse notes below). -->
-      <a class="about-more" href="/about" data-i18n="nav.about">more about me</a>
-    </section>
-
-    <div class="work-grid">
-      <section class="col">
-        <h2><a href="/work/personal"><span data-i18n="nav.personal">Personal</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
-        <ul class="stack">
-          <li>
-            <a class="item-title" href="/work/personal#steward-ai">Steward AI</a>
-            <span class="item-desc" data-i18n="home.steward.desc">Lets businesses understand their employees' AI usage.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/personal#unpak-system">Unpak</a>
-            <span class="item-desc" data-i18n="home.unpak.desc">Co-founded a startup that helps enterprises with their AI transformation.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/personal#floorsense">FloorSense</a>
-            <span class="item-desc" data-i18n="home.floorsense.desc">Computer vision that reads architectural floorplans.</span>
-          </li>
-        </ul>
-      </section>
-
-      <section class="col">
-        <h2><a href="/work/contract"><span data-i18n="nav.contract">Contract</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
-        <ul class="stack">
-          <li>
-            <a class="item-title" href="/work/contract#ai-sales-agent" data-i18n="work.salesagent.title">AI Sales Agent</a>
-            <span class="item-desc" data-i18n="home.salesagent.desc">Chat agent that lets a company query their ERP using natural language.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/contract#ag-analytics" data-i18n="work.agdash.title">Agricultural Analytics Platform</a>
-            <span class="item-desc" data-i18n="home.agdash.desc">Geospatial analytics for a 1,500-person equipment dealer.</span>
-          </li>
-        </ul>
-      </section>
-
-      <section class="col">
-        <h2><a href="/work/cool"><span data-i18n="nav.extra">Extra</span><svg class="pill-border" aria-hidden="true"><path class="pb-l" pathLength="100"></path><path class="pb-r" pathLength="100"></path></svg></a></h2>
-        <ul class="stack">
-          <li>
-            <a class="item-title" href="/work/cool#notch">Notch</a>
-            <span class="item-desc" data-i18n="home.notch.desc">A macOS utility that lives in the display notch.</span>
-          </li>
-          <li>
-            <a class="item-title" href="/work/cool#liquid-glass">Liquid Glass</a>
-            <span class="item-desc" data-i18n="home.liquidglass.desc">My attempt at Apple's liquid glass.</span>
-          </li>
-        </ul>
-      </section>
-    </div>
-
-    <!-- Live numbers in the last empty corner: how many people came in the
-         last 30 days, what the last commit to the site did, and how many are
-         here right now. Hidden until the first response lands, so a counter
-         that's down shows nothing rather than a row of zeros. The labels are
-         held back until hover; the zeros are placeholders that also fix the
-         width, so no number can shuffle the layout as it grows. -->
-    <!-- The opposite corner: the last public place I was seen at, written by
-         a launchd job on my Mac and filtered down to somewhere worth saying
-         out loud before it ever reaches the database (functions/api/where.js).
-         It arrives on the same beat as the numbers on the right, so this
-         costs no extra request. Absent entirely when there's nothing to say,
-         which is most evenings. -->
-    <!-- One line, top-left: "Last seen at <venue> [in <city>]". No
-         timestamp in the sentence — it holds whatever the last public
-         place was, and the city appears only when the venue name doesn't
-         already contain it. The indented hint under the line is the
-         neighbourhood and the age ("South Beach · 2 days ago"), opening
-         on hover the way the music corner's hint does; the age drops out
-         after five days, and the hint is empty when neither half applies.
-         pulse.js fills the gaps. -->
-    <aside class="whereat" hidden>
-      <span class="whereat-line">
-        <svg class="whereat-pin" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span class="whereat-lede" data-i18n="where.lede">Last seen</span>
-        <span class="whereat-lede" data-i18n="where.at">at</span>
-        <span class="whereat-place"></span><span class="whereat-city"></span>
-      </span>
-      <span class="whereat-hint"></span>
-    </aside>
-
-    <!-- Bottom-left: what's on Spotify, from the same /api/pulse response.
-         Just "<note> <song> by <artist>", plain text — nothing here is a
-         link. Hovering opens the hint above it — "Now Playing", or
-         "Last Played · 3 hours ago" — the same way the stats opposite open
-         their labels. Absent until the first response lands, and stays
-         absent if the Spotify connection is down: no placeholder, same as
-         the corner above it. -->
-    <aside class="listening" hidden>
-      <span class="listening-hint" aria-hidden="true"></span>
-      <span class="listening-line">
-        <svg class="listening-note" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        <span class="listening-track"></span>
-        <span class="listening-by" data-i18n="music.by">by</span>
-        <span class="listening-artist"></span>
-      </span>
-    </aside>
-
-    <footer class="pulse" hidden>
-      <div class="pulse-stat">
-        <span class="pulse-label" data-i18n="pulse.visits">visits (30d)</span>
-        <span class="pulse-num" data-pulse="visits">000000</span>
-      </div>
-      <!-- The middle row, and the only one that goes anywhere: what the last
-           commit to this site did, the way GitHub writes it — lines added
-           in green, lines removed in red, and nothing else. Hovering opens
-           "last commit · 7 hours ago" (or "18 min ago") the way its neighbours open their
-           labels (pulse.js keeps the age current from data-committed), and
-           clicking goes to that commit on GitHub. The numbers, the timestamp
-           and the link are placeholders here: tools/deploy.sh stamps the
-           real ones from HEAD right before `wrangler pages deploy` and puts
-           this file back afterwards, so the row is always the commit that
-           is actually live and this copy never changes. The link goes to
-           the profile instead when the repo is private or the commit isn't
-           pushed, since the commit page would 404 for every visitor. -->
+    </nav>
+    <div class="pulse">
       <a class="pulse-stat pulse-commit" href="https://github.com/spitfiresb/arche/commit/0d599cfe679bb858427609e454e7f2e1db13ade6" target="_blank" rel="noopener" data-committed="2026-09-06T15:28:08-07:00">
-        <span class="pulse-label"><span data-i18n="pulse.commit">last commit</span> · <span class="pulse-age"></span></span>
         <span class="pulse-num pulse-add"><span class="pulse-sign">+</span>142</span><span class="pulse-num pulse-del"><span class="pulse-sign">&minus;</span>16</span>
+        <span class="pulse-label"><span>Last Commit</span> · <span class="pulse-age"></span></span>
       </a>
-      <!-- The live one already says what it is, so instead of a label it
-           opens a flag per country currently reading, filled in by pulse.js.
-           Decorative: the count beside it is what carries the meaning, so
-           screen readers are spared a row of unlabelled emoji. -->
-      <div class="pulse-stat">
-        <span class="pulse-flags" aria-hidden="true"></span>
-        <span class="pulse-dot" aria-hidden="true"></span><span class="pulse-num" data-pulse="online">000</span><span class="pulse-unit" data-i18n="pulse.online">online</span>
-      </div>
+    </div>
     </footer>
   </main>
-  <script src="/assets/js/landing.js"></script>
-  <script src="/assets/js/pulse.js" defer></script>
+  <script src="/assets/js/pulse.js?v=count-once" defer></script>
+  <script src="/assets/js/home-socials.js?v=hover-load" defer></script>
+  <script src="/assets/js/home-clock.js?v=lowercase" defer></script>
 </body>
 </html>

@@ -1,102 +1,86 @@
 # arche (zsaeed.com)
 
-Flat-file site served from `public/` on Cloudflare Pages (project name
-`zainsaeed`). `functions/` at the repo root holds the three Pages Functions
-(`POST /api/detect`, `POST /api/pulse`, `POST /api/where`). `wrangler.toml`
-carries the project name, the output directory, and the D1 binding.
+Flat-file personal site served from `public/` on Cloudflare Pages (project
+`zainsaeed`). Current pages are Home, `/projects/`, and the custom 404.
+`functions/api/` contains the pulse, where, and spotify-poll Pages Functions.
+`wrangler.toml` declares the output directory and D1 binding.
 
-## Deployment
+## Development and deployment
 
-**The site does NOT auto-deploy.** The Pages project has no git integration —
-pushing to `main` changes nothing on the live site. After pushing, deploy
-manually:
+Run `python3 tools/serve.py` for http://localhost:8712. An optional positional
+port or `PORT` overrides it. The server honors `public/_redirects`, supports
+clean HTML URLs, and disables caching. `?edit` injects the local text editor.
+`tools/agentation/` provides a separate optional annotation preview.
 
-```sh
-tools/deploy.sh            # stamp the commit row, then wrangler pages deploy
-tools/deploy.sh --dry-run  # show what would be stamped, deploy nothing
-```
+The preview bridges `POST /api/pulse` to public production status, cached for
+20 seconds. It sends an empty body upstream and never forwards visitor-counting
+flags, cookies, or headers. Other Pages Functions need Wrangler and `.dev.vars`.
 
-The script refuses a dirty tree, works out the last commit's diff stat,
-timestamp and URL from git, writes them into the commit row in
-`public/index.html`, runs `npx wrangler pages deploy`, and restores the file
-on exit whatever happens. Running `npx wrangler pages deploy` by hand still
-works (`wrangler.toml` declares the output directory and project name) but
-ships the placeholder commit row.
+The site does not auto-deploy. `tools/deploy.sh` stamps the footer commit link,
+timestamp, and diff numbers from HEAD, deploys with Wrangler, and restores the
+HTML on exit. `--dry-run` shows the stamped diff without deploying. It refuses
+a dirty tree. The commit links to GitHub only when the repository is public
+and HEAD is pushed; otherwise it links to the owner's profile.
 
-Then verify at https://zsaeed.com (use `curl -L`; clean URLs like
-`/work/contract` redirect).
+## Current frontend
 
-## Local preview
+- `public/index.html` is hand-written: name, Bay Area clock, location/music,
+  four work entries, two featured projects, social previews, and commit footer.
+- Edit `PROJECTS` in `tools/build-work.py`, then run it to regenerate
+  `public/projects/index.html`. Commit source and output together.
+- `site.css` contains the shared layout, typography, theme, links, entrance
+  animations, and 404 content styles. Home and Projects use a 576px outer column
+  with fluid insets and self-hosted Hanken Grotesk. The font file is WOFF2 with
+  a content hash in its name because `_headers` caches fonts as immutable; a
+  changed font needs a new filename, not an overwrite.
+- `home-socials.css` / `home-socials.js` implement LinkedIn/GitHub hover previews.
+  Footer cards expand upward; on touch, the icons open profiles directly.
+  Profile images use `data-src` and load on hover or keyboard focus. Keep their
+  dimensions to reserve space. The GitHub contribution calendar is fetched on
+  first hover/focus of the social row, never on page load or on touch devices.
+  The email link sits immediately after GitHub.
+- `home-status.css` styles inline location/music, the clock, and commit footer.
+  `pulse.js` renders status and commit age; `home-clock.js` keeps Pacific time.
+- `theme.js` restores and switches light/dark mode. `prefetch.js` warms internal
+  destinations on pointer hover; navigation uses ordinary browser links.
+- `home-back.css` styles the 404's return-home control.
 
-Any static server over `public/` works, but it won't rewrite clean URLs —
-hit `/work/contract.html` directly. For the Pages Functions, use
-`npx wrangler pages dev` (needs `.dev.vars`, see README).
+The retired About page, project demos/detail pages, translations, and landscape
+implementation are removed from this working tree. Git history preserves them;
+`bottom-artwork` also preserves the earlier visible illustration. Do not restore
+those features as dependencies of the current pages. Keep old-URL redirects:
+they remain useful to bookmarks and inbound links.
 
-## The stats strip
+## Visitor counting and status
 
-The three numbers in the bottom-right of the home page: visits in the last
-30 days, the last commit's diff stat, and how many people are reading now.
-`pulse.js` runs on every page and beats to `POST /api/pulse` on load and
-every 30s while the tab is visible; only `index.html` contains the `.pulse`
-markup that draws the result. Counts are stored in the `zainsaeed-pulse` D1
-database (`schema.sql`).
+Home and Projects register a visit through `POST /api/pulse`. Pages showing
+location/music refresh every 30 seconds while visible. The API returns
+`{ visits, place, track }`; visitor totals are no longer displayed, but counting
+and storage remain active. `schema.sql` defines hits, place, and spotify.
 
-The commit row is static: "+142 −16" in GitHub's green and red, the whole
-row a link, and its timestamp in `data-committed`. `tools/deploy.sh` stamps
-all three from HEAD at deploy time; the values in git are placeholders. Only
-the age is computed, in the browser, for the hover label. The link is the
-commit when the repo is public and the commit is pushed, and the GitHub
-profile otherwise — a private repo's commit page is a 404 to everyone but
-its owner, so the row links to the one page guaranteed to open. The check
-is one `gh repo view` call on the deploying machine, never at request time.
+- Keep `.whereat-line`, `.listening-line`, and hint spans. The location hint is
+  measured against the city text after fonts, status, or layout change.
+- Location/music hints expand on hover; touch shows details in normal flow.
+- `PULSE_SALT` must exist in the Pages dashboard and `.dev.vars`. Without it,
+  visitor hashes fall back to guessable unsalted hashes.
+- Keep the top-level-window guard: embedded copies must not register visits.
+- Recent status is restored from session storage, then revalidated. Null data
+  hides its row; an unavailable endpoint leaves cached status intact.
+- The footer commit is static HTML stamped by deployment; only its age changes
+  in the browser. It does not depend on the status request succeeding.
 
-Hovering a number opens its label; hovering the live count opens one flag per
-country currently reading. The flags are `SELECT DISTINCT country` over the
-presence rows inside the online window, so people are deduplicated by country
-before they ever reach the browser, and the client turns each two-letter code
-into an emoji by shifting its letters into the regional-indicator block.
-
-Things to remember when touching it:
-
-- **Narrow screens don't draw any of the corners.** Below 40rem the stats
-  strip, the music corner and the location line are all `display: none`
-  — three blocks in `style.css`, one per corner, each cross-referencing
-  the strip's. It's a width gate, not a device test: a phone in landscape
-  is wider than 40rem and gets the desktop corners, labels open, because
-  touch has no hover to hold them back. The beacon still beats, so those
-  visits still count; only the drawing goes. Hiding is CSS-only on
-  purpose — the response carries all three anyway, and filling hidden
-  elements is free, with one catch: the location hint's indent is
-  measured from layout, and inside `display: none` every offset is
-  zero. `indentHint` in `pulse.js` retries until it gets a real
-  number, and again the moment the viewport crosses the breakpoint, so a
-  rotate to landscape doesn't surface a hint at the fallback indent.
-- **`PULSE_SALT` must be set** in the Pages dashboard and in `.dev.vars`.
-  Without it, the visitor hashes are a plain hash of an IP, which is
-  enumerable over the whole IPv4 space and therefore not anonymous at all.
-- **The beacon has to stay out of iframes.** Nothing on the site frames its
-  own pages today (the old folded-corner About preview did), but the
-  `window.top` guard in `pulse.js` stays: any future embed is a real page
-  load, and every framed copy silently double-counts its visit.
-- **Country belongs on `presence`, not `hits`.** Presence rows expire minutes
-  after a tab closes; putting the country on the visit log instead would
-  quietly turn a counter into a 30-day record of where people were.
-- **Never add `Segoe UI Emoji` to the `.pulse-flags` stack.** It *does* have
-  glyphs for the regional-indicator range — the boxed capitals — so naming it
-  satisfies the lookup on Windows and stops the fallback to the bundled
-  Twemoji font, which is the whole reason that font is there. The stack names
-  `Apple Color Emoji` (Apple-only, has real flags, so a Mac downloads nothing)
-  and then the webfont, and nothing else.
+Run `node --test tools/test-pulse.mjs` when changing the status client or API.
+It checks the response contract, visit writes, caching, and polling behavior.
+The one-time `tools/migrations/remove-online-presence.sql` removes the retired
+online-presence table from existing databases; preserve it until migration is
+confirmed for each environment.
 
 ## The music corner
 
-Hidden below 40rem with the other corners — see the stats strip above.
-
-The bottom-left of the home page: "<note icon> <track> by <artist>" — no
-lede, nothing clickable, the "by <artist>" pair a step smaller and greyer
-than the title. Hovering opens a small grey hint above it, the same way
-the stats opposite open their labels: "Now Playing" while something is
-live, "Last Played · 3 hours ago" once it isn't. No reporter anywhere —
+A row in the home page's top-left status group: "<note icon> <track> by <artist>" — no
+lede, nothing clickable. The hint opens below the sentence on hover:
+"Now Playing" while something is live, "Last Played · 3 hours ago"
+once it isn't. No reporter anywhere —
 Spotify's own servers know what's playing, so `/api/pulse` pulls it and
 the result rides back on the response every page is already fetching,
 same as the venue. `pulse.js` draws it.
@@ -162,41 +146,9 @@ Things to remember when touching it:
   `played_at` stays behind; the browser gets a distance from now, never a
   clock time.
 
-## The Notch demo
-
-The Notch band on `/work/cool` embeds `public/demos/notch-v2/` — one
-self-contained file that recreates the app in the browser and then *runs
-itself*: a 25-second loop walks a drawn cursor through Now Playing, the
-"Saved in" playlist panel, a live Claude Code session (already under way
-when the loop opens, so the spinner is in the pill from the first frame),
-Clawd's completion sprint, and then a ⇧⌘4 drag over a Claude window on the
-desktop that ends in the screenshot toast. Nothing in it responds to the
-visitor — no buttons, no hover, no keys — so it reads as a video without
-being one.
-
-- **It's an `.ld-inline` iframe, not an `.ld-thumb`.** A thumb only runs the
-  demo once you click through to fullscreen, which is no good for something
-  whose whole point is that it plays on its own.
-- **Every size is the app's own point value**, scaled once with `--u`; the
-  header comment lists the timings it mirrors. Changing `PANEL_W_FRAC` is
-  how far the camera is pushed in, and 0.52 is the ceiling: past that the
-  menu bar (which scales too) overflows the frame.
-- **It pauses when nobody's looking.** A loop that never ends would
-  otherwise animate in a background tab or below the fold; `onScreen()`
-  checks `document.hidden` and the iframe's own rect in the parent.
-- **The playlist slide is a FLIP, not a transition.** Toggling a playlist
-  rebuilds the list, and rebuilt nodes have no memory of where they were, so
-  `togglePlaylist` measures every row first and puts each one back before
-  releasing it. The app gets the same slide for free — one `ForEach` spans
-  both sections there, so a toggle is a pure reorder.
-- `public/demos/notch/` is the previous, interactive edition, kept for
-  comparison. Nothing links to it.
-
 ## The location corner
 
-Hidden below 40rem with the other corners — see the stats strip above.
-
-The top-left of the home page: "Last seen at <venue>". A LaunchAgent on my
+A row in the home page's top-left status group: "Last seen at <venue>". A LaunchAgent on my
 Mac (`tools/where/`) takes a coarse CoreLocation fix every three minutes and
 posts it to `POST /api/where`, which asks OpenStreetMap what's there and
 writes a venue name only if it clears an allowlist. The result rides back on
@@ -217,14 +169,17 @@ Things to remember when touching it:
   entry anywhere: a house contains no café, so nothing matches. It's
   currently coffee shops only (`amenity=cafe`, `shop=coffee`), by choice.
 - **`PINS` in `where.js` is for venues OSM doesn't know.** A pin within
-  `NEARBY_M` beats every OSM candidate; distance only ranks pins against
+  its radius (`NEARBY_M` unless it sets `r`) beats every OSM candidate; distance only ranks pins against
   each other. Closer-wins was tried and lost to a mislocated OSM footprint
   sitting nearer every Wi-Fi fix than Qamaria's real storefront — the pin
   exists because OSM is wrong there, so OSM can't be allowed to outvote it.
   Pins resolve without Overpass (they survive outages) and skip `VETO` (a
   deliberate entry beats a categorical rule). Pin coordinates come from the
   venue's own site, never from where fixes land. Adding one is a code
-  change on purpose, same as `ALLOW`.
+  change on purpose, same as `ALLOW`. A pin whose 50m circle would swallow
+  a real neighbouring café sets its own smaller `r` (Corgi Cafe claims 22m,
+  half the gap to Working Girls'); past that, the ordinary OSM contest
+  decides.
 - **`VETO` is containment, via `is_in` — not proximity.** Costco's food court
   is legitimately tagged `amenity=fast_food` and sails straight through the
   allowlist; what stops it is that the *containing* way is `shop=wholesale`.
@@ -240,7 +195,7 @@ Things to remember when touching it:
 - **The neighbourhood is a hover hint, not part of the sentence.** The same
   Overpass round trip also fetches `place=neighbourhood|quarter|suburb`
   nodes within 1500m; the nearest of any tier becomes `place.area`, drawn
-  under the line by `pulse.js` the way the music corner's hint opens — the
+  by `pulse.js` as the trailing span after the sentence — the
   sentence keeps "in San Francisco" for the faraway reader, the hint says
   "South Beach" for the local. Place nodes are label points, not polygons,
   so nearest-centre is the only possible test, and it's honest about its
