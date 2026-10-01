@@ -56,7 +56,7 @@ def public_pulse():
             return _pulse_cache
         # Deliberately independent of the incoming body, cookies and headers.
         # pulse.js sends fresh on production; local previews must not.
-        request = urllib.request.Request(PULSE_URL, data=b'{}', method='POST',
+        request = urllib.request.Request(PULSE_URL, data=b'', method='POST',
             headers={'Content-Type': 'application/json', 'User-Agent': 'arche-local-preview'})
         with urllib.request.urlopen(request, timeout=10) as response:
             payload = json.load(response)
@@ -73,9 +73,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         parsed = urllib.parse.urlsplit(self.path)
         with open(os.path.join(ROOT, '_redirects')) as rules:
             for line in rules:
-                if not line.strip() or line.lstrip().startswith('#'):
+                # Same grammar as Pages: source, destination, optional
+                # status (302 by default), # comments. A malformed rule is
+                # skipped rather than taking every local page down with it.
+                fields = line.split('#', 1)[0].split()
+                if len(fields) not in (2, 3):
                     continue
-                source, destination, status = line.split()
+                source, destination = fields[:2]
+                status = fields[2] if len(fields) == 3 else '302'
                 if fnmatch.fnmatchcase(parsed.path, source):
                     if parsed.query:
                         destination += '?' + parsed.query

@@ -17,7 +17,7 @@
 //   SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET
 //               optional; without them the music corner just stays empty.
 
-const WINDOW_DAYS = 30;      // the "(30d)" in the label
+const WINDOW_DAYS = 30;      // visits are counted over this many days
 const TRACK_TTL = 25;        // seconds the cached Spotify track is served as-is
 const RETAIN_DAYS = 60;      // how long day-rows are kept before being swept
 const PLACE_AGE_TTL = 432000; // 5 days; after that the corner keeps the venue but drops the age
@@ -72,7 +72,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     at.visits = stmts.push(
       db.prepare("SELECT COUNT(*) AS n FROM hits WHERE day >= ?1").bind(since),
     ) - 1;
-    // The place in the other corner, written by /api/where. It rides along on
+    // The location row, written by /api/where. It rides along on
     // this batch rather than getting an endpoint of its own: every page is
     // already reading here, so the widget costs one statement on a
     // query that was happening anyway instead of a second request per tab.
@@ -88,7 +88,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
           WHERE id = 1`,
       ),
     ) - 1;
-    // The music line in the third corner. Same deal as place: it rides the
+    // The music row beside it. Same deal as place: it rides the
     // batch that was happening anyway. Only the cache is read here — Spotify
     // itself is never on this request's critical path (see refreshSpotify).
     at.spotify = stmts.push(

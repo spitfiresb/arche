@@ -169,14 +169,17 @@ Things to remember when touching it:
   entry anywhere: a house contains no café, so nothing matches. It's
   currently coffee shops only (`amenity=cafe`, `shop=coffee`), by choice.
 - **`PINS` in `where.js` is for venues OSM doesn't know.** A pin within
-  `NEARBY_M` beats every OSM candidate; distance only ranks pins against
+  its radius (`NEARBY_M` unless it sets `r`) beats every OSM candidate; distance only ranks pins against
   each other. Closer-wins was tried and lost to a mislocated OSM footprint
   sitting nearer every Wi-Fi fix than Qamaria's real storefront — the pin
   exists because OSM is wrong there, so OSM can't be allowed to outvote it.
   Pins resolve without Overpass (they survive outages) and skip `VETO` (a
   deliberate entry beats a categorical rule). Pin coordinates come from the
   venue's own site, never from where fixes land. Adding one is a code
-  change on purpose, same as `ALLOW`.
+  change on purpose, same as `ALLOW`. A pin whose 50m circle would swallow
+  a real neighbouring café sets its own smaller `r` (Corgi Cafe claims 22m,
+  half the gap to Working Girls'); past that, the ordinary OSM contest
+  decides.
 - **`VETO` is containment, via `is_in` — not proximity.** Costco's food court
   is legitimately tagged `amenity=fast_food` and sails straight through the
   allowlist; what stops it is that the *containing* way is `shop=wholesale`.

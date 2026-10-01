@@ -211,8 +211,12 @@
       });
       paintPlace(age(cached.place));
       const track = age(cached.track);
-      // An old snapshot is a last-known song, not proof it is still playing.
-      if (track && elapsed > BEAT_MS) track.playing = false;
+      // An old snapshot is a last-known song, not proof it is still playing:
+      // the last sighting of it live is as old as the snapshot itself.
+      if (track && track.playing && elapsed > BEAT_MS) {
+        track.playing = false;
+        track.ago = elapsed / 1000;
+      }
       paintTrack(track);
     } catch (_) {
       // Corrupt or blocked storage falls back to the normal live request.

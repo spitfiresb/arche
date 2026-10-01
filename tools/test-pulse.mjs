@@ -165,10 +165,11 @@ for (const cached of ['invalid JSON', JSON.stringify({ at: Date.now() - 180000, 
 
 test('a cached playing flag expires before the cached song does', () => {
   const page = musicClient(JSON.stringify({
-    at: Date.now() - 45000, place: null, track: { ...savedTrack, playing: true, ago: null },
+    at: Date.now() - 90000, place: null, track: { ...savedTrack, playing: true, ago: null },
   }));
   assert.equal(page.listening.hidden, false);
-  assert.equal(page.fields['.listening-hint'].textContent, 'Last Played');
+  // Last seen live when the snapshot was taken, so it ages from there.
+  assert.equal(page.fields['.listening-hint'].textContent, 'Last Played · 1 minute ago');
 });
 
 test('a failed first beat keeps the visit uncounted until one succeeds', async () => {

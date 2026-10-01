@@ -13,7 +13,7 @@
 -- stable for 24 hours.
 --
 -- The primary key IS the dedupe: a second visit on the same day is an
--- INSERT OR IGNORE that changes nothing, so "visits (30d)" counts people
+-- INSERT OR IGNORE that changes nothing, so the 30-day count counts people
 -- rather than page loads, and refreshing can't move the number.
 CREATE TABLE IF NOT EXISTS hits (
   day     TEXT NOT NULL,  -- 'YYYY-MM-DD', UTC
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS hits (
 ) WITHOUT ROWID;
 
 -- One row, forever, holding the last place worth saying out loud: the widget
--- in the bottom-left corner of the home page. Written only by /api/where,
+-- in the home page's top-left status group. Written only by /api/where,
 -- which a launchd job on my Mac beats while I'm logged in.
 --
 -- What is NOT here is the point. There is no latitude, no longitude, no
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS hits (
 -- confirmed at this place" rather than "arrived at". The moment I leave it
 -- stops moving and the corner starts counting up.
 -- One row, forever: the Spotify connection and the last track worth showing,
--- the line in the bottom-left corner of the home page. Nothing per-visitor
+-- the music row in the home page's top-left status group. Nothing per-visitor
 -- ever touches this table — it is entirely about my own listening.
 --
 -- The refresh token lives here rather than in an environment variable on

@@ -210,8 +210,10 @@
         });
 
         var total = document.querySelector(".gh-total");
-        if (total) {
-          total.textContent = data.total.lastYear.toLocaleString() +
+        // Optional: a response without a total keeps the graph it drew.
+        var lastYear = data.total && data.total.lastYear;
+        if (total && typeof lastYear === "number") {
+          total.textContent = lastYear.toLocaleString() +
             " contributions in the last year";
         }
       })
