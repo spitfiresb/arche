@@ -71,9 +71,6 @@ and storage remain active. `schema.sql` defines hits, place, and spotify.
 
 Run `node --test tools/test-pulse.mjs` when changing the status client or API.
 It checks the response contract, visit writes, caching, and polling behavior.
-The one-time `tools/migrations/remove-online-presence.sql` removes the retired
-online-presence table from existing databases; preserve it until migration is
-confirmed for each environment.
 
 ## The music corner
 

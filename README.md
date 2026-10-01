@@ -64,7 +64,7 @@ interactive project demos are recoverable from git history; `bottom-artwork`
 also preserves the visible landscape layout. The current site has no scene
 editor or illustration dependencies.
 
-The location, music, and analytics widgets also work on this preview server:
+The location and music widgets also work on this preview server:
 it reads the public live site's status without registering local visitors
 or forwarding browser cookies.
 To test the Pages Functions themselves, use Wrangler:
@@ -96,16 +96,6 @@ It refuses a dirty tree, so what's live is always a commit. `gh` has to be
 signed in, for the one call that checks whether the repo is public.
 
 Deployment stamps the commit numbers, timestamp, and link in the footer.
-
-After deploying the removal of the online indicator, clean up the unused table
-in existing databases once (the current `schema.sql` does not create it):
-
-```sh
-npx wrangler d1 execute zainsaeed-pulse --remote --file=tools/migrations/remove-online-presence.sql
-```
-
-Use `--local` for a local database. This only drops the retired table; the visitor
-total, location and Spotify data remain intact.
 
 ## The location corner
 
