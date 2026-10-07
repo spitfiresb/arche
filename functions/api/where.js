@@ -180,6 +180,13 @@ const PINS = [
   // only half the gap to its nearest allowed neighbour, and past that the
   // ordinary OSM contest decides.
   { name: "Corgi Cafe", city: "San Francisco", lat: 37.79055, lon: -122.4047, r: 22 },
+  // Opened August 2026, so OSM hasn't caught up; Wi-Fi fixes land beside
+  // Ben Thai Cafe with nothing allowed inside 50m. lemils.com publishes only
+  // the street address (1330 Polk St), so the coordinate is OSM's own
+  // address node for 1330, which sits in order between 1318 and 1334.
+  // Juniper and Sammy's Cafe are both 64m off, so this claims half that gap,
+  // same rule as Corgi.
+  { name: "Le Mil's Coffee", city: "San Francisco", lat: 37.7892577, lon: -122.420291, r: 32 },
 ];
 
 export async function onRequestPost({ request, env }) {
